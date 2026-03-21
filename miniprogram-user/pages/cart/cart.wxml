@@ -44,7 +44,7 @@
           <text class="dish-meta">数量 {{item.quantity}}</text>
         </view>
         <view class="cart-side">
-          <text class="dish-price">{{item.dish_kind === 'meat' || item.dish_kind === 'veg' ? '选菜后计算' : 'MYR ' + item.lineAmount}}</text>
+          <text wx:if="{{item.dish_kind !== 'meat' && item.dish_kind !== 'veg'}}" class="dish-price">MYR {{item.lineAmount}}</text>
           <view class="cart-actions">
             <button class="qty-btn" size="mini" data-id="{{item.cart_key}}" bindtap="decreaseQty">-</button>
             <button class="qty-btn" size="mini" data-id="{{item.cart_key}}" bindtap="increaseQty">+</button>

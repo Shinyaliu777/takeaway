@@ -227,6 +227,7 @@
   font-size: 20rpx;
   margin-top: 6rpx;
   color: #9a5a28;
+  min-height: 28rpx;
 }
 
 .stepper {
@@ -384,6 +385,7 @@
   font-size: 30rpx;
   font-weight: 700;
   color: #9a5a28;
+  min-height: 38rpx;
 }
 
 .dish-stock {
@@ -405,7 +407,7 @@
 }
 
 .bottom-nav-spacer {
-  height: 94rpx;
+  height: 260rpx;
 }
 
 .action-panel {

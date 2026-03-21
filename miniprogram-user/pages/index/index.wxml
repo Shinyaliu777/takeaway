@@ -25,10 +25,10 @@
       <button class="hero-tool" bindtap="goProfile">我的</button>
     </view>
     <view class="feature-grid" wx:if="{{featuredProducts.length}}">
-      <view wx:for="{{featuredProducts}}" wx:key="id" class="feature-tile" bindtap="goProductDetail" data-product-id="{{item.id}}">
+      <view wx:for="{{featuredProducts}}" wx:key="id" class="feature-tile">
         <image wx:if="{{item.image_url}}" class="feature-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true"></image>
         <text class="feature-name">{{item.name}}</text>
-        <text class="feature-price">{{item.dish_kind === 'meat' || item.dish_kind === 'veg' ? '选菜后计算' : 'MYR ' + item.price_amount}}</text>
+        <text class="feature-price">{{item.dish_kind === 'meat' || item.dish_kind === 'veg' ? '' : 'MYR ' + item.price_amount}}</text>
       </view>
     </view>
   </view>
@@ -88,7 +88,7 @@
       <text class="section-title">今日菜单</text>
       <text class="section-subtitle">自由选菜，系统自动拆套餐最优价</text>
     </view>
-    <view wx:for="{{filteredProducts}}" wx:key="id" class="dish-card" bindtap="goProductDetail" data-product-id="{{item.id}}">
+    <view wx:for="{{filteredProducts}}" wx:key="id" class="dish-card">
       <image wx:if="{{item.image_url}}" class="dish-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true"></image>
       <view class="dish-main">
         <view>
@@ -97,10 +97,10 @@
         </view>
         <view class="dish-bottom">
           <view>
-            <text class="dish-price">{{item.dish_kind === 'meat' || item.dish_kind === 'veg' ? '选菜后计算' : 'MYR ' + item.price_amount}}</text>
+            <text wx:if="{{item.dish_kind !== 'meat' && item.dish_kind !== 'veg'}}" class="dish-price">MYR {{item.price_amount}}</text>
             <text class="dish-stock">现货 {{item.stock_qty}} 份</text>
           </view>
-          <view class="stepper" catchtap="stopPaymentSheet">
+          <view class="stepper">
             <button wx:if="{{item.selected_qty}}" class="stepper-btn stepper-minus" size="mini" catchtap="decreaseDish" data-product-id="{{item.id}}">-</button>
             <text class="stepper-count">{{item.selected_qty || 0}}</text>
             <button class="stepper-btn add-btn" size="mini" catchtap="increaseDish" data-product="{{item}}">+</button>
