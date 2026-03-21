@@ -101,20 +101,27 @@ function buildPricingPreview(cart) {
   });
 
   const comboPlan = buildBestComboPlan(meatUnits, vegUnits);
+  const hasComboSelection = meatUnits.length > 0 || vegUnits.length > 0;
+  const hasCompleteCombo = comboPlan.matched && comboPlan.comboLines.length > 0;
   const sideTotal = sideLines.reduce((sum, item) => sum + item.amount, 0);
-  const total = Number((comboPlan.comboTotal + sideTotal).toFixed(2));
+  const total = Number(((hasCompleteCombo ? comboPlan.comboTotal : 0) + sideTotal).toFixed(2));
 
   return {
-    matched: comboPlan.matched,
+    matched: hasCompleteCombo,
     selectedCount,
     comboLines: comboPlan.comboLines,
     sideLines,
     comboTotal: comboPlan.comboTotal,
     sideTotal: Number(sideTotal.toFixed(2)),
     totalAmount: total,
-    summaryText: comboPlan.matched
-      ? (comboPlan.comboLines.map((item) => item.name).join(" + ") || "仅单点加购")
-      : "当前组合还不能结算，请继续补齐荤素搭配"
+    summaryText: hasCompleteCombo
+      ? `${comboPlan.comboLines.length} 组套餐已匹配，可继续加主食或直接结算`
+      : hasComboSelection
+        ? "当前组合还不能结算，请继续补齐荤素搭配"
+        : sideLines.length
+          ? "至少选择一组可结算套餐"
+          : "先从菜单里选择菜品",
+    checkoutReady: hasCompleteCombo
   };
 }
 

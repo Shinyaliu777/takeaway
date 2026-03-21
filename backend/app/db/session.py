@@ -48,10 +48,18 @@ def ensure_legacy_columns() -> None:
                 connection.execute("ALTER TABLE shop ADD COLUMN alipay_qr_url TEXT NOT NULL DEFAULT ''")
             if "tng_qr_url" not in shop_columns:
                 connection.execute("ALTER TABLE shop ADD COLUMN tng_qr_url TEXT NOT NULL DEFAULT ''")
+            if "featured_enabled" not in shop_columns:
+                connection.execute("ALTER TABLE shop ADD COLUMN featured_enabled INTEGER NOT NULL DEFAULT 0")
+            if "featured_cards_json" not in shop_columns:
+                connection.execute("ALTER TABLE shop ADD COLUMN featured_cards_json TEXT NOT NULL DEFAULT '[]'")
             if "description" not in product_columns:
                 connection.execute("ALTER TABLE product ADD COLUMN description TEXT NOT NULL DEFAULT ''")
             if "option_groups_json" not in product_columns:
                 connection.execute("ALTER TABLE product ADD COLUMN option_groups_json TEXT NOT NULL DEFAULT ''")
+            if "available_lunch" not in product_columns:
+                connection.execute("ALTER TABLE product ADD COLUMN available_lunch INTEGER NOT NULL DEFAULT 1")
+            if "available_dinner" not in product_columns:
+                connection.execute("ALTER TABLE product ADD COLUMN available_dinner INTEGER NOT NULL DEFAULT 1")
             if "selected_options_json" not in order_item_columns:
                 connection.execute("ALTER TABLE orderitem ADD COLUMN selected_options_json TEXT NOT NULL DEFAULT ''")
             if "proof_image_url" not in payment_columns:
@@ -82,10 +90,18 @@ def ensure_legacy_columns() -> None:
         alter_statements.append("ALTER TABLE shop ADD COLUMN alipay_qr_url VARCHAR(255) NOT NULL DEFAULT ''")
     if "tng_qr_url" not in existing_columns["shop"]:
         alter_statements.append("ALTER TABLE shop ADD COLUMN tng_qr_url VARCHAR(255) NOT NULL DEFAULT ''")
+    if "featured_enabled" not in existing_columns["shop"]:
+        alter_statements.append("ALTER TABLE shop ADD COLUMN featured_enabled BOOLEAN NOT NULL DEFAULT FALSE")
+    if "featured_cards_json" not in existing_columns["shop"]:
+        alter_statements.append("ALTER TABLE shop ADD COLUMN featured_cards_json TEXT NOT NULL DEFAULT '[]'")
     if "description" not in existing_columns["product"]:
         alter_statements.append("ALTER TABLE product ADD COLUMN description TEXT NOT NULL")
     if "option_groups_json" not in existing_columns["product"]:
         alter_statements.append("ALTER TABLE product ADD COLUMN option_groups_json TEXT NOT NULL")
+    if "available_lunch" not in existing_columns["product"]:
+        alter_statements.append("ALTER TABLE product ADD COLUMN available_lunch BOOLEAN NOT NULL DEFAULT TRUE")
+    if "available_dinner" not in existing_columns["product"]:
+        alter_statements.append("ALTER TABLE product ADD COLUMN available_dinner BOOLEAN NOT NULL DEFAULT TRUE")
     if "selected_options_json" not in existing_columns["orderitem"]:
         alter_statements.append("ALTER TABLE orderitem ADD COLUMN selected_options_json TEXT NOT NULL")
     if "proof_image_url" not in existing_columns["paymentorder"]:

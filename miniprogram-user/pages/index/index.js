@@ -28,6 +28,32 @@ function buildPaymentCodes(shop = {}) {
   ];
 }
 
+function buildFeaturedCards(shop = {}, products = []) {
+  if (!shop.featured_enabled) {
+    return [];
+  }
+  const productMap = {};
+  (products || []).forEach((product) => {
+    productMap[product.id] = product;
+  });
+  return ((shop.featured_cards || []) || [])
+    .filter((item) => item && (item.title || item.image_url || item.target_product_id))
+    .map((item) => {
+      const linkedProduct = productMap[Number(item.target_product_id) || 0] || null;
+      return {
+        title: item.title || (linkedProduct ? linkedProduct.name : "推荐菜品"),
+        subtitle: item.subtitle || (linkedProduct ? linkedProduct.description : ""),
+        image_url: item.image_url || (linkedProduct ? linkedProduct.image_url : ""),
+        target_product_id: linkedProduct ? linkedProduct.id : 0
+      };
+    });
+}
+
+function inferCurrentPeriod() {
+  const currentHour = new Date().getHours();
+  return currentHour >= 15 ? "dinner" : "lunch";
+}
+
 function isShopOpen(hours) {
   if (!hours || !hours.includes("-")) {
     return true;
@@ -53,6 +79,7 @@ Page({
     cartLabel: "",
     featuredProducts: [],
     selectedCategoryId: 0,
+    currentPeriod: inferCurrentPeriod(),
     showPaymentSheet: false,
     selectedPaymentKey: "wechat",
     paymentCodes: buildPaymentCodes(),
@@ -91,12 +118,12 @@ Page({
         shop: shop || {},
         categories: categories || [],
         products: products || [],
-        featuredProducts: (products || []).slice(0, 2),
+        featuredProducts: buildFeaturedCards(shop || {}, products || []),
         shopOpen: isShopOpen((shop || {}).business_hours),
         paymentCodes,
         selectedPaymentCode
       });
-      this.applyFilter(this.data.selectedCategoryId || 0, products || []);
+      this.applyFilter(this.data.selectedCategoryId || 0, products || [], this.data.currentPeriod);
       this.preloadPaymentCodes(paymentCodes);
       this.syncCartCount();
     } catch (error) {
@@ -128,8 +155,17 @@ Page({
     }));
     this.setData({
       filteredProducts: mapSelection(this.data.filteredProducts),
-      featuredProducts: mapSelection(this.data.featuredProducts)
+      featuredProducts: this.data.featuredProducts
     });
+  },
+  isProductAvailableInPeriod(product, period = this.data.currentPeriod) {
+    if (!product) {
+      return false;
+    }
+    if (period === "dinner") {
+      return product.available_dinner !== false;
+    }
+    return product.available_lunch !== false;
   },
   addToCart(event) {
     if (!app.requireUserLogin("/pages/index/index")) {
@@ -175,21 +211,27 @@ Page({
     wx.setStorageSync("user-cart", cart);
     this.syncCartCount();
   },
-  applyFilter(categoryId, products = this.data.products) {
+  applyFilter(categoryId, products = this.data.products, period = this.data.currentPeriod) {
+    const availableProducts = (products || []).filter((item) => this.isProductAvailableInPeriod(item, period));
     const filteredProducts = !categoryId
-      ? products
-      : (products || []).filter((item) => item.category_id === categoryId);
+      ? availableProducts
+      : availableProducts.filter((item) => item.category_id === categoryId);
     this.setData({
       selectedCategoryId: categoryId,
+      currentPeriod: period,
       filteredProducts: filteredProducts.map((item) => ({
         ...item,
         selected_qty: this.getDishQuantity(item.id)
       }))
     });
   },
+  selectPeriod(event) {
+    const period = event.currentTarget.dataset.period || "lunch";
+    this.applyFilter(this.data.selectedCategoryId || 0, this.data.products, period);
+  },
   selectCategory(event) {
     const categoryId = Number(event.currentTarget.dataset.categoryId || 0);
-    this.applyFilter(categoryId);
+    this.applyFilter(categoryId, this.data.products, this.data.currentPeriod);
   },
   goProductDetail(event) {
     if (!app.requireUserLogin("/pages/index/index")) {
@@ -197,6 +239,13 @@ Page({
     }
     const productId = Number(event.currentTarget.dataset.productId);
     wx.navigateTo({ url: `/pages/detail/index?id=${productId}` });
+  },
+  goFeaturedProduct(event) {
+    const productId = Number(event.currentTarget.dataset.productId || 0);
+    if (!productId) {
+      return;
+    }
+    this.goProductDetail({ currentTarget: { dataset: { productId } } });
   },
   syncCartCount() {
     const cart = wx.getStorageSync("user-cart") || [];

@@ -53,9 +53,11 @@ class ProductPayload(BaseModel):
     name: str = Field(min_length=1)
     image_url: Optional[str] = ""
     description: Optional[str] = ""
-    price_amount: float = Field(gt=0)
+    price_amount: float = Field(ge=0)
     stock_qty: int = Field(ge=0)
     sale_status: bool = True
+    available_lunch: bool = True
+    available_dinner: bool = True
 
 
 class CategoryPayload(BaseModel):
@@ -74,6 +76,8 @@ class ShopUpdatePayload(BaseModel):
     address: str = Field(min_length=1)
     notice: str = ""
     business_hours: str = Field(min_length=1)
+    featured_enabled: bool = False
+    featured_cards_json: str = "[]"
 
 
 class UserProfileUpdatePayload(BaseModel):

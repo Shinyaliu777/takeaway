@@ -32,6 +32,8 @@ class Shop(SQLModel, table=True):
     notice: str = ""
     business_hours: str = "10:00-22:00"
     currency_code: str = "MYR"
+    featured_enabled: bool = False
+    featured_cards_json: str = "[]"
 
 
 class Category(SQLModel, table=True):
@@ -51,6 +53,8 @@ class Product(SQLModel, table=True):
     price_amount: float
     stock_qty: int = 0
     sale_status: bool = True
+    available_lunch: bool = True
+    available_dinner: bool = True
 
 
 class UserAddress(SQLModel, table=True):

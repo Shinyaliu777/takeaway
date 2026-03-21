@@ -2,7 +2,7 @@
   <view class="hero-panel">
     <text class="eyebrow">MERCHANT CONSOLE</text>
     <text class="title">商家工作台</text>
-    <text class="hero-line">处理订单、管理商品、维护店铺信息。</text>
+    <text class="hero-line">处理订单、管理商品、维护首页运营位和店铺展示信息。</text>
     <view class="hero-grid">
       <view class="hero-stat">
         <text class="hero-stat-label">登录状态</text>
@@ -11,6 +11,33 @@
       <view class="hero-stat">
         <text class="hero-stat-label">未读消息</text>
         <text class="hero-stat-value">{{messageCount}}</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-label">待处理订单</text>
+        <text class="hero-stat-value">{{pendingOrders}}</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-label">待审付款</text>
+        <text class="hero-stat-value">{{reviewCount}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">今日运营状态</text>
+      <text class="section-subtitle">高频数据</text>
+    </view>
+    <view class="quick-grid">
+      <view class="quick-card quick-card-primary">
+        <text class="quick-icon">◉</text>
+        <text class="quick-title">推荐位{{featuredEnabled ? '已开启' : '未开启'}}</text>
+        <text class="quick-copy">去店铺设置里编辑首页推荐卡片和图片。</text>
+      </view>
+      <view class="quick-card">
+        <text class="quick-icon">¤</text>
+        <text class="quick-title">商品时段</text>
+        <text class="quick-copy">午餐、晚餐可点状态已并入商品管理。</text>
       </view>
     </view>
   </view>

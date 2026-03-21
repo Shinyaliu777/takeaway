@@ -73,7 +73,7 @@ Page({
     const cart = (wx.getStorageSync("user-cart") || []).map((item) => ({
       ...item,
       lineAmount: item.dish_kind === "meat" || item.dish_kind === "veg"
-        ? "选菜后计算"
+        ? ""
         : (item.price_amount * item.quantity).toFixed(2)
     }));
     const totalAmount = pricingPreview.totalAmount.toFixed(2);
@@ -130,6 +130,13 @@ Page({
       return;
     }
     wx.navigateTo({ url: "/pages/address/address" });
+  },
+  goMenu() {
+    wx.navigateBack({
+      fail: () => {
+        wx.redirectTo({ url: "/pages/index/index" });
+      }
+    });
   },
   async checkout() {
     const token = app.globalData.userToken || wx.getStorageSync("user-token");

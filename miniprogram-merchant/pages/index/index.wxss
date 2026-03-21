@@ -10,9 +10,9 @@
 
 .quick-card {
   margin: 0;
-  padding: 18rpx;
-  min-height: 156rpx;
-  border-radius: 14rpx;
+  padding: 22rpx;
+  min-height: 176rpx;
+  border-radius: 18rpx;
   background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
   border: 1rpx solid rgba(214, 222, 231, 0.9);
   text-align: left;
@@ -42,14 +42,14 @@
 
 .quick-icon {
   display: block;
-  font-size: 30rpx;
+  font-size: 36rpx;
   color: #334155;
 }
 
 .quick-title {
   display: block;
   margin-top: 14rpx;
-  font-size: 26rpx;
+  font-size: 30rpx;
   font-weight: 700;
   color: #0f172a;
 }
@@ -57,7 +57,7 @@
 .quick-copy {
   display: block;
   margin-top: 8rpx;
-  font-size: 20rpx;
+  font-size: 22rpx;
   line-height: 1.6;
   color: #64748b;
 }

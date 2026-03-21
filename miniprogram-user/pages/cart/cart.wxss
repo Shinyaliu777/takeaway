@@ -2,49 +2,102 @@
   margin-bottom: 18rpx;
 }
 
+.cart-item-card,
+.address-card {
+  background: #fffdf8;
+  border-radius: 20rpx;
+  padding: 18rpx;
+  margin-bottom: 12rpx;
+  border: 1rpx solid #eadfce;
+  box-shadow: 0 8rpx 18rpx rgba(78, 56, 33, 0.05);
+}
+
 .cart-item-card {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   gap: 14rpx;
-  background: #fffdf8;
-  border-radius: 18rpx;
-  padding: 18rpx;
-  margin-bottom: 12rpx;
-  box-shadow: 0 8rpx 18rpx rgba(78, 56, 33, 0.05);
-  border: 1rpx solid #eadfce;
+  align-items: center;
 }
 
 .cart-item-main {
   flex: 1;
+  min-width: 0;
 }
 
-.cart-side {
-  text-align: right;
+.cart-item-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.dish-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #2f2118;
+}
+
+.dish-meta {
+  display: block;
+  margin-top: 6rpx;
+  color: #7d6956;
+  font-size: 22rpx;
+}
+
+.kind-tag {
+  padding: 4rpx 10rpx;
+  border-radius: 999rpx;
+  font-size: 18rpx;
+  font-weight: 700;
+}
+
+.kind-tag-meat {
+  background: #fef2f2;
+  color: #b42318;
+}
+
+.kind-tag-veg {
+  background: #edf7ed;
+  color: #2f6b3d;
+}
+
+.kind-tag-side {
+  background: #fff5e8;
+  color: #9a5a28;
+}
+
+.subtle {
+  color: #9a5a28;
 }
 
 .cart-actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   flex-wrap: wrap;
   gap: 8rpx;
-  margin-top: 10rpx;
+  justify-content: flex-end;
 }
 
 .qty-btn,
 .text-btn {
   margin: 0;
   border-radius: 14rpx;
-  min-height: 56rpx;
-  line-height: 56rpx;
+  min-height: 58rpx;
+  line-height: 58rpx;
   font-size: 22rpx;
 }
 
 .qty-btn {
-  background: #5c3b26;
+  background: #6f4424;
   color: #fff;
-  width: 56rpx;
+  width: 58rpx;
   padding: 0;
+}
+
+.qty-btn-light {
+  background: #f5ead8;
+  color: #6d4a2d;
 }
 
 .text-btn {
@@ -52,23 +105,67 @@
   color: #991b1b;
 }
 
-.address-card {
-  background: #fffdf8;
-  border-radius: 18rpx;
-  padding: 18rpx;
-  margin-bottom: 12rpx;
-  box-shadow: 0 8rpx 18rpx rgba(78, 56, 33, 0.05);
+.combo-card {
+  padding: 16rpx;
+  border-radius: 16rpx;
+  background: #fff8ef;
   border: 1rpx solid #eadfce;
+  margin-top: 12rpx;
+}
+
+.combo-head,
+.preview-line,
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.combo-name,
+.combo-price,
+.total-line {
+  color: #3b2a1f;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.combo-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-top: 12rpx;
+}
+
+.combo-item-chip {
+  padding: 8rpx 12rpx;
+  border-radius: 999rpx;
+  background: #ffffff;
+  border: 1rpx solid #eadfce;
+  color: #6b5544;
+  font-size: 20rpx;
+}
+
+.subsection-head {
+  margin-top: 14rpx;
+}
+
+.subsection-title {
+  color: #7d5d41;
+  font-size: 20rpx;
+  font-weight: 700;
 }
 
 .preview-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12rpx;
   margin-top: 10rpx;
   color: #5c4533;
   font-size: 22rpx;
+}
+
+.total-line {
+  padding-top: 14rpx;
+  margin-top: 14rpx;
+  border-top: 1rpx solid #eadfce;
 }
 
 .empty-box {
@@ -81,12 +178,22 @@
 .status-panel {
   background: #fffdf9;
   border: 1rpx solid #eadfce;
+  border-radius: 24rpx;
+  padding: 20rpx;
+}
+
+.status-copy {
+  margin-bottom: 14rpx;
 }
 
 .status-title {
   display: block;
   color: #3b2a1f;
   font-size: 28rpx;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 4rpx;
+}
+
+.panel-btn {
+  margin-top: 12rpx;
 }

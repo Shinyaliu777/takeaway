@@ -12,9 +12,12 @@ Page({
       phone: "",
       address: "",
       notice: "",
-      business_hours: ""
+      business_hours: "",
+      featured_enabled: false,
+      featured_cards_json: "[]"
     },
-    uploadKey: ""
+    uploadKey: "",
+    featuredCards: []
   },
   async onShow() {
     try {
@@ -37,8 +40,17 @@ Page({
           phone: shop.phone || "",
           address: shop.address || "",
           notice: shop.notice || "",
-          business_hours: shop.business_hours || ""
-        }
+          business_hours: shop.business_hours || "",
+          featured_enabled: !!shop.featured_enabled,
+          featured_cards_json: shop.featured_cards_json || "[]"
+        },
+        featuredCards: (shop.featured_cards || []).length
+          ? shop.featured_cards
+          : [
+              { title: "", subtitle: "", image_url: "", target_product_id: "" },
+              { title: "", subtitle: "", image_url: "", target_product_id: "" },
+              { title: "", subtitle: "", image_url: "", target_product_id: "" }
+            ]
       });
     } catch (error) {
       wx.showToast({ title: "加载失败", icon: "none" });
@@ -46,6 +58,7 @@ Page({
   },
   chooseUpload(event) {
     const key = event.currentTarget.dataset.key;
+    const index = event.currentTarget.dataset.index;
     if (!key) {
       return;
     }
@@ -61,10 +74,17 @@ Page({
         this.setData({ uploadKey: key });
         try {
           const uploaded = await api.uploadImage(file.tempFilePath);
-          this.setData({
-            [`form.${key}`]: uploaded.image_url,
-            uploadKey: ""
-          });
+          if (index !== undefined && index !== null && index !== "") {
+            this.setData({
+              [`featuredCards[${Number(index)}].${key}`]: uploaded.image_url,
+              uploadKey: ""
+            });
+          } else {
+            this.setData({
+              [`form.${key}`]: uploaded.image_url,
+              uploadKey: ""
+            });
+          }
           wx.showToast({ title: "上传成功", icon: "success" });
         } catch (error) {
           this.setData({ uploadKey: "" });
@@ -79,9 +99,24 @@ Page({
       [`form.${key}`]: event.detail.value
     });
   },
+  onFeaturedInput(event) {
+    const index = Number(event.currentTarget.dataset.index || 0);
+    const key = event.currentTarget.dataset.key;
+    this.setData({
+      [`featuredCards[${index}].${key}`]: event.detail.value
+    });
+  },
+  onFeaturedSwitch(event) {
+    this.setData({
+      "form.featured_enabled": !!event.detail.value
+    });
+  },
   async saveShop() {
     try {
-      await api.updateShop(this.data.form);
+      await api.updateShop({
+        ...this.data.form,
+        featured_cards_json: JSON.stringify(this.data.featuredCards || [])
+      });
       await this.loadShop();
       wx.showToast({ title: "已保存", icon: "success" });
     } catch (error) {

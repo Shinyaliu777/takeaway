@@ -2,7 +2,7 @@
   <view class="hero-panel">
     <text class="eyebrow">STORE PROFILE</text>
     <text class="title">店铺设置</text>
-    <text class="hero-line">更新品牌信息、营业时间和前台展示文案。</text>
+    <text class="hero-line">更新品牌信息、收款方式、首页推荐位和前台运营内容。</text>
   </view>
   <view class="card">
     <view class="section-head">
@@ -30,6 +30,41 @@
       <text class="field-label">营业时间</text>
       <input class="input" placeholder="例如 10:00-22:00" value="{{form.business_hours}}" data-key="business_hours" bindinput="onInput" />
     </view>
+
+    <view class="payment-section">
+      <view class="section-head payment-head">
+        <text class="section-title">首页推荐位</text>
+        <text class="section-subtitle">商家可自由开启或关闭</text>
+      </view>
+      <view class="switch-row">
+        <view>
+          <text class="payment-upload-title">开启推荐商品位</text>
+          <text class="payment-upload-copy">用户端首页会显示你配置的运营卡片。</text>
+        </view>
+        <switch checked="{{form.featured_enabled}}" bindchange="onFeaturedSwitch" color="#0f172a"></switch>
+      </view>
+      <view wx:for="{{featuredCards}}" wx:key="index" class="payment-upload-card">
+        <view class="section-head payment-head">
+          <text class="section-title">推荐卡片 {{index + 1}}</text>
+          <text class="section-subtitle">最多 3 张</text>
+        </view>
+        <image wx:if="{{item.image_url}}" class="payment-qr-preview" src="{{item.image_url}}" mode="aspectFill"></image>
+        <view class="field-block">
+          <text class="field-label">标题</text>
+          <input class="input" placeholder="例如：今日推荐" value="{{item.title}}" data-index="{{index}}" data-key="title" bindinput="onFeaturedInput" />
+        </view>
+        <view class="field-block">
+          <text class="field-label">副标题</text>
+          <input class="input" placeholder="例如：下饭双拼，午餐热门" value="{{item.subtitle}}" data-index="{{index}}" data-key="subtitle" bindinput="onFeaturedInput" />
+        </view>
+        <view class="field-block">
+          <text class="field-label">关联商品 ID</text>
+          <input class="input" placeholder="可选，不填则只展示卡片" value="{{item.target_product_id}}" data-index="{{index}}" data-key="target_product_id" bindinput="onFeaturedInput" />
+        </view>
+        <button class="secondary-btn" bindtap="chooseUpload" data-index="{{index}}" data-key="image_url">上传卡片图片</button>
+      </view>
+    </view>
+
     <view class="payment-section">
       <view class="section-head payment-head">
         <text class="section-title">收款码管理</text>

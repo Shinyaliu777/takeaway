@@ -15,7 +15,9 @@ Page({
       description: "",
       price_amount: "",
       stock_qty: "",
-      sale_status: true
+      sale_status: true,
+      available_lunch: true,
+      available_dinner: true
     }
   },
   async onShow() {
@@ -98,7 +100,9 @@ Page({
         description: product.description || "",
         price_amount: product.price_amount,
         stock_qty: product.stock_qty,
-        sale_status: product.sale_status
+        sale_status: product.sale_status,
+        available_lunch: product.available_lunch !== false,
+        available_dinner: product.available_dinner !== false
       }
     });
   },
@@ -108,6 +112,12 @@ Page({
     this.setData({
       categoryIndex,
       "form.category_id": category ? category.id : 1
+    });
+  },
+  onSwitchChange(event) {
+    const key = event.currentTarget.dataset.key;
+    this.setData({
+      [`form.${key}`]: !!event.detail.value
     });
   },
   async toggleSaleStatus(event) {
@@ -120,7 +130,9 @@ Page({
         description: product.description || "",
         price_amount: Number(product.price_amount),
         stock_qty: Number(product.stock_qty),
-        sale_status: !product.sale_status
+        sale_status: !product.sale_status,
+        available_lunch: product.available_lunch !== false,
+        available_dinner: product.available_dinner !== false
       });
       this.loadProducts();
       wx.showToast({ title: "已更新", icon: "success" });
@@ -138,7 +150,9 @@ Page({
         description: "",
         price_amount: "",
         stock_qty: "",
-        sale_status: true
+        sale_status: true,
+        available_lunch: true,
+        available_dinner: true
       },
       categoryIndex: 0
     });
@@ -162,11 +176,13 @@ Page({
           category_id: 1,
           name: "",
           image_url: "",
-          description: "",
-          price_amount: "",
-          stock_qty: "",
-          sale_status: true
-        },
+        description: "",
+        price_amount: "",
+        stock_qty: "",
+        sale_status: true,
+        available_lunch: true,
+        available_dinner: true
+      },
         categoryIndex: 0
       });
       this.loadProducts();

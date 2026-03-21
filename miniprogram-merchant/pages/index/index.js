@@ -4,7 +4,10 @@ const app = getApp();
 Page({
   data: {
     tokenReady: false,
-    messageCount: 0
+    messageCount: 0,
+    pendingOrders: 0,
+    reviewCount: 0,
+    featuredEnabled: false
   },
   onShow() {
     this.ensureLogin();
@@ -12,10 +15,17 @@ Page({
   async ensureLogin() {
     try {
       await app.ensureMerchantLogin();
-      const messages = await api.getMessages();
+      const [messages, orders, shop] = await Promise.all([
+        api.getMessages(),
+        api.getOrders(),
+        api.getShop()
+      ]);
       this.setData({
         tokenReady: true,
-        messageCount: (messages || []).filter((item) => !item.read).length
+        messageCount: (messages || []).filter((item) => !item.read).length,
+        pendingOrders: (orders || []).filter((item) => item.order_status === "PAID" || item.order_status === "PAYMENT_REVIEW").length,
+        reviewCount: (orders || []).filter((item) => item.payment_status === "PROOF_UPLOADED").length,
+        featuredEnabled: !!(shop && shop.featured_enabled)
       });
     } catch (error) {
       wx.redirectTo({ url: "/pages/login/login" });

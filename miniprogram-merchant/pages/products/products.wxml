@@ -2,16 +2,12 @@
   <view class="hero-panel">
     <text class="eyebrow">MENU CONTENT</text>
     <text class="title">商品管理</text>
-    <text class="hero-line">统一商品图片、介绍、价格和库存，确保前台展示稳定。</text>
+    <text class="hero-line">统一商品图片、介绍、库存与午晚餐可售状态，确保前台选菜顺畅。</text>
   </view>
   <view class="card">
     <view class="section-head">
       <text class="section-title">商品列表</text>
       <text class="section-subtitle">当前商品 {{products.length}} 个</text>
-    </view>
-    <view class="table-head">
-      <text class="table-head-main">商品信息</text>
-      <text class="table-head-side">操作</text>
     </view>
     <view wx:for="{{products}}" wx:key="id" class="product-list-card">
       <view class="product-top">
@@ -19,12 +15,14 @@
         <view class="product-main">
           <view class="product-header">
             <text class="product-title">{{item.name}}</text>
-            <text class="product-price">MYR {{item.price_amount}}</text>
+            <text class="product-price">{{item.price_amount ? 'MYR ' + item.price_amount : '自动套餐价'}}</text>
           </view>
           <text class="product-summary">{{item.description || '未填写介绍'}}</text>
           <view class="meta-row">
             <text class="pill pill-slate">{{item.category_name}}</text>
             <text class="pill pill-slate">库存 {{item.stock_qty}}</text>
+            <text class="pill pill-blue" wx:if="{{item.available_lunch}}">午餐可点</text>
+            <text class="pill pill-blue" wx:if="{{item.available_dinner}}">晚餐可点</text>
             <text class="pill {{item.sale_status ? 'pill-green' : 'pill-amber'}}">{{item.sale_status ? '上架中' : '已下架'}}</text>
           </view>
         </view>
@@ -77,15 +75,25 @@
     </view>
 
     <view class="editor-section">
-      <text class="editor-section-title">价格与库存</text>
+      <text class="editor-section-title">价格、库存与售卖时段</text>
       <view class="field-grid">
         <view class="field-block field-grid-item">
           <text class="field-label">价格</text>
-          <input class="input" placeholder="MYR" value="{{form.price_amount}}" data-key="price_amount" bindinput="onInput" />
+          <input class="input" placeholder="自动套餐价填 0，其它单点填 MYR" value="{{form.price_amount}}" data-key="price_amount" bindinput="onInput" />
         </view>
         <view class="field-block field-grid-item">
           <text class="field-label">库存</text>
           <input class="input" placeholder="可售数量" value="{{form.stock_qty}}" data-key="stock_qty" bindinput="onInput" />
+        </view>
+      </view>
+      <view class="switch-grid">
+        <view class="switch-card">
+          <text class="switch-title">午餐可点</text>
+          <switch checked="{{form.available_lunch}}" data-key="available_lunch" bindchange="onSwitchChange" color="#0f172a"></switch>
+        </view>
+        <view class="switch-card">
+          <text class="switch-title">晚餐可点</text>
+          <switch checked="{{form.available_dinner}}" data-key="available_dinner" bindchange="onSwitchChange" color="#0f172a"></switch>
         </view>
       </view>
     </view>

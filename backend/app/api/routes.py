@@ -128,6 +128,10 @@ def require_user(
 def dump(model):
     if isinstance(model, list):
         return [dump(item) for item in model]
+    if isinstance(model, Shop):
+        payload = jsonable_encoder(model)
+        payload["featured_cards"] = parse_json_field(model.featured_cards_json)
+        return payload
     if isinstance(model, Product):
         payload = jsonable_encoder(model)
         payload["option_groups"] = parse_json_field(model.option_groups_json)
@@ -289,7 +293,7 @@ def build_priced_order_lines(raw_items: list[tuple[Product, int]], category_map:
         )
 
     bundle_plan = build_best_combo_plan(meat_units, veg_units)
-    if not bundle_plan["matched"]:
+    if not bundle_plan["matched"] or not bundle_plan["combo_lines"]:
         raise HTTPException(status_code=400, detail="当前选菜还不能组成可结算套餐，请继续补齐荤素组合")
 
     pricing_lines = []
@@ -563,7 +567,8 @@ def user_upload_payment_proof(
 
 @router.get("/api/shop")
 def get_shop(session: Session = Depends(get_session)):
-    return session.exec(select(Shop)).first()
+    shop = session.exec(select(Shop)).first()
+    return dump(shop) if shop else None
 
 
 @router.get("/api/categories")
@@ -895,7 +900,7 @@ def reject_merchant_payment(order_id: int, session: Session = Depends(get_sessio
 
 @router.get("/api/merchant/products", dependencies=[Depends(require_merchant)])
 def merchant_products(session: Session = Depends(get_session)):
-    return session.exec(select(Product).order_by(Product.id.desc())).all()
+    return dump(session.exec(select(Product).order_by(Product.id.desc())).all())
 
 
 @router.post("/api/merchant/products", dependencies=[Depends(require_merchant)])
@@ -907,7 +912,7 @@ def create_merchant_product(payload: ProductPayload, session: Session = Depends(
     session.add(product)
     session.commit()
     session.refresh(product)
-    return product
+    return dump(product)
 
 
 @router.get("/api/merchant/categories", dependencies=[Depends(require_merchant)])
@@ -963,12 +968,13 @@ def update_merchant_product(product_id: int, payload: ProductPayload, session: S
     session.add(product)
     session.commit()
     session.refresh(product)
-    return product
+    return dump(product)
 
 
 @router.get("/api/merchant/shop", dependencies=[Depends(require_merchant)])
 def merchant_shop(session: Session = Depends(get_session)):
-    return session.exec(select(Shop)).first()
+    shop = session.exec(select(Shop)).first()
+    return dump(shop) if shop else None
 
 
 @router.put("/api/merchant/shop", dependencies=[Depends(require_merchant)])
@@ -981,7 +987,7 @@ def update_merchant_shop(payload: ShopUpdatePayload, session: Session = Depends(
     session.add(shop)
     session.commit()
     session.refresh(shop)
-    return shop
+    return dump(shop)
 
 
 @router.get("/api/merchant/messages", dependencies=[Depends(require_merchant)])
