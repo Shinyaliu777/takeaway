@@ -82,6 +82,7 @@ def ensure_legacy_columns() -> None:
         "paymentorder": {column["name"] for column in inspector.get_columns("paymentorder")},
     }
     alter_statements = []
+    followup_statements = []
     if "avatar_url" not in existing_columns["user"]:
         alter_statements.append("ALTER TABLE user ADD COLUMN avatar_url VARCHAR(255) NOT NULL DEFAULT ''")
     if "mobile" not in existing_columns["user"]:
@@ -97,17 +98,21 @@ def ensure_legacy_columns() -> None:
     if "featured_enabled" not in existing_columns["shop"]:
         alter_statements.append("ALTER TABLE shop ADD COLUMN featured_enabled BOOLEAN NOT NULL DEFAULT FALSE")
     if "featured_cards_json" not in existing_columns["shop"]:
-        alter_statements.append("ALTER TABLE shop ADD COLUMN featured_cards_json TEXT NOT NULL DEFAULT '[]'")
+        alter_statements.append("ALTER TABLE shop ADD COLUMN featured_cards_json TEXT NULL")
+        followup_statements.append("UPDATE shop SET featured_cards_json = '[]' WHERE featured_cards_json IS NULL")
     if "description" not in existing_columns["product"]:
-        alter_statements.append("ALTER TABLE product ADD COLUMN description TEXT NOT NULL")
+        alter_statements.append("ALTER TABLE product ADD COLUMN description TEXT NULL")
+        followup_statements.append("UPDATE product SET description = '' WHERE description IS NULL")
     if "option_groups_json" not in existing_columns["product"]:
-        alter_statements.append("ALTER TABLE product ADD COLUMN option_groups_json TEXT NOT NULL")
+        alter_statements.append("ALTER TABLE product ADD COLUMN option_groups_json TEXT NULL")
+        followup_statements.append("UPDATE product SET option_groups_json = '[]' WHERE option_groups_json IS NULL")
     if "available_lunch" not in existing_columns["product"]:
         alter_statements.append("ALTER TABLE product ADD COLUMN available_lunch BOOLEAN NOT NULL DEFAULT TRUE")
     if "available_dinner" not in existing_columns["product"]:
         alter_statements.append("ALTER TABLE product ADD COLUMN available_dinner BOOLEAN NOT NULL DEFAULT TRUE")
     if "selected_options_json" not in existing_columns["orderitem"]:
-        alter_statements.append("ALTER TABLE orderitem ADD COLUMN selected_options_json TEXT NOT NULL")
+        alter_statements.append("ALTER TABLE orderitem ADD COLUMN selected_options_json TEXT NULL")
+        followup_statements.append("UPDATE orderitem SET selected_options_json = '' WHERE selected_options_json IS NULL")
     if "proof_image_url" not in existing_columns["paymentorder"]:
         alter_statements.append("ALTER TABLE paymentorder ADD COLUMN proof_image_url VARCHAR(255) NOT NULL DEFAULT ''")
     if "reviewed_at" not in existing_columns["paymentorder"]:
@@ -118,6 +123,8 @@ def ensure_legacy_columns() -> None:
 
     with engine.begin() as connection:
         for statement in alter_statements:
+            connection.execute(text(statement))
+        for statement in followup_statements:
             connection.execute(text(statement))
 
 
