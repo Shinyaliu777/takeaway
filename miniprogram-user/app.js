@@ -10,20 +10,6 @@ App({
     this.globalData.userToken = wx.getStorageSync("user-token") || "";
     this.globalData.userInfo = wx.getStorageSync("user-info") || null;
   },
-  requestUserAuthorization() {
-    return new Promise((resolve, reject) => {
-      wx.getUserProfile({
-        desc: "用于展示用户昵称和头像，并完成下单登录",
-        success: (res) => {
-          resolve({
-            nickname: (res.userInfo && res.userInfo.nickName) || "微信用户",
-            avatarUrl: (res.userInfo && res.userInfo.avatarUrl) || ""
-          });
-        },
-        fail: reject
-      });
-    });
-  },
   loginUser(nickname = "微信用户", avatarUrl = "", phoneAuth = {}) {
     return new Promise((resolve, reject) => {
       wx.login({
