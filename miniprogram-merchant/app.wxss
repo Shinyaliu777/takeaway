@@ -82,20 +82,27 @@ page {
 .section-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10rpx 16rpx;
   margin-bottom: 14rpx;
 }
 
 .section-title {
   display: block;
+  flex: 1;
+  min-width: 0;
   font-size: 30rpx;
   font-weight: 700;
   color: #0f172a;
 }
 
 .section-subtitle {
+  display: block;
   color: #64748b;
   font-size: 20rpx;
+  line-height: 1.5;
+  text-align: right;
 }
 
 .line {
@@ -162,13 +169,19 @@ picker .input {
 .secondary-btn,
 .ghost-btn,
 .danger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   margin-top: 0;
   border-radius: 14rpx;
   font-size: 24rpx;
   min-height: 68rpx;
-  line-height: 68rpx;
+  line-height: 1.2;
   padding: 0 18rpx;
   font-weight: 700;
+  white-space: normal;
+  text-align: center;
 }
 
 .primary-btn {

@@ -5,13 +5,14 @@
 }
 
 .card-inline-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12rpx;
   margin-bottom: 18rpx;
 }
 
 .inline-action-btn {
-  flex: 1;
+  width: 100%;
 }
 
 .field-grid-item {
@@ -52,6 +53,7 @@
 .category-main {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 18rpx;
   align-items: flex-start;
 }
@@ -67,11 +69,13 @@
   display: flex;
   gap: 8rpx;
   flex-shrink: 0;
+  width: 100%;
+  justify-content: flex-end;
 }
 
 .category-btn {
+  min-width: 108rpx;
   min-height: 58rpx;
-  line-height: 58rpx;
   font-size: 22rpx;
   padding: 0 18rpx;
 }
@@ -150,4 +154,5 @@
 .editor-primary,
 .editor-secondary {
   flex: 1;
+  width: 100%;
 }
