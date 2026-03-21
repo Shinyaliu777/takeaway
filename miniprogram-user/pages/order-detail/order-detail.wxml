@@ -9,6 +9,25 @@
     </view>
   </view>
 
+  <view class="card detail-card" wx:if="{{timeline.length}}">
+    <view class="section-head">
+      <text class="section-title">订单进度</text>
+      <text class="section-subtitle">让你清楚知道订单当前在哪一步</text>
+    </view>
+    <view class="timeline">
+      <view wx:for="{{timeline}}" wx:key="key" class="timeline-item">
+        <view class="timeline-mark-wrap">
+          <view class="timeline-mark {{item.done ? 'timeline-mark-done' : item.active ? 'timeline-mark-active' : ''}}"></view>
+          <view wx:if="{{index !== timeline.length - 1}}" class="timeline-line {{item.done ? 'timeline-line-done' : ''}}"></view>
+        </view>
+        <view class="timeline-copy">
+          <text class="timeline-title {{item.active ? 'timeline-title-active' : ''}}">{{item.title}}</text>
+          <text class="timeline-desc">{{item.desc}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <view class="card detail-card" wx:if="{{order}}">
     <view class="section-head">
       <text class="section-title">配送信息</text>

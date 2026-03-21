@@ -91,6 +91,49 @@ function buildBestComboPlan(meatUnits, vegUnits, comboRules = PACKAGE_COMBOS) {
   };
 }
 
+function inferCompletionHint(meatCount, vegCount, comboRules) {
+  if (!meatCount && !vegCount) {
+    return "";
+  }
+  let best = null;
+  const maxExtraMeat = Math.max(...comboRules.map((rule) => rule.meat), 1) * 3;
+  const maxExtraVeg = Math.max(...comboRules.map((rule) => rule.veg), 1) * 3;
+
+  for (let extraMeat = 0; extraMeat <= maxExtraMeat; extraMeat += 1) {
+    for (let extraVeg = 0; extraVeg <= maxExtraVeg; extraVeg += 1) {
+      if (extraMeat === 0 && extraVeg === 0) {
+        continue;
+      }
+      const mockMeatUnits = Array.from({ length: meatCount + extraMeat }, (_, index) => ({ name: `M${index}` }));
+      const mockVegUnits = Array.from({ length: vegCount + extraVeg }, (_, index) => ({ name: `V${index}` }));
+      const matched = buildBestComboPlan(mockMeatUnits, mockVegUnits, comboRules).matched;
+      if (!matched) {
+        continue;
+      }
+      const totalExtra = extraMeat + extraVeg;
+      if (
+        !best
+        || totalExtra < best.totalExtra
+        || (totalExtra === best.totalExtra && extraVeg < best.extraVeg)
+      ) {
+        best = { extraMeat, extraVeg, totalExtra };
+      }
+    }
+  }
+
+  if (!best) {
+    return "当前组合还不能结算，请继续补齐荤素搭配";
+  }
+  const parts = [];
+  if (best.extraMeat) {
+    parts.push(`${best.extraMeat} 个荤菜`);
+  }
+  if (best.extraVeg) {
+    parts.push(`${best.extraVeg} 个素菜`);
+  }
+  return `当前还差 ${parts.join("、")} 才能组成可结算套餐`;
+}
+
 function buildPricingPreview(cart, config = {}) {
   const pricingConfig = normalizePricingConfig(config);
   const meatUnits = [];
@@ -123,6 +166,9 @@ function buildPricingPreview(cart, config = {}) {
   const hasCompleteCombo = comboPlan.matched && comboPlan.comboLines.length > 0;
   const sideTotal = sideLines.reduce((sum, item) => sum + item.amount, 0);
   const total = Number(((hasCompleteCombo ? comboPlan.comboTotal : 0) + sideTotal).toFixed(2));
+  const missingHint = hasCompleteCombo
+    ? ""
+    : inferCompletionHint(meatUnits.length, vegUnits.length, pricingConfig.comboRules);
 
   return {
     matched: hasCompleteCombo,
@@ -132,10 +178,11 @@ function buildPricingPreview(cart, config = {}) {
     comboTotal: comboPlan.comboTotal,
     sideTotal: Number(sideTotal.toFixed(2)),
     totalAmount: total,
+    missingHint,
     summaryText: hasCompleteCombo
       ? `已匹配 ${comboPlan.comboLines.length} 组套餐，可直接去核对下单`
       : hasComboSelection
-        ? "当前组合还不能结算，请继续补齐荤素搭配"
+        ? missingHint || "当前组合还不能结算，请继续补齐荤素搭配"
         : sideLines.length
           ? "至少补齐一组可结算套餐"
           : "先从菜单里选择菜品",

@@ -438,6 +438,15 @@
   line-height: 1.4;
 }
 
+.pricing-inline-missing {
+  display: block;
+  margin-top: 4rpx;
+  color: #b45309;
+  font-size: 20rpx;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
 .pricing-inline-total {
   display: block;
   margin-top: 6rpx;

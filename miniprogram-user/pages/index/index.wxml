@@ -118,6 +118,7 @@
     <view class="pricing-inline">
       <text class="pricing-inline-main">已选 {{pricingPreview.selectedCount}} 份</text>
       <text class="pricing-inline-copy">{{pricingPreview.summaryText}}</text>
+      <text wx:if="{{pricingPreview.missingHint && !pricingPreview.matched}}" class="pricing-inline-missing">{{pricingPreview.missingHint}}</text>
       <text class="pricing-inline-total">MYR {{pricingPreview.totalAmount}}</text>
     </view>
     <button class="panel-btn panel-primary panel-cart-btn" bindtap="goCart">去核对订单{{cartLabel}}</button>

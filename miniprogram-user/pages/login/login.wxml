@@ -25,7 +25,7 @@
       <view class="benefit-card">
         <text class="benefit-kicker">01</text>
         <text class="benefit-title">一键登录</text>
-        <text class="benefit-copy">点击一次完成微信登录，不依赖额外资料授权。</text>
+        <text class="benefit-copy">点击一次完成微信登录，登录成功后立即进入菜单。</text>
       </view>
       <view class="benefit-card">
         <text class="benefit-kicker">02</text>

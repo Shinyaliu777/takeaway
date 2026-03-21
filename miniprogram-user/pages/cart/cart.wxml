@@ -47,6 +47,7 @@
     </view>
     <view class="address-card">
       <text class="line">{{pricingPreview.summaryText}}</text>
+      <text wx:if="{{pricingPreview.missingHint && !pricingPreview.matched}}" class="line strong">{{pricingPreview.missingHint}}</text>
       <view wx:if="{{pricingPreview.comboLines.length}}">
         <view wx:for="{{pricingPreview.comboLines}}" wx:key="index" class="combo-card">
           <view class="combo-head">

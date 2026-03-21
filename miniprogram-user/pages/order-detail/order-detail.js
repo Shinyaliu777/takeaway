@@ -24,13 +24,58 @@ function formatSelectedOptions(selectedOptions) {
   return (selectedOptions || []).map((item) => `${item.group_name}:${item.option_name}`).join(" / ");
 }
 
+function buildOrderTimeline(order) {
+  if (!order) {
+    return [];
+  }
+  const steps = [
+    {
+      key: "created",
+      title: "订单已创建",
+      desc: "订单已生成，等待你完成付款",
+      done: true
+    },
+    {
+      key: "proof",
+      title: "上传付款截图",
+      desc: order.payment_status === "FAILED" ? "当前截图未通过，请重新上传清晰截图" : "上传截图后，商家才能开始审核",
+      done: order.payment_status !== "UNPAID"
+    },
+    {
+      key: "review",
+      title: "商家审核中",
+      desc: order.payment_status === "PROOF_UPLOADED" ? "截图已提交，商家通常会尽快确认到账" : "商家确认到账后订单会进入已付款",
+      done: order.payment_status === "SUCCESS"
+    },
+    {
+      key: "delivery",
+      title: "开始配送",
+      desc: "商家确认到账后开始配送",
+      done: order.order_status === "DELIVERING" || order.order_status === "COMPLETED"
+    },
+    {
+      key: "complete",
+      title: "订单完成",
+      desc: "配送完成后本单结束",
+      done: order.order_status === "COMPLETED"
+    }
+  ];
+
+  const currentIndex = steps.findIndex((step) => !step.done);
+  return steps.map((step, index) => ({
+    ...step,
+    active: currentIndex === -1 ? index === steps.length - 1 : index === currentIndex
+  }));
+}
+
 Page({
   data: {
     order: null,
     items: [],
     payment: null,
     uploading: false,
-    proofImageFailed: false
+    proofImageFailed: false,
+    timeline: []
   },
   onLoad(query) {
     this.orderId = query.id;
@@ -55,6 +100,7 @@ Page({
               payment_status_text: mapPaymentStatus(detail.order.payment_status)
             }
           : null,
+        timeline: buildOrderTimeline(detail.order),
         items: (detail.items || []).map((item) => ({
           ...item,
           selected_options_text: formatSelectedOptions(item.selected_options || [])
