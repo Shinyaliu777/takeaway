@@ -18,6 +18,7 @@ from app.models.entities import (
     UserAddress,
     UserMessage,
 )
+from app.services.pricing import compute_package_price, infer_package_counts_from_name
 
 
 DESIRED_NOTICE = (
@@ -27,14 +28,14 @@ DESIRED_NOTICE = (
 )
 
 PACKAGE_PRODUCTS = [
-    ("两荤一素套餐", 20.8, 80, "product-bowl-dark.png", "已含米饭，适合饭量正常、想吃得更丰富的用户。"),
-    ("一荤两素套餐", 15.8, 80, "product-chicken-rice.png", "已含米饭，荤素平衡，是午晚餐常规选择。"),
-    ("一荤一素套餐", 14.8, 80, "product-curry-chicken.png", "已含米饭，适合想吃得刚刚好的用户。"),
-    ("两荤套餐", 18.8, 70, "product-bowl-dark.png", "已含米饭，双荤更顶饱，适合重口味用户。"),
-    ("两素套餐", 9.9, 70, "product-fries.png", "已含米饭，清爽轻负担。"),
-    ("两荤两素套餐", 22.8, 60, "product-bowl-dark.png", "已含米饭，分量更足，适合大食量。"),
-    ("三素套餐", 11.8, 60, "product-fries.png", "已含米饭，适合清淡口味。"),
-    ("三荤套餐", 26.8, 50, "product-bowl-dark.png", "已含米饭，当前最足量套餐。"),
+    ("两荤一素套餐", 80, "product-bowl-dark.png", "已含米饭，适合饭量正常、想吃得更丰富的用户。"),
+    ("一荤两素套餐", 80, "product-chicken-rice.png", "已含米饭，荤素平衡，是午晚餐常规选择。"),
+    ("一荤一素套餐", 80, "product-curry-chicken.png", "已含米饭，适合想吃得刚刚好的用户。"),
+    ("两荤套餐", 70, "product-bowl-dark.png", "已含米饭，双荤更顶饱，适合重口味用户。"),
+    ("两素套餐", 70, "product-fries.png", "已含米饭，清爽轻负担。"),
+    ("两荤两素套餐", 60, "product-bowl-dark.png", "已含米饭，分量更足，适合大食量。"),
+    ("三素套餐", 60, "product-fries.png", "已含米饭，适合清淡口味。"),
+    ("三荤套餐", 50, "product-bowl-dark.png", "已含米饭，当前最足量套餐。"),
 ]
 
 PACKAGE_OPTION_PRESETS = {
@@ -47,24 +48,7 @@ def build_package_option_groups(name: str) -> list[dict]:
     if "套餐" not in name:
         return []
     groups = []
-    if "三荤" in name:
-        meat_count, veg_count = 3, 0
-    elif "两荤两素" in name:
-        meat_count, veg_count = 2, 2
-    elif "两荤一素" in name:
-        meat_count, veg_count = 2, 1
-    elif "两荤套餐" in name:
-        meat_count, veg_count = 2, 0
-    elif "一荤两素" in name:
-        meat_count, veg_count = 1, 2
-    elif "一荤一素" in name:
-        meat_count, veg_count = 1, 1
-    elif "两素套餐" in name:
-        meat_count, veg_count = 0, 2
-    elif "三素" in name:
-        meat_count, veg_count = 0, 3
-    else:
-        meat_count, veg_count = 0, 0
+    meat_count, veg_count = infer_package_counts_from_name(name)
 
     for index in range(meat_count):
         groups.append({
@@ -138,10 +122,12 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
 
     package_category_id = category_map["套餐"].id
     side_category_id = category_map["单点主食"].id
-    for name, price, stock, image_name, description in PACKAGE_PRODUCTS:
+    for name, stock, image_name, description in PACKAGE_PRODUCTS:
         product = existing_map.get(name)
         image_url = f"{asset_base}/{image_name}?{asset_version}"
-        option_groups_json = json.dumps(build_package_option_groups(name), ensure_ascii=False)
+        option_groups = build_package_option_groups(name)
+        option_groups_json = json.dumps(option_groups, ensure_ascii=False)
+        price = compute_package_price(name, option_groups)
         if not product:
             session.add(
                 Product(
@@ -341,8 +327,16 @@ def seed_data(session: Session) -> None:
 
     saved_categories = session.exec(select(Category).order_by(Category.sort_order)).all()
     session.add_all([
-        Product(category_id=saved_categories[0].id, name=name, image_url=f"{asset_base}/{image_name}?{asset_version}", description=description, option_groups_json=json.dumps(build_package_option_groups(name), ensure_ascii=False), price_amount=price, stock_qty=stock)
-        for name, price, stock, image_name, description in PACKAGE_PRODUCTS
+        Product(
+            category_id=saved_categories[0].id,
+            name=name,
+            image_url=f"{asset_base}/{image_name}?{asset_version}",
+            description=description,
+            option_groups_json=json.dumps(build_package_option_groups(name), ensure_ascii=False),
+            price_amount=compute_package_price(name, build_package_option_groups(name)),
+            stock_qty=stock,
+        )
+        for name, stock, image_name, description in PACKAGE_PRODUCTS
     ])
     session.add_all([
         Product(category_id=saved_categories[1].id, name=name, image_url=f"{asset_base}/{image_name}?{asset_version}", description=description, option_groups_json="[]", price_amount=price, stock_qty=stock)

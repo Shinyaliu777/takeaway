@@ -62,6 +62,9 @@ Page({
   },
   paymentImageCache: {},
   onShow() {
+    if (!app.requireUserLogin("/pages/index/index")) {
+      return;
+    }
     this.ensureLoginAndLoad();
     this.syncCartCount();
   },
@@ -88,15 +91,6 @@ Page({
       this.preloadPaymentCodes(paymentCodes);
     } catch (error) {
       wx.showToast({ title: "菜单加载失败", icon: "none" });
-    }
-
-    const nickname = wx.getStorageSync("user-nickname") || "微信用户";
-    try {
-      await app.ensureUserLogin(nickname);
-    } catch (error) {
-      if (error && error.detail === "WeChat login is not configured") {
-        wx.showToast({ title: "微信登录未配置，先浏览菜单", icon: "none" });
-      }
     }
   },
   addToCart(event) {
@@ -142,6 +136,9 @@ Page({
     this.applyFilter(categoryId);
   },
   goProductDetail(event) {
+    if (!app.requireUserLogin("/pages/index/index")) {
+      return;
+    }
     const productId = Number(event.currentTarget.dataset.productId);
     wx.navigateTo({ url: `/pages/detail/index?id=${productId}` });
   },

@@ -13,6 +13,9 @@ Page({
     this.productId = Number(options.id || 0);
   },
   onShow() {
+    if (!app.requireUserLogin(`/pages/detail/index?id=${this.productId}`)) {
+      return;
+    }
     this.loadDetail();
     this.syncCartCount();
   },

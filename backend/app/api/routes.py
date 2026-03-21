@@ -51,6 +51,7 @@ from app.schemas.contracts import (
     UserLoginPayload,
     UserProfileUpdatePayload,
 )
+from app.services.pricing import compute_package_price
 
 router = APIRouter()
 WECHAT_ACCESS_TOKEN_CACHE = {"token": "", "expires_at": 0.0}
@@ -130,6 +131,7 @@ def dump(model):
     if isinstance(model, Product):
         payload = jsonable_encoder(model)
         payload["option_groups"] = parse_json_field(model.option_groups_json)
+        payload["price_amount"] = resolve_product_price(model)
         return payload
     if isinstance(model, OrderItem):
         payload = jsonable_encoder(model)
@@ -147,6 +149,13 @@ def parse_json_field(raw_value: str):
         return json.loads(raw_value)
     except json.JSONDecodeError:
         return []
+
+
+def resolve_product_price(product: Product) -> float:
+    option_groups = parse_json_field(product.option_groups_json)
+    if option_groups:
+        return compute_package_price(product.name, option_groups, product.price_amount)
+    return product.price_amount
 
 
 def build_cart_item_label(product: Product, selected_options: list[dict]) -> str:
@@ -601,9 +610,10 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
         selected_options = validate_selected_options(product, item.selected_options)
         if product.stock_qty < item.quantity:
             raise HTTPException(status_code=400, detail=f"Insufficient stock for {product.name}")
-        line_amount = round(product.price_amount * item.quantity, 2)
+        unit_price = resolve_product_price(product)
+        line_amount = round(unit_price * item.quantity, 2)
         total_amount += line_amount
-        line_items.append((product, item.quantity, line_amount, selected_options))
+        line_items.append((product, item.quantity, unit_price, line_amount, selected_options))
 
     order = Order(
         order_no=f"ORD-{uuid4().hex[:10].upper()}",
@@ -617,13 +627,13 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
     session.add(order)
     session.flush()
 
-    for product, quantity, line_amount, selected_options in line_items:
+    for product, quantity, unit_price, line_amount, selected_options in line_items:
         session.add(
             OrderItem(
                 order_id=order.id,
                 product_id=product.id,
                 product_name_snapshot=build_cart_item_label(product, selected_options),
-                product_price_snapshot=product.price_amount,
+                product_price_snapshot=unit_price,
                 selected_options_json=json.dumps(selected_options, ensure_ascii=False),
                 quantity=quantity,
                 line_amount=line_amount,
