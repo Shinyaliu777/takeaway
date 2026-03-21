@@ -48,6 +48,8 @@ def ensure_legacy_columns() -> None:
                 connection.execute("ALTER TABLE shop ADD COLUMN alipay_qr_url TEXT NOT NULL DEFAULT ''")
             if "tng_qr_url" not in shop_columns:
                 connection.execute("ALTER TABLE shop ADD COLUMN tng_qr_url TEXT NOT NULL DEFAULT ''")
+            if "extra_rice_price" not in shop_columns:
+                connection.execute("ALTER TABLE shop ADD COLUMN extra_rice_price REAL NOT NULL DEFAULT 2.0")
             if "featured_enabled" not in shop_columns:
                 connection.execute("ALTER TABLE shop ADD COLUMN featured_enabled INTEGER NOT NULL DEFAULT 0")
             if "featured_cards_json" not in shop_columns:
@@ -90,6 +92,8 @@ def ensure_legacy_columns() -> None:
         alter_statements.append("ALTER TABLE shop ADD COLUMN alipay_qr_url VARCHAR(255) NOT NULL DEFAULT ''")
     if "tng_qr_url" not in existing_columns["shop"]:
         alter_statements.append("ALTER TABLE shop ADD COLUMN tng_qr_url VARCHAR(255) NOT NULL DEFAULT ''")
+    if "extra_rice_price" not in existing_columns["shop"]:
+        alter_statements.append("ALTER TABLE shop ADD COLUMN extra_rice_price DOUBLE NOT NULL DEFAULT 2.0")
     if "featured_enabled" not in existing_columns["shop"]:
         alter_statements.append("ALTER TABLE shop ADD COLUMN featured_enabled BOOLEAN NOT NULL DEFAULT FALSE")
     if "featured_cards_json" not in existing_columns["shop"]:

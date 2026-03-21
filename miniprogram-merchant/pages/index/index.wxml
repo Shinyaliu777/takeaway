@@ -62,6 +62,11 @@
         <text class="quick-title">商品管理</text>
         <text class="quick-copy">图片、价格、库存</text>
       </button>
+      <button class="quick-card" bindtap="goRules">
+        <text class="quick-icon">≋</text>
+        <text class="quick-title">规则管理</text>
+        <text class="quick-copy">套餐规则、价格和加饭费用</text>
+      </button>
       <button class="quick-card" bindtap="goCategories">
         <text class="quick-icon">◫</text>
         <text class="quick-title">分类管理</text>

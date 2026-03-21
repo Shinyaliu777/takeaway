@@ -1,0 +1,96 @@
+.field-grid {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.field-grid-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-block {
+  margin-bottom: 14rpx;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8rpx;
+  color: #334155;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.editor-card {
+  padding-bottom: 24rpx;
+}
+
+.editor-section {
+  margin-bottom: 14rpx;
+}
+
+.category-item {
+  padding: 16rpx 0;
+  border-top: 1rpx solid rgba(214, 222, 231, 0.9);
+}
+
+.category-item:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.category-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 18rpx;
+  align-items: flex-start;
+}
+
+.category-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.category-actions {
+  display: flex;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.category-btn {
+  min-height: 58rpx;
+  line-height: 58rpx;
+  font-size: 22rpx;
+  padding: 0 18rpx;
+}
+
+.switch-card {
+  background: #f8fafc;
+  border: 1rpx solid #d8e0e8;
+  border-radius: 14rpx;
+  padding: 16rpx 18rpx;
+}
+
+.switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.switch-copy {
+  color: #475569;
+  font-size: 24rpx;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+
+.editor-primary,
+.editor-secondary {
+  flex: 1;
+}

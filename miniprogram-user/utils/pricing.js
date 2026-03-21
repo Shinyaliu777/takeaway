@@ -9,7 +9,24 @@ const PACKAGE_COMBOS = [
   { name: "三荤套餐", meat: 3, veg: 0, price: 26.8 }
 ];
 
-function buildBestComboPlan(meatUnits, vegUnits) {
+function normalizePricingConfig(config = {}) {
+  const comboRules = (config.comboRules || config.pricing_rules || PACKAGE_COMBOS)
+    .map((rule) => ({
+      name: String(rule.name || "").trim(),
+      meat: Number(rule.meat !== undefined ? rule.meat : (rule.meat_count !== undefined ? rule.meat_count : 0)),
+      veg: Number(rule.veg !== undefined ? rule.veg : (rule.veg_count !== undefined ? rule.veg_count : 0)),
+      price: Number(rule.price || 0)
+    }))
+    .filter((rule) => rule.name && rule.price >= 0 && (rule.meat > 0 || rule.veg > 0));
+  return {
+    comboRules: comboRules.length ? comboRules : PACKAGE_COMBOS,
+    extraRicePrice: Number(
+      config.extraRicePrice !== undefined ? config.extraRicePrice : (config.extra_rice_price !== undefined ? config.extra_rice_price : 2)
+    )
+  };
+}
+
+function buildBestComboPlan(meatUnits, vegUnits, comboRules = PACKAGE_COMBOS) {
   const meatCount = meatUnits.length;
   const vegCount = vegUnits.length;
   const dp = Array.from({ length: meatCount + 1 }, () => Array(vegCount + 1).fill(Number.POSITIVE_INFINITY));
@@ -21,7 +38,7 @@ function buildBestComboPlan(meatUnits, vegUnits) {
       if (!Number.isFinite(dp[currentMeat][currentVeg])) {
         continue;
       }
-      PACKAGE_COMBOS.forEach((combo) => {
+      comboRules.forEach((combo) => {
         const nextMeat = currentMeat + combo.meat;
         const nextVeg = currentVeg + combo.veg;
         if (nextMeat > meatCount || nextVeg > vegCount) {
@@ -74,7 +91,8 @@ function buildBestComboPlan(meatUnits, vegUnits) {
   };
 }
 
-function buildPricingPreview(cart) {
+function buildPricingPreview(cart, config = {}) {
+  const pricingConfig = normalizePricingConfig(config);
   const meatUnits = [];
   const vegUnits = [];
   const sideLines = [];
@@ -96,11 +114,11 @@ function buildPricingPreview(cart) {
     sideLines.push({
       name: item.name,
       quantity: item.quantity,
-      amount: Number(((item.price_amount || 0) * item.quantity).toFixed(2))
+      amount: Number((((item.dish_kind === "rice" ? pricingConfig.extraRicePrice : (item.price_amount || 0))) * item.quantity).toFixed(2))
     });
   });
 
-  const comboPlan = buildBestComboPlan(meatUnits, vegUnits);
+  const comboPlan = buildBestComboPlan(meatUnits, vegUnits, pricingConfig.comboRules);
   const hasComboSelection = meatUnits.length > 0 || vegUnits.length > 0;
   const hasCompleteCombo = comboPlan.matched && comboPlan.comboLines.length > 0;
   const sideTotal = sideLines.reduce((sum, item) => sum + item.amount, 0);
@@ -115,16 +133,17 @@ function buildPricingPreview(cart) {
     sideTotal: Number(sideTotal.toFixed(2)),
     totalAmount: total,
     summaryText: hasCompleteCombo
-      ? `${comboPlan.comboLines.length} 组套餐已匹配，可继续加主食或直接结算`
+      ? `已匹配 ${comboPlan.comboLines.length} 组套餐，可直接去核对下单`
       : hasComboSelection
         ? "当前组合还不能结算，请继续补齐荤素搭配"
         : sideLines.length
-          ? "至少选择一组可结算套餐"
+          ? "至少补齐一组可结算套餐"
           : "先从菜单里选择菜品",
     checkoutReady: hasCompleteCombo
   };
 }
 
 module.exports = {
-  buildPricingPreview
+  buildPricingPreview,
+  normalizePricingConfig
 };

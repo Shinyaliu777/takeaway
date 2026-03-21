@@ -1,5 +1,5 @@
 const api = require("../../utils/request");
-const { buildPricingPreview } = require("../../utils/pricing");
+const { buildPricingPreview, normalizePricingConfig } = require("../../utils/pricing");
 const app = getApp();
 
 Page({
@@ -12,6 +12,7 @@ Page({
       sideLines: [],
       totalAmount: 0
     },
+    pricingConfig: normalizePricingConfig(wx.getStorageSync("pricing-config") || {}),
     addresses: [],
     defaultAddress: null,
     canCheckout: false,
@@ -33,7 +34,7 @@ Page({
       return;
     }
     try {
-      const [products, categories] = await Promise.all([api.getProducts(), api.getCategories()]);
+      const [products, categories, shop] = await Promise.all([api.getProducts(), api.getCategories(), api.getShop()]);
       const productMap = {};
       const categoryMap = {};
       (categories || []).forEach((category) => {
@@ -62,6 +63,12 @@ Page({
         wx.showToast({ title: "已移除失效商品", icon: "none" });
       }
       wx.setStorageSync("user-cart", nextCart);
+      const pricingConfig = normalizePricingConfig({
+        comboRules: (shop || {}).pricing_rules || [],
+        extraRicePrice: (shop || {}).extra_rice_price
+      });
+      wx.setStorageSync("pricing-config", pricingConfig);
+      this.setData({ pricingConfig });
     } catch (error) {
       // Ignore catalog refresh failure and fall back to local cart cache.
     }
@@ -69,15 +76,16 @@ Page({
   },
   loadCart() {
     const rawCart = wx.getStorageSync("user-cart") || [];
-    const pricingPreview = buildPricingPreview(rawCart);
+    const pricingConfig = this.data.pricingConfig || normalizePricingConfig(wx.getStorageSync("pricing-config") || {});
+    const pricingPreview = buildPricingPreview(rawCart, pricingConfig);
     const cart = (wx.getStorageSync("user-cart") || []).map((item) => ({
       ...item,
       lineAmount: item.dish_kind === "meat" || item.dish_kind === "veg"
         ? ""
-        : (item.price_amount * item.quantity).toFixed(2)
+        : ((item.dish_kind === "rice" ? pricingConfig.extraRicePrice : item.price_amount) * item.quantity).toFixed(2)
     }));
     const totalAmount = pricingPreview.totalAmount.toFixed(2);
-    this.setData({ cart, totalAmount, pricingPreview });
+    this.setData({ cart, totalAmount, pricingPreview, pricingConfig });
   },
   syncCart(cart) {
     wx.setStorageSync("user-cart", cart);

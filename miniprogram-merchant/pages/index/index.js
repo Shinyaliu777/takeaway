@@ -40,6 +40,9 @@ Page({
   goProducts() {
     wx.navigateTo({ url: "/pages/products/products" });
   },
+  goRules() {
+    wx.navigateTo({ url: "/pages/rules/rules" });
+  },
   goUsers() {
     wx.navigateTo({ url: "/pages/users/users" });
   },

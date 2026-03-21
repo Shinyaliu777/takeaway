@@ -30,6 +30,10 @@
       <text class="field-label">营业时间</text>
       <input class="input" placeholder="例如 10:00-22:00" value="{{form.business_hours}}" data-key="business_hours" bindinput="onInput" />
     </view>
+    <view class="field-block">
+      <text class="field-label">额外米饭单价（MYR）</text>
+      <input class="input" placeholder="例如 2" value="{{form.extra_rice_price}}" data-key="extra_rice_price" bindinput="onInput" />
+    </view>
 
     <view class="payment-section">
       <view class="section-head payment-head">

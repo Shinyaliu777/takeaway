@@ -1,0 +1,90 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">PRICING RULES</text>
+    <text class="title">规则管理</text>
+    <text class="hero-line">在后台直接维护套餐组合、价格和额外加饭费用，用户端会实时按最新规则结算。</text>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">额外米饭价格</text>
+      <text class="section-subtitle">套餐默认含 1 份饭，额外米饭单独加价</text>
+    </view>
+    <view class="field-grid">
+      <view class="field-block field-grid-item">
+        <text class="field-label">额外米饭单价（MYR）</text>
+        <input class="input" placeholder="例如 2" value="{{extraRicePrice}}" bindinput="onExtraRiceInput" />
+      </view>
+    </view>
+    <button class="primary-btn" bindtap="saveExtraRicePrice">保存加饭价格</button>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">套餐规则列表</text>
+      <text class="section-subtitle">当前规则 {{rules.length}} 条</text>
+    </view>
+    <view wx:for="{{rules}}" wx:key="id" class="category-item">
+      <view class="category-main">
+        <view>
+          <text class="category-name">{{item.name}}</text>
+          <view class="meta-row">
+            <text class="pill pill-slate">{{item.meat_count}} 荤</text>
+            <text class="pill pill-slate">{{item.veg_count}} 素</text>
+            <text class="pill pill-blue">MYR {{item.price}}</text>
+            <text class="pill pill-slate">排序 {{item.sort_order}}</text>
+            <text class="pill {{item.enabled ? 'pill-green' : 'pill-amber'}}">{{item.enabled ? '启用中' : '已停用'}}</text>
+          </view>
+        </view>
+        <view class="category-actions">
+          <button class="ghost-btn category-btn" size="mini" data-rule="{{item}}" bindtap="editRule">编辑</button>
+          <button class="danger-btn category-btn" size="mini" data-id="{{item.id}}" bindtap="deleteRule">删</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card editor-card">
+    <view class="section-head">
+      <text class="section-title">{{editingId ? '编辑规则' : '新增规则'}}</text>
+      <text class="section-subtitle">规则会直接影响前台自动拆套餐结果</text>
+    </view>
+    <view class="editor-section">
+      <view class="field-block">
+        <text class="field-label">规则名称</text>
+        <input class="input" placeholder="例如：两荤一素套餐" value="{{form.name}}" data-key="name" bindinput="onInput" />
+      </view>
+      <view class="field-grid">
+        <view class="field-block field-grid-item">
+          <text class="field-label">荤菜数量</text>
+          <input class="input" placeholder="例如 2" value="{{form.meat_count}}" data-key="meat_count" bindinput="onInput" />
+        </view>
+        <view class="field-block field-grid-item">
+          <text class="field-label">素菜数量</text>
+          <input class="input" placeholder="例如 1" value="{{form.veg_count}}" data-key="veg_count" bindinput="onInput" />
+        </view>
+      </view>
+      <view class="field-grid">
+        <view class="field-block field-grid-item">
+          <text class="field-label">价格（MYR）</text>
+          <input class="input" placeholder="例如 20.8" value="{{form.price}}" data-key="price" bindinput="onInput" />
+        </view>
+        <view class="field-block field-grid-item">
+          <text class="field-label">排序</text>
+          <input class="input" placeholder="数字越小越靠前" value="{{form.sort_order}}" data-key="sort_order" bindinput="onInput" />
+        </view>
+      </view>
+      <view class="switch-card">
+        <text class="field-label">状态</text>
+        <view class="switch-row">
+          <text class="switch-copy">{{form.enabled ? '启用' : '停用'}}</text>
+          <switch checked="{{form.enabled}}" bindchange="onSwitchChange" color="#0f172a" />
+        </view>
+      </view>
+    </view>
+    <view class="editor-actions">
+      <button class="primary-btn editor-primary" bindtap="saveRule">保存</button>
+      <button wx:if="{{editingId}}" class="ghost-btn editor-secondary" bindtap="cancelEdit">取消编辑</button>
+    </view>
+  </view>
+</view>

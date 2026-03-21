@@ -16,7 +16,7 @@
     <view class="hero-meta">
       <text class="meta-pill">营业时间 {{shop.business_hours}}</text>
       <text class="meta-pill">套餐默认含饭</text>
-      <text class="meta-pill">额外米饭 +2 MYR</text>
+      <text class="meta-pill">额外米饭 +{{shop.extra_rice_price || 2}} MYR</text>
     </view>
     <view class="hero-tools">
       <button class="hero-tool" bindtap="goOrders">订单</button>
@@ -78,7 +78,7 @@
   <view class="section-shell menu-shell">
     <view class="section-head">
       <text class="section-title">{{currentPeriod === 'lunch' ? '午餐菜单' : '晚餐菜单'}}</text>
-      <text class="section-subtitle">直接加减菜品，系统实时拆套餐</text>
+      <text class="section-subtitle">直接加减菜品，底部实时显示结算结果</text>
     </view>
     <view wx:if="{{filteredProducts.length}}">
       <view wx:for="{{filteredProducts}}" wx:key="id" class="dish-card">
@@ -120,6 +120,6 @@
       <text class="pricing-inline-copy">{{pricingPreview.summaryText}}</text>
       <text class="pricing-inline-total">MYR {{pricingPreview.totalAmount}}</text>
     </view>
-    <button class="panel-btn panel-primary panel-cart-btn" bindtap="goCart">查看购物车{{cartLabel}}</button>
+    <button class="panel-btn panel-primary panel-cart-btn" bindtap="goCart">去核对订单{{cartLabel}}</button>
   </view>
 </view>

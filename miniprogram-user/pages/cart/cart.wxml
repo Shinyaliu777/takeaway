@@ -2,7 +2,7 @@
   <view class="hero-card cart-hero">
     <text class="eyebrow">CHECK ORDER</text>
     <text class="hero-title">核对订单</text>
-    <text class="hero-note">先看你选了哪些菜，再确认系统拆成了哪些套餐。</text>
+    <text class="hero-note">这里只负责核对菜品、套餐拆分和最终金额，不再重复计算。</text>
     <view class="hero-meta">
       <text class="meta-pill">已选 {{pricingPreview.selectedCount}} 份</text>
       <text class="meta-pill">合计 MYR {{totalAmount}}</text>
@@ -43,7 +43,7 @@
   <view class="section-shell">
     <view class="section-head">
       <text class="section-title">套餐拆分结果</text>
-      <text class="section-subtitle">系统自动按最优组合结算</text>
+      <text class="section-subtitle">系统已自动按最优组合结算</text>
     </view>
     <view class="address-card">
       <text class="line">{{pricingPreview.summaryText}}</text>

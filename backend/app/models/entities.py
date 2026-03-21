@@ -32,6 +32,7 @@ class Shop(SQLModel, table=True):
     notice: str = ""
     business_hours: str = "10:00-22:00"
     currency_code: str = "MYR"
+    extra_rice_price: float = 2.0
     featured_enabled: bool = False
     featured_cards_json: str = "[]"
 
@@ -55,6 +56,16 @@ class Product(SQLModel, table=True):
     sale_status: bool = True
     available_lunch: bool = True
     available_dinner: bool = True
+
+
+class ComboRule(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    meat_count: int = 0
+    veg_count: int = 0
+    price: float
+    sort_order: int = 0
+    enabled: bool = True
 
 
 class UserAddress(SQLModel, table=True):

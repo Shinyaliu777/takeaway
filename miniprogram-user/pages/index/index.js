@@ -1,5 +1,5 @@
 const api = require("../../utils/request");
-const { buildPricingPreview } = require("../../utils/pricing");
+const { buildPricingPreview, normalizePricingConfig } = require("../../utils/pricing");
 const app = getApp();
 
 function buildPaymentCodes(shop = {}) {
@@ -87,13 +87,14 @@ Page({
     sheetImagePath: "",
     sheetImageLoading: false,
     sheetImageError: false,
+    pricingConfig: normalizePricingConfig(),
     pricingPreview: {
       matched: false,
       selectedCount: 0,
       comboLines: [],
       sideLines: [],
       totalAmount: 0,
-      summaryText: "请选择菜品后自动计算"
+      summaryText: "先从菜单里选择菜品"
     }
   },
   paymentImageCache: {},
@@ -111,6 +112,10 @@ Page({
         api.getCategories(),
         api.getProducts()
       ]);
+      const pricingConfig = normalizePricingConfig({
+        comboRules: (shop || {}).pricing_rules || [],
+        extraRicePrice: (shop || {}).extra_rice_price
+      });
       const paymentCodes = buildPaymentCodes(shop || {});
       const selectedPaymentCode =
         paymentCodes.find((item) => item.key === this.data.selectedPaymentKey) || paymentCodes[0];
@@ -121,8 +126,10 @@ Page({
         featuredProducts: buildFeaturedCards(shop || {}, products || []),
         shopOpen: isShopOpen((shop || {}).business_hours),
         paymentCodes,
-        selectedPaymentCode
+        selectedPaymentCode,
+        pricingConfig
       });
+      wx.setStorageSync("pricing-config", pricingConfig);
       this.applyFilter(this.data.selectedCategoryId || 0, products || [], this.data.currentPeriod);
       this.preloadPaymentCodes(paymentCodes);
       this.syncCartCount();
@@ -260,7 +267,7 @@ Page({
   syncCartCount() {
     const cart = wx.getStorageSync("user-cart") || [];
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const pricingPreview = buildPricingPreview(cart);
+    const pricingPreview = buildPricingPreview(cart, this.data.pricingConfig);
     this.setData({
       cartCount,
       cartLabel: cartCount ? ` (${cartCount})` : "",

@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 from app.core.config import PUBLIC_BASE_URL
 from app.models.entities import (
     Category,
+    ComboRule,
     MerchantMessage,
     MerchantUser,
     Order,
@@ -56,6 +57,17 @@ SIDE_PRODUCTS = [
     ("脆皮酥饼", 3.0, 90, "product-fries.png", "单点主食，不含在套餐里。"),
 ]
 
+DEFAULT_COMBO_RULES = [
+    ("两荤一素套餐", 2, 1, 20.8, 1),
+    ("一荤两素套餐", 1, 2, 15.8, 2),
+    ("一荤一素套餐", 1, 1, 14.8, 3),
+    ("两荤套餐", 2, 0, 18.8, 4),
+    ("两素套餐", 0, 2, 9.9, 5),
+    ("两荤两素套餐", 2, 2, 22.8, 6),
+    ("三素套餐", 0, 3, 11.8, 7),
+    ("三荤套餐", 3, 0, 26.8, 8),
+]
+
 
 def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset_version: str) -> bool:
     updated = False
@@ -63,7 +75,27 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
         shop.name = "小黎的神秘小厨房"
         shop.notice = DESIRED_NOTICE
         shop.business_hours = "10:45-18:45"
+        shop.extra_rice_price = EXTRA_RICE_PRICE
         session.add(shop)
+        updated = True
+    elif float(shop.extra_rice_price or 0) <= 0:
+        shop.extra_rice_price = EXTRA_RICE_PRICE
+        session.add(shop)
+        updated = True
+
+    existing_combo_rules = session.exec(select(ComboRule).order_by(ComboRule.sort_order, ComboRule.id)).all()
+    if not existing_combo_rules:
+        for name, meat_count, veg_count, price, sort_order in DEFAULT_COMBO_RULES:
+            session.add(
+                ComboRule(
+                    name=name,
+                    meat_count=meat_count,
+                    veg_count=veg_count,
+                    price=price,
+                    sort_order=sort_order,
+                    enabled=True,
+                )
+            )
         updated = True
 
     categories = session.exec(select(Category).order_by(Category.sort_order, Category.id)).all()

@@ -1,4 +1,4 @@
-PACKAGE_COMBOS = [
+DEFAULT_PACKAGE_COMBOS = [
     {"name": "两荤一素套餐", "meat": 2, "veg": 1, "price": 20.8},
     {"name": "一荤两素套餐", "meat": 1, "veg": 2, "price": 15.8},
     {"name": "一荤一素套餐", "meat": 1, "veg": 1, "price": 14.8},
@@ -13,7 +13,7 @@ EXTRA_RICE_PRICE = 2.0
 
 
 def infer_package_counts_from_name(name: str) -> tuple[int, int]:
-    for combo in PACKAGE_COMBOS:
+    for combo in DEFAULT_PACKAGE_COMBOS:
         if combo["name"] == name:
             return combo["meat"], combo["veg"]
     return 0, 0
@@ -35,13 +35,29 @@ def compute_package_price(name: str, option_groups: list[dict] | None = None, fa
     meat_count, veg_count = infer_package_counts_from_option_groups(option_groups or [])
     if not meat_count and not veg_count:
         meat_count, veg_count = infer_package_counts_from_name(name)
-    for combo in PACKAGE_COMBOS:
+    for combo in DEFAULT_PACKAGE_COMBOS:
         if combo["meat"] == meat_count and combo["veg"] == veg_count:
             return combo["price"]
     return fallback_price
 
 
-def build_best_combo_plan(meat_units: list[dict], veg_units: list[dict]) -> dict:
+def normalize_package_rules(rules: list[dict] | None = None) -> list[dict]:
+    normalized = []
+    for rule in (rules or DEFAULT_PACKAGE_COMBOS):
+        normalized.append(
+            {
+                "name": str(rule.get("name") or "").strip(),
+                "meat": int(rule.get("meat") or rule.get("meat_count") or 0),
+                "veg": int(rule.get("veg") or rule.get("veg_count") or 0),
+                "price": round(float(rule.get("price") or 0), 2),
+                "sort_order": int(rule.get("sort_order") or 0),
+            }
+        )
+    return [rule for rule in normalized if rule["name"] and rule["price"] >= 0 and (rule["meat"] > 0 or rule["veg"] > 0)]
+
+
+def build_best_combo_plan(meat_units: list[dict], veg_units: list[dict], rules: list[dict] | None = None) -> dict:
+    package_rules = normalize_package_rules(rules)
     meat_count = len(meat_units)
     veg_count = len(veg_units)
     infinity = float("inf")
@@ -53,7 +69,7 @@ def build_best_combo_plan(meat_units: list[dict], veg_units: list[dict]) -> dict
         for current_veg in range(veg_count + 1):
             if dp[current_meat][current_veg] == infinity:
                 continue
-            for combo in PACKAGE_COMBOS:
+            for combo in package_rules:
                 next_meat = current_meat + combo["meat"]
                 next_veg = current_veg + combo["veg"]
                 if next_meat > meat_count or next_veg > veg_count:

@@ -29,6 +29,7 @@ from app.core.config import (
 from app.db.session import get_session
 from app.models.entities import (
     Category,
+    ComboRule,
     MerchantMessage,
     MerchantUser,
     Order,
@@ -43,6 +44,7 @@ from app.models.entities import (
 from app.schemas.contracts import (
     AddressCreate,
     CategoryPayload,
+    ComboRulePayload,
     MerchantLoginPayload,
     MerchantOrderStatusUpdate,
     OrderCreate,
@@ -162,6 +164,44 @@ def resolve_product_price(product: Product) -> float:
 def get_category_map(session: Session) -> dict[int, Category]:
     categories = session.exec(select(Category)).all()
     return {category.id: category for category in categories}
+
+
+def get_active_combo_rules(session: Session) -> list[ComboRule]:
+    return session.exec(
+        select(ComboRule).where(ComboRule.enabled == True).order_by(ComboRule.sort_order, ComboRule.id)
+    ).all()
+
+
+def get_all_combo_rules(session: Session) -> list[ComboRule]:
+    return session.exec(select(ComboRule).order_by(ComboRule.sort_order, ComboRule.id)).all()
+
+
+def serialize_combo_rules(rules: list[ComboRule]) -> list[dict]:
+    return [
+        {
+            "id": rule.id,
+            "name": rule.name,
+            "meat_count": rule.meat_count,
+            "veg_count": rule.veg_count,
+            "price": rule.price,
+            "sort_order": rule.sort_order,
+            "enabled": rule.enabled,
+        }
+        for rule in (rules or [])
+    ]
+
+
+def serialize_shop(session: Session, shop: Shop | None) -> dict | None:
+    if not shop:
+        return None
+    payload = dump(shop)
+    payload["pricing_rules"] = serialize_combo_rules(get_active_combo_rules(session))
+    return payload
+
+
+def validate_combo_rule_payload(payload: ComboRulePayload) -> None:
+    if payload.meat_count <= 0 and payload.veg_count <= 0:
+        raise HTTPException(status_code=400, detail="Combo rule must contain meat or veg count")
 
 
 def infer_product_kind(product: Product, category_map: dict[int, Category]) -> str:
@@ -290,7 +330,12 @@ def build_group_name(kind: str, index: int) -> str:
     return f"菜品{index}"
 
 
-def build_priced_order_lines(raw_items: list[tuple[Product, int]], category_map: dict[int, Category]) -> dict:
+def build_priced_order_lines(
+    raw_items: list[tuple[Product, int]],
+    category_map: dict[int, Category],
+    combo_rules: list[ComboRule],
+    extra_rice_price: float,
+) -> dict:
     meat_units = []
     veg_units = []
     side_lines = []
@@ -310,13 +355,27 @@ def build_priced_order_lines(raw_items: list[tuple[Product, int]], category_map:
                 "product_id": product.id,
                 "name": product.name,
                 "quantity": quantity,
-                "unit_price": product.price_amount,
-                "line_amount": round(product.price_amount * quantity, 2),
+                "unit_price": extra_rice_price if kind == "rice" else product.price_amount,
+                "line_amount": round((extra_rice_price if kind == "rice" else product.price_amount) * quantity, 2),
                 "selected_options": [],
             }
         )
 
-    bundle_plan = build_best_combo_plan(meat_units, veg_units)
+    bundle_plan = build_best_combo_plan(
+        meat_units,
+        veg_units,
+        [
+            {
+                "id": rule.id,
+                "name": rule.name,
+                "meat_count": rule.meat_count,
+                "veg_count": rule.veg_count,
+                "price": rule.price,
+                "sort_order": rule.sort_order,
+            }
+            for rule in combo_rules
+        ],
+    )
     if not bundle_plan["matched"] or not bundle_plan["combo_lines"]:
         raise HTTPException(status_code=400, detail="当前选菜还不能组成可结算套餐，请继续补齐荤素组合")
 
@@ -592,7 +651,7 @@ def user_upload_payment_proof(
 @router.get("/api/shop")
 def get_shop(session: Session = Depends(get_session)):
     shop = session.exec(select(Shop)).first()
-    return dump(shop) if shop else None
+    return serialize_shop(session, shop)
 
 
 @router.get("/api/categories")
@@ -741,6 +800,7 @@ def submit_payment_proof(
 def create_order(payload: OrderCreate, user: User = Depends(require_user), session: Session = Depends(get_session)):
     raw_items = []
     category_map = get_category_map(session)
+    shop = session.exec(select(Shop)).first()
 
     for item in payload.items:
         if item.quantity <= 0:
@@ -753,7 +813,12 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
             raise HTTPException(status_code=400, detail=f"Insufficient stock for {product.name}")
         raw_items.append((product, item.quantity))
 
-    pricing_result = build_priced_order_lines(raw_items, category_map)
+    pricing_result = build_priced_order_lines(
+        raw_items,
+        category_map,
+        get_active_combo_rules(session),
+        float((shop.extra_rice_price if shop else EXTRA_RICE_PRICE) or EXTRA_RICE_PRICE),
+    )
 
     order = Order(
         order_no=f"ORD-{uuid4().hex[:10].upper()}",
@@ -998,7 +1063,46 @@ def update_merchant_product(product_id: int, payload: ProductPayload, session: S
 @router.get("/api/merchant/shop", dependencies=[Depends(require_merchant)])
 def merchant_shop(session: Session = Depends(get_session)):
     shop = session.exec(select(Shop)).first()
-    return dump(shop) if shop else None
+    return serialize_shop(session, shop)
+
+
+@router.get("/api/merchant/combo-rules", dependencies=[Depends(require_merchant)])
+def merchant_combo_rules(session: Session = Depends(get_session)):
+    return serialize_combo_rules(get_all_combo_rules(session))
+
+
+@router.post("/api/merchant/combo-rules", dependencies=[Depends(require_merchant)])
+def create_merchant_combo_rule(payload: ComboRulePayload, session: Session = Depends(get_session)):
+    validate_combo_rule_payload(payload)
+    rule = ComboRule(**payload.model_dump())
+    session.add(rule)
+    session.commit()
+    session.refresh(rule)
+    return dump(rule)
+
+
+@router.patch("/api/merchant/combo-rules/{rule_id}", dependencies=[Depends(require_merchant)])
+def update_merchant_combo_rule(rule_id: int, payload: ComboRulePayload, session: Session = Depends(get_session)):
+    validate_combo_rule_payload(payload)
+    rule = session.get(ComboRule, rule_id)
+    if not rule:
+        raise HTTPException(status_code=404, detail="Combo rule not found")
+    for key, value in payload.model_dump().items():
+        setattr(rule, key, value)
+    session.add(rule)
+    session.commit()
+    session.refresh(rule)
+    return dump(rule)
+
+
+@router.delete("/api/merchant/combo-rules/{rule_id}", dependencies=[Depends(require_merchant)])
+def delete_merchant_combo_rule(rule_id: int, session: Session = Depends(get_session)):
+    rule = session.get(ComboRule, rule_id)
+    if not rule:
+        raise HTTPException(status_code=404, detail="Combo rule not found")
+    session.delete(rule)
+    session.commit()
+    return {"message": "Combo rule deleted"}
 
 
 @router.put("/api/merchant/shop", dependencies=[Depends(require_merchant)])
@@ -1011,7 +1115,7 @@ def update_merchant_shop(payload: ShopUpdatePayload, session: Session = Depends(
     session.add(shop)
     session.commit()
     session.refresh(shop)
-    return dump(shop)
+    return serialize_shop(session, shop)
 
 
 @router.get("/api/merchant/messages", dependencies=[Depends(require_merchant)])

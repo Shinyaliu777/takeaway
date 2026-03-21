@@ -76,8 +76,18 @@ class ShopUpdatePayload(BaseModel):
     address: str = Field(min_length=1)
     notice: str = ""
     business_hours: str = Field(min_length=1)
+    extra_rice_price: float = Field(default=2.0, ge=0)
     featured_enabled: bool = False
     featured_cards_json: str = "[]"
+
+
+class ComboRulePayload(BaseModel):
+    name: str = Field(min_length=1)
+    meat_count: int = Field(default=0, ge=0)
+    veg_count: int = Field(default=0, ge=0)
+    price: float = Field(ge=0)
+    sort_order: int = Field(default=0, ge=0)
+    enabled: bool = True
 
 
 class UserProfileUpdatePayload(BaseModel):

@@ -13,6 +13,7 @@ Page({
       address: "",
       notice: "",
       business_hours: "",
+      extra_rice_price: "2",
       featured_enabled: false,
       featured_cards_json: "[]"
     },
@@ -41,6 +42,7 @@ Page({
           address: shop.address || "",
           notice: shop.notice || "",
           business_hours: shop.business_hours || "",
+          extra_rice_price: `${shop.extra_rice_price !== undefined ? shop.extra_rice_price : 2}`,
           featured_enabled: !!shop.featured_enabled,
           featured_cards_json: shop.featured_cards_json || "[]"
         },
@@ -115,6 +117,7 @@ Page({
     try {
       await api.updateShop({
         ...this.data.form,
+        extra_rice_price: Number(this.data.form.extra_rice_price || 0),
         featured_cards_json: JSON.stringify(this.data.featuredCards || [])
       });
       await this.loadShop();
