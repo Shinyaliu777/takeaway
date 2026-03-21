@@ -51,7 +51,7 @@ from app.schemas.contracts import (
     UserLoginPayload,
     UserProfileUpdatePayload,
 )
-from app.services.pricing import compute_package_price
+from app.services.pricing import EXTRA_RICE_PRICE, build_best_combo_plan
 
 router = APIRouter()
 WECHAT_ACCESS_TOKEN_CACHE = {"token": "", "expires_at": 0.0}
@@ -152,10 +152,30 @@ def parse_json_field(raw_value: str):
 
 
 def resolve_product_price(product: Product) -> float:
-    option_groups = parse_json_field(product.option_groups_json)
-    if option_groups:
-        return compute_package_price(product.name, option_groups, product.price_amount)
     return product.price_amount
+
+
+def get_category_map(session: Session) -> dict[int, Category]:
+    categories = session.exec(select(Category)).all()
+    return {category.id: category for category in categories}
+
+
+def infer_product_kind(product: Product, category_map: dict[int, Category]) -> str:
+    category_name = ((category_map.get(product.category_id) or Category(name="")).name or "").strip()
+    if "荤" in category_name:
+        return "meat"
+    if "素" in category_name:
+        return "veg"
+    if "米饭" in product.name:
+        return "rice"
+    return "side"
+
+
+def serialize_product(product: Product, category_map: dict[int, Category]) -> dict:
+    payload = dump(product)
+    payload["dish_kind"] = infer_product_kind(product, category_map)
+    payload["category_name"] = ((category_map.get(product.category_id) or Category(name="")).name or "").strip()
+    return payload
 
 
 def build_cart_item_label(product: Product, selected_options: list[dict]) -> str:
@@ -231,6 +251,85 @@ def build_order_user_summary(session: Session, order: Order) -> dict:
         "user_display_name": nickname,
         "user_order_count": order_count,
         "is_repeat_customer": order_count > 1,
+    }
+
+
+def build_group_name(kind: str, index: int) -> str:
+    if kind == "meat":
+        return f"荤菜{index}"
+    if kind == "veg":
+        return f"素菜{index}"
+    return f"菜品{index}"
+
+
+def build_priced_order_lines(raw_items: list[tuple[Product, int]], category_map: dict[int, Category]) -> dict:
+    meat_units = []
+    veg_units = []
+    side_lines = []
+
+    for product, quantity in raw_items:
+        kind = infer_product_kind(product, category_map)
+        if kind in {"meat", "veg"}:
+            for _ in range(quantity):
+                unit = {"product_id": product.id, "name": product.name, "kind": kind}
+                if kind == "meat":
+                    meat_units.append(unit)
+                else:
+                    veg_units.append(unit)
+            continue
+        side_lines.append(
+            {
+                "product_id": product.id,
+                "name": product.name,
+                "quantity": quantity,
+                "unit_price": product.price_amount,
+                "line_amount": round(product.price_amount * quantity, 2),
+                "selected_options": [],
+            }
+        )
+
+    bundle_plan = build_best_combo_plan(meat_units, veg_units)
+    if not bundle_plan["matched"]:
+        raise HTTPException(status_code=400, detail="当前选菜还不能组成可结算套餐，请继续补齐荤素组合")
+
+    pricing_lines = []
+    for combo in bundle_plan["combo_lines"]:
+        selected_options = []
+        meat_index = 1
+        veg_index = 1
+        for item in combo["items"]:
+            if item["kind"] == "meat":
+                group_name = build_group_name("meat", meat_index)
+                meat_index += 1
+            else:
+                group_name = build_group_name("veg", veg_index)
+                veg_index += 1
+            selected_options.append(
+                {
+                    "group_name": group_name,
+                    "option_name": item["name"],
+                    "product_id": item["product_id"],
+                }
+            )
+        pricing_lines.append(
+            {
+                "product_id": 0,
+                "name": combo["name"],
+                "quantity": 1,
+                "unit_price": combo["price"],
+                "line_amount": combo["price"],
+                "selected_options": selected_options,
+            }
+        )
+
+    pricing_lines.extend(side_lines)
+    total_amount = round(
+        bundle_plan["combo_total"] + sum(item["line_amount"] for item in side_lines),
+        2,
+    )
+    return {
+        "lines": pricing_lines,
+        "total_amount": total_amount,
     }
 
 
@@ -343,11 +442,21 @@ def mark_order_paid(session: Session, order: Order, payment: PaymentOrder) -> No
     if order.payment_status == "SUCCESS":
         return
     items = session.exec(select(OrderItem).where(OrderItem.order_id == order.id)).all()
+    stock_deductions: dict[int, int] = {}
     for item in items:
-        product = session.get(Product, item.product_id)
-        if not product or product.stock_qty < item.quantity:
-            raise HTTPException(status_code=400, detail=f"Stock conflict for {item.product_name_snapshot}")
-        product.stock_qty -= item.quantity
+        selected_options = parse_json_field(item.selected_options_json)
+        component_ids = [entry.get("product_id") for entry in selected_options if entry.get("product_id")]
+        if component_ids:
+            for product_id in component_ids:
+                stock_deductions[product_id] = stock_deductions.get(product_id, 0) + 1
+            continue
+        if item.product_id > 0:
+            stock_deductions[item.product_id] = stock_deductions.get(item.product_id, 0) + item.quantity
+    for product_id, quantity in stock_deductions.items():
+        product = session.get(Product, product_id)
+        if not product or product.stock_qty < quantity:
+            raise HTTPException(status_code=400, detail=f"Stock conflict for product {product_id}")
+        product.stock_qty -= quantity
         session.add(product)
 
     paid_at = datetime.utcnow()
@@ -464,7 +573,9 @@ def get_categories(session: Session = Depends(get_session)):
 
 @router.get("/api/products")
 def get_products(session: Session = Depends(get_session)):
-    return session.exec(select(Product).where(Product.sale_status == True)).all()
+    category_map = get_category_map(session)
+    products = session.exec(select(Product).where(Product.sale_status == True)).all()
+    return [serialize_product(product, category_map) for product in products]
 
 
 @router.get("/api/products/{product_id}")
@@ -473,8 +584,9 @@ def get_product_detail(product_id: int, session: Session = Depends(get_session))
     if not product or not product.sale_status:
         raise HTTPException(status_code=404, detail="Product not found")
     category = session.get(Category, product.category_id)
+    category_map = get_category_map(session)
     return {
-        "product": dump(product),
+        "product": serialize_product(product, category_map),
         "category": dump(category) if category else None,
     }
 
@@ -598,8 +710,8 @@ def submit_payment_proof(
 
 @router.post("/api/orders/create")
 def create_order(payload: OrderCreate, user: User = Depends(require_user), session: Session = Depends(get_session)):
-    total_amount = 0.0
-    line_items = []
+    raw_items = []
+    category_map = get_category_map(session)
 
     for item in payload.items:
         if item.quantity <= 0:
@@ -607,13 +719,12 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
         product = session.get(Product, item.product_id)
         if not product or not product.sale_status:
             raise HTTPException(status_code=400, detail=f"Invalid product {item.product_id}")
-        selected_options = validate_selected_options(product, item.selected_options)
+        validate_selected_options(product, item.selected_options)
         if product.stock_qty < item.quantity:
             raise HTTPException(status_code=400, detail=f"Insufficient stock for {product.name}")
-        unit_price = resolve_product_price(product)
-        line_amount = round(unit_price * item.quantity, 2)
-        total_amount += line_amount
-        line_items.append((product, item.quantity, unit_price, line_amount, selected_options))
+        raw_items.append((product, item.quantity))
+
+    pricing_result = build_priced_order_lines(raw_items, category_map)
 
     order = Order(
         order_no=f"ORD-{uuid4().hex[:10].upper()}",
@@ -621,22 +732,22 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
         receiver_name=payload.receiver_name,
         receiver_mobile=payload.receiver_mobile,
         receiver_address=payload.receiver_address,
-        total_amount=round(total_amount, 2),
+        total_amount=pricing_result["total_amount"],
         currency_code=DEFAULT_CURRENCY,
     )
     session.add(order)
     session.flush()
 
-    for product, quantity, unit_price, line_amount, selected_options in line_items:
+    for line in pricing_result["lines"]:
         session.add(
             OrderItem(
                 order_id=order.id,
-                product_id=product.id,
-                product_name_snapshot=build_cart_item_label(product, selected_options),
-                product_price_snapshot=unit_price,
-                selected_options_json=json.dumps(selected_options, ensure_ascii=False),
-                quantity=quantity,
-                line_amount=line_amount,
+                product_id=line["product_id"],
+                product_name_snapshot=line["name"],
+                product_price_snapshot=line["unit_price"],
+                selected_options_json=json.dumps(line["selected_options"], ensure_ascii=False),
+                quantity=line["quantity"],
+                line_amount=line["line_amount"],
             )
         )
 

@@ -9,6 +9,20 @@ Page({
     cartCount: 0,
     selectedOptions: {}
   },
+  inferDishKind() {
+    const categoryName = ((this.data.category || {}).name || "").trim();
+    const productName = ((this.data.product || {}).name || "").trim();
+    if (categoryName.includes("荤")) {
+      return "meat";
+    }
+    if (categoryName.includes("素")) {
+      return "veg";
+    }
+    if (productName.includes("米饭")) {
+      return "rice";
+    }
+    return "side";
+  },
   onLoad(options) {
     this.productId = Number(options.id || 0);
   },
@@ -108,6 +122,7 @@ Page({
         selection_label: selectionLabel,
         selected_options: selectedOptions.filter((item) => item.option_name),
         price_amount: product.price_amount,
+        dish_kind: this.inferDishKind(),
         quantity: 1
       });
     }

@@ -1,10 +1,17 @@
 const api = require("../../utils/request");
+const { buildPricingPreview } = require("../../utils/pricing");
 const app = getApp();
 
 Page({
   data: {
     cart: [],
     totalAmount: "0.00",
+    pricingPreview: {
+      matched: false,
+      comboLines: [],
+      sideLines: [],
+      totalAmount: 0
+    },
     addresses: [],
     defaultAddress: null,
     canCheckout: false,
@@ -26,8 +33,12 @@ Page({
       return;
     }
     try {
-      const products = await api.getProducts();
+      const [products, categories] = await Promise.all([api.getProducts(), api.getCategories()]);
       const productMap = {};
+      const categoryMap = {};
+      (categories || []).forEach((category) => {
+        categoryMap[category.id] = category.name;
+      });
       (products || []).forEach((product) => {
         productMap[product.id] = product;
       });
@@ -40,6 +51,11 @@ Page({
           selection_label: item.selection_label || "",
           selected_options: item.selected_options || [],
           price_amount: productMap[item.product_id].price_amount,
+          dish_kind: productMap[item.product_id].dish_kind || (
+            ((categoryMap[productMap[item.product_id].category_id] || "").includes("荤") && "meat")
+            || ((categoryMap[productMap[item.product_id].category_id] || "").includes("素") && "veg")
+            || (productMap[item.product_id].name.includes("米饭") ? "rice" : "side")
+          ),
           quantity: item.quantity
         }));
       if (nextCart.length !== rawCart.length) {
@@ -52,18 +68,22 @@ Page({
     this.loadCart();
   },
   loadCart() {
+    const rawCart = wx.getStorageSync("user-cart") || [];
+    const pricingPreview = buildPricingPreview(rawCart);
     const cart = (wx.getStorageSync("user-cart") || []).map((item) => ({
       ...item,
-      lineAmount: (item.price_amount * item.quantity).toFixed(2)
+      lineAmount: item.dish_kind === "meat" || item.dish_kind === "veg"
+        ? "选菜后计算"
+        : (item.price_amount * item.quantity).toFixed(2)
     }));
-    const totalAmount = cart.reduce((sum, item) => sum + item.price_amount * item.quantity, 0).toFixed(2);
-    this.setData({ cart, totalAmount });
+    const totalAmount = pricingPreview.totalAmount.toFixed(2);
+    this.setData({ cart, totalAmount, pricingPreview });
   },
   syncCart(cart) {
     wx.setStorageSync("user-cart", cart);
     this.loadCart();
     this.setData({
-      canCheckout: !!this.data.defaultAddress && cart.length > 0
+      canCheckout: !!this.data.defaultAddress && cart.length > 0 && this.data.pricingPreview.matched
     });
   },
   increaseQty(event) {
@@ -96,7 +116,7 @@ Page({
       this.setData({
         addresses,
         defaultAddress,
-        canCheckout: !!defaultAddress && this.data.cart.length > 0
+        canCheckout: !!defaultAddress && this.data.cart.length > 0 && this.data.pricingPreview.matched
       });
     } catch (error) {
       wx.showToast({ title: "地址加载失败", icon: "none" });
@@ -119,7 +139,8 @@ Page({
       return;
     }
     if (!this.data.canCheckout) {
-      wx.showToast({ title: "缺少购物车或地址", icon: "none" });
+      const title = !this.data.pricingPreview.matched ? "当前选菜还不能结算" : "缺少购物车或地址";
+      wx.showToast({ title, icon: "none" });
       return;
     }
     const address = this.data.defaultAddress;

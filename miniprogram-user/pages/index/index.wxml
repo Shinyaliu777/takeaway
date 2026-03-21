@@ -28,7 +28,7 @@
       <view wx:for="{{featuredProducts}}" wx:key="id" class="feature-tile" bindtap="goProductDetail" data-product-id="{{item.id}}">
         <image wx:if="{{item.image_url}}" class="feature-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true"></image>
         <text class="feature-name">{{item.name}}</text>
-        <text class="feature-price">MYR {{item.price_amount}}</text>
+        <text class="feature-price">{{item.dish_kind === 'meat' || item.dish_kind === 'veg' ? '选菜后计算' : 'MYR ' + item.price_amount}}</text>
       </view>
     </view>
   </view>
@@ -86,7 +86,7 @@
   <view class="section-shell">
     <view class="section-head">
       <text class="section-title">今日菜单</text>
-      <text class="section-subtitle">先看详情，再决定要不要下单</text>
+      <text class="section-subtitle">自由选菜，系统自动拆套餐最优价</text>
     </view>
     <view wx:for="{{filteredProducts}}" wx:key="id" class="dish-card" bindtap="goProductDetail" data-product-id="{{item.id}}">
       <image wx:if="{{item.image_url}}" class="dish-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true"></image>
@@ -97,10 +97,14 @@
         </view>
         <view class="dish-bottom">
           <view>
-            <text class="dish-price">MYR {{item.price_amount}}</text>
+            <text class="dish-price">{{item.dish_kind === 'meat' || item.dish_kind === 'veg' ? '选菜后计算' : 'MYR ' + item.price_amount}}</text>
             <text class="dish-stock">现货 {{item.stock_qty}} 份</text>
           </view>
-          <button class="add-btn" size="mini" catchtap="addToCart" data-product="{{item}}">加入</button>
+          <view class="stepper" catchtap="stopPaymentSheet">
+            <button wx:if="{{item.selected_qty}}" class="stepper-btn stepper-minus" size="mini" catchtap="decreaseDish" data-product-id="{{item.id}}">-</button>
+            <text class="stepper-count">{{item.selected_qty || 0}}</text>
+            <button class="stepper-btn add-btn" size="mini" catchtap="increaseDish" data-product="{{item}}">+</button>
+          </view>
         </view>
       </view>
     </view>
@@ -109,6 +113,26 @@
   <view class="bottom-nav-spacer"></view>
 
   <view class="action-panel">
+    <view class="pricing-panel">
+      <text class="pricing-title">实时结算</text>
+      <text class="pricing-copy">{{pricingPreview.summaryText}}</text>
+      <view wx:if="{{pricingPreview.comboLines.length}}" class="pricing-lines">
+        <view wx:for="{{pricingPreview.comboLines}}" wx:key="index" class="pricing-line">
+          <text>{{item.name}}</text>
+          <text>MYR {{item.price}}</text>
+        </view>
+      </view>
+      <view wx:if="{{pricingPreview.sideLines.length}}" class="pricing-lines">
+        <view wx:for="{{pricingPreview.sideLines}}" wx:key="name" class="pricing-line">
+          <text>{{item.name}} x{{item.quantity}}</text>
+          <text>MYR {{item.amount}}</text>
+        </view>
+      </view>
+      <view class="pricing-total">
+        <text>合计</text>
+        <text>MYR {{pricingPreview.totalAmount}}</text>
+      </view>
+    </view>
     <button class="panel-btn panel-primary" bindtap="goCart">购物车{{cartLabel}}</button>
   </view>
 

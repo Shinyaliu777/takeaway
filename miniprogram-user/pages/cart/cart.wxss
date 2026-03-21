@@ -61,6 +61,16 @@
   border: 1rpx solid #eadfce;
 }
 
+.preview-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 10rpx;
+  color: #5c4533;
+  font-size: 22rpx;
+}
+
 .empty-box {
   background: #fffbf5;
   border-radius: 18rpx;

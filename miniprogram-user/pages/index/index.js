@@ -1,4 +1,5 @@
 const api = require("../../utils/request");
+const { buildPricingPreview } = require("../../utils/pricing");
 const app = getApp();
 
 function buildPaymentCodes(shop = {}) {
@@ -58,7 +59,15 @@ Page({
     selectedPaymentCode: buildPaymentCodes()[0],
     sheetImagePath: "",
     sheetImageLoading: false,
-    sheetImageError: false
+    sheetImageError: false,
+    pricingPreview: {
+      matched: false,
+      selectedCount: 0,
+      comboLines: [],
+      sideLines: [],
+      totalAmount: 0,
+      summaryText: "请选择菜品后自动计算"
+    }
   },
   paymentImageCache: {},
   onShow() {
@@ -89,9 +98,38 @@ Page({
       });
       this.applyFilter(this.data.selectedCategoryId || 0, products || []);
       this.preloadPaymentCodes(paymentCodes);
+      this.syncCartCount();
     } catch (error) {
       wx.showToast({ title: "菜单加载失败", icon: "none" });
     }
+  },
+  inferDishKind(categoryId, name = "") {
+    const category = (this.data.categories || []).find((item) => item.id === categoryId);
+    const categoryName = (category && category.name) || "";
+    if (categoryName.includes("荤")) {
+      return "meat";
+    }
+    if (categoryName.includes("素")) {
+      return "veg";
+    }
+    if (name.includes("米饭")) {
+      return "rice";
+    }
+    return "side";
+  },
+  getDishQuantity(productId, cart = wx.getStorageSync("user-cart") || []) {
+    const found = cart.find((item) => item.product_id === productId);
+    return found ? found.quantity : 0;
+  },
+  refreshProductSelections(cart = wx.getStorageSync("user-cart") || []) {
+    const mapSelection = (list) => (list || []).map((item) => ({
+      ...item,
+      selected_qty: this.getDishQuantity(item.id, cart)
+    }));
+    this.setData({
+      filteredProducts: mapSelection(this.data.filteredProducts),
+      featuredProducts: mapSelection(this.data.featuredProducts)
+    });
   },
   addToCart(event) {
     if (!app.requireUserLogin("/pages/index/index")) {
@@ -115,12 +153,27 @@ Page({
         product_id: product.id,
         name: product.name,
         price_amount: product.price_amount,
+        dish_kind: this.inferDishKind(product.category_id, product.name),
         quantity: 1
       });
     }
     wx.setStorageSync("user-cart", cart);
     this.syncCartCount();
-    wx.showToast({ title: "已加入", icon: "success" });
+  },
+  increaseDish(event) {
+    const product = event.currentTarget.dataset.product;
+    if (!product) {
+      return;
+    }
+    this.addToCart({ currentTarget: { dataset: { product } } });
+  },
+  decreaseDish(event) {
+    const productId = Number(event.currentTarget.dataset.productId || 0);
+    const cart = (wx.getStorageSync("user-cart") || [])
+      .map((item) => (item.product_id === productId ? { ...item, quantity: item.quantity - 1 } : item))
+      .filter((item) => item.quantity > 0);
+    wx.setStorageSync("user-cart", cart);
+    this.syncCartCount();
   },
   applyFilter(categoryId, products = this.data.products) {
     const filteredProducts = !categoryId
@@ -128,7 +181,10 @@ Page({
       : (products || []).filter((item) => item.category_id === categoryId);
     this.setData({
       selectedCategoryId: categoryId,
-      filteredProducts
+      filteredProducts: filteredProducts.map((item) => ({
+        ...item,
+        selected_qty: this.getDishQuantity(item.id)
+      }))
     });
   },
   selectCategory(event) {
@@ -145,10 +201,13 @@ Page({
   syncCartCount() {
     const cart = wx.getStorageSync("user-cart") || [];
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const pricingPreview = buildPricingPreview(cart);
     this.setData({
       cartCount,
-      cartLabel: cartCount ? ` (${cartCount})` : ""
+      cartLabel: cartCount ? ` (${cartCount})` : "",
+      pricingPreview
     });
+    this.refreshProductSelections(cart);
   },
   goCart() {
     if (!app.requireUserLogin("/pages/cart/cart")) {

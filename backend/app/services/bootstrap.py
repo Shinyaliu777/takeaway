@@ -18,7 +18,7 @@ from app.models.entities import (
     UserAddress,
     UserMessage,
 )
-from app.services.pricing import compute_package_price, infer_package_counts_from_name
+from app.services.pricing import EXTRA_RICE_PRICE
 
 
 DESIRED_NOTICE = (
@@ -27,42 +27,27 @@ DESIRED_NOTICE = (
     "付款后请及时把截图发群里或私信客服，送达后请尽快取餐。"
 )
 
-PACKAGE_PRODUCTS = [
-    ("两荤一素套餐", 80, "product-bowl-dark.png", "已含米饭，适合饭量正常、想吃得更丰富的用户。"),
-    ("一荤两素套餐", 80, "product-chicken-rice.png", "已含米饭，荤素平衡，是午晚餐常规选择。"),
-    ("一荤一素套餐", 80, "product-curry-chicken.png", "已含米饭，适合想吃得刚刚好的用户。"),
-    ("两荤套餐", 70, "product-bowl-dark.png", "已含米饭，双荤更顶饱，适合重口味用户。"),
-    ("两素套餐", 70, "product-fries.png", "已含米饭，清爽轻负担。"),
-    ("两荤两素套餐", 60, "product-bowl-dark.png", "已含米饭，分量更足，适合大食量。"),
-    ("三素套餐", 60, "product-fries.png", "已含米饭，适合清淡口味。"),
-    ("三荤套餐", 50, "product-bowl-dark.png", "已含米饭，当前最足量套餐。"),
+MEAT_PRODUCTS = [
+    ("土豆焖鸡", 80, "product-curry-chicken.png", "招牌荤菜，可重复选择，系统会自动匹配套餐价。"),
+    ("小炒肉", 80, "product-bowl-dark.png", "经典下饭荤菜，可与其他荤素菜自由组合。"),
+    ("香菇鸡", 80, "product-curry-chicken.png", "家常风味荤菜，可重复选。"),
+    ("辣子鸡", 80, "product-curry-chicken.png", "偏香辣口味，适合重口用户。"),
+    ("黑椒牛肉", 70, "product-bowl-dark.png", "黑椒风味荤菜，搭配套餐自动计价。"),
+    ("红烧肉", 70, "product-bowl-dark.png", "高频点单荤菜，可重复选择。"),
 ]
 
-PACKAGE_OPTION_PRESETS = {
-    "荤菜": ["土豆焖鸡", "小炒肉", "香菇鸡", "辣子鸡", "黑椒牛肉", "红烧肉"],
-    "素菜": ["手撕包菜", "清炒生菜", "番茄炒蛋", "炒豆角", "炒土豆丝", "麻婆豆腐"],
-}
+VEG_PRODUCTS = [
+    ("手撕包菜", 90, "product-fries.png", "清爽素菜，搭配荤菜更均衡。"),
+    ("清炒生菜", 90, "product-fries.png", "常规素菜，适合轻口味。"),
+    ("番茄炒蛋", 90, "product-fries.png", "偏家常口味，计入素菜数量。"),
+    ("炒豆角", 90, "product-fries.png", "常规素菜，可与其他素菜自由搭配。"),
+    ("炒土豆丝", 90, "product-fries.png", "热门素菜，可重复选。"),
+    ("麻婆豆腐", 90, "product-fries.png", "下饭素菜，按素菜组合计价。"),
+]
 
-
-def build_package_option_groups(name: str) -> list[dict]:
-    if "套餐" not in name:
-        return []
-    groups = []
-    meat_count, veg_count = infer_package_counts_from_name(name)
-
-    for index in range(meat_count):
-        groups.append({
-            "group_name": f"荤菜{index + 1}",
-            "required": True,
-            "options": PACKAGE_OPTION_PRESETS["荤菜"],
-        })
-    for index in range(veg_count):
-        groups.append({
-            "group_name": f"素菜{index + 1}",
-            "required": True,
-            "options": PACKAGE_OPTION_PRESETS["素菜"],
-        })
-    return groups
+RICE_PRODUCTS = [
+    ("额外米饭", EXTRA_RICE_PRICE, 160, "product-chicken-rice.png", "套餐默认含一份米饭，这里是额外加饭，每份 2 MYR。"),
+]
 
 SIDE_PRODUCTS = [
     ("手工馒头", 1.5, 120, "product-milk-tea.png", "单点主食，不含在套餐里。"),
@@ -85,8 +70,9 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
     category_map = {category.name: category for category in categories}
 
     desired_categories = [
-        ("套餐", 1),
-        ("单点主食", 2),
+        ("荤菜", 1),
+        ("素菜", 2),
+        ("加点主食", 3),
     ]
     for name, sort_order in desired_categories:
         category = category_map.get(name)
@@ -110,7 +96,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             session.add(category)
             updated = True
 
-    desired_product_names = {row[0] for row in PACKAGE_PRODUCTS + SIDE_PRODUCTS}
+    desired_product_names = {row[0] for row in MEAT_PRODUCTS + VEG_PRODUCTS + RICE_PRODUCTS + SIDE_PRODUCTS}
     existing_products = session.exec(select(Product)).all()
     existing_map = {product.name: product for product in existing_products}
 
@@ -120,23 +106,22 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             session.add(product)
             updated = True
 
-    package_category_id = category_map["套餐"].id
-    side_category_id = category_map["单点主食"].id
-    for name, stock, image_name, description in PACKAGE_PRODUCTS:
+    meat_category_id = category_map["荤菜"].id
+    veg_category_id = category_map["素菜"].id
+    staple_category_id = category_map["加点主食"].id
+    for name, stock, image_name, description in MEAT_PRODUCTS:
         product = existing_map.get(name)
         image_url = f"{asset_base}/{image_name}?{asset_version}"
-        option_groups = build_package_option_groups(name)
-        option_groups_json = json.dumps(option_groups, ensure_ascii=False)
-        price = compute_package_price(name, option_groups)
+        option_groups_json = "[]"
         if not product:
             session.add(
                 Product(
-                    category_id=package_category_id,
+                    category_id=meat_category_id,
                     name=name,
                     image_url=image_url,
                     description=description,
                     option_groups_json=option_groups_json,
-                    price_amount=price,
+                    price_amount=0,
                     stock_qty=stock,
                     sale_status=True,
                 )
@@ -144,16 +129,16 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             updated = True
             continue
         if (
-            product.category_id != package_category_id
-            or product.price_amount != price
+            product.category_id != meat_category_id
+            or product.price_amount != 0
             or product.stock_qty != stock
             or product.image_url != image_url
             or product.description != description
             or product.option_groups_json != option_groups_json
             or product.sale_status is not True
         ):
-            product.category_id = package_category_id
-            product.price_amount = price
+            product.category_id = meat_category_id
+            product.price_amount = 0
             product.stock_qty = stock
             product.image_url = image_url
             product.description = description
@@ -162,13 +147,50 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             session.add(product)
             updated = True
 
-    for name, price, stock, image_name, description in SIDE_PRODUCTS:
+    for name, stock, image_name, description in VEG_PRODUCTS:
         product = existing_map.get(name)
         image_url = f"{asset_base}/{image_name}?{asset_version}"
         if not product:
             session.add(
                 Product(
-                    category_id=side_category_id,
+                    category_id=veg_category_id,
+                    name=name,
+                    image_url=image_url,
+                    description=description,
+                    option_groups_json="[]",
+                    price_amount=0,
+                    stock_qty=stock,
+                    sale_status=True,
+                )
+            )
+            updated = True
+            continue
+        if (
+            product.category_id != veg_category_id
+            or product.price_amount != 0
+            or product.stock_qty != stock
+            or product.image_url != image_url
+            or product.description != description
+            or product.option_groups_json != "[]"
+            or product.sale_status is not True
+        ):
+            product.category_id = veg_category_id
+            product.price_amount = 0
+            product.stock_qty = stock
+            product.image_url = image_url
+            product.description = description
+            product.option_groups_json = "[]"
+            product.sale_status = True
+            session.add(product)
+            updated = True
+
+    for name, price, stock, image_name, description in RICE_PRODUCTS + SIDE_PRODUCTS:
+        product = existing_map.get(name)
+        image_url = f"{asset_base}/{image_name}?{asset_version}"
+        if not product:
+            session.add(
+                Product(
+                    category_id=staple_category_id,
                     name=name,
                     image_url=image_url,
                     description=description,
@@ -181,7 +203,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             updated = True
             continue
         if (
-            product.category_id != side_category_id
+            product.category_id != staple_category_id
             or product.price_amount != price
             or product.stock_qty != stock
             or product.image_url != image_url
@@ -189,7 +211,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             or product.option_groups_json != "[]"
             or product.sale_status is not True
         ):
-            product.category_id = side_category_id
+            product.category_id = staple_category_id
             product.price_amount = price
             product.stock_qty = stock
             product.image_url = image_url
@@ -318,8 +340,9 @@ def seed_data(session: Session) -> None:
     session.commit()
 
     categories = [
-        Category(name="套餐", sort_order=1),
-        Category(name="单点主食", sort_order=2),
+        Category(name="荤菜", sort_order=1),
+        Category(name="素菜", sort_order=2),
+        Category(name="加点主食", sort_order=3),
     ]
     for category in categories:
         session.add(category)
@@ -332,15 +355,27 @@ def seed_data(session: Session) -> None:
             name=name,
             image_url=f"{asset_base}/{image_name}?{asset_version}",
             description=description,
-            option_groups_json=json.dumps(build_package_option_groups(name), ensure_ascii=False),
-            price_amount=compute_package_price(name, build_package_option_groups(name)),
+            option_groups_json="[]",
+            price_amount=0,
             stock_qty=stock,
         )
-        for name, stock, image_name, description in PACKAGE_PRODUCTS
+        for name, stock, image_name, description in MEAT_PRODUCTS
     ])
     session.add_all([
-        Product(category_id=saved_categories[1].id, name=name, image_url=f"{asset_base}/{image_name}?{asset_version}", description=description, option_groups_json="[]", price_amount=price, stock_qty=stock)
-        for name, price, stock, image_name, description in SIDE_PRODUCTS
+        Product(
+            category_id=saved_categories[1].id,
+            name=name,
+            image_url=f"{asset_base}/{image_name}?{asset_version}",
+            description=description,
+            option_groups_json="[]",
+            price_amount=0,
+            stock_qty=stock,
+        )
+        for name, stock, image_name, description in VEG_PRODUCTS
+    ])
+    session.add_all([
+        Product(category_id=saved_categories[2].id, name=name, image_url=f"{asset_base}/{image_name}?{asset_version}", description=description, option_groups_json="[]", price_amount=price, stock_qty=stock)
+        for name, price, stock, image_name, description in RICE_PRODUCTS + SIDE_PRODUCTS
     ])
     session.add_all(
         [

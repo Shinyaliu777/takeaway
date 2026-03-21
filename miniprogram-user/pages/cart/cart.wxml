@@ -2,10 +2,32 @@
   <view class="hero-card cart-hero">
     <text class="eyebrow">READY TO CHECK OUT</text>
     <text class="hero-title">购物车</text>
-    <text class="hero-note">确认菜品、地址后就可以提交订单。</text>
+    <text class="hero-note">先选具体菜品，系统会自动拆成最优套餐价。</text>
     <view class="hero-meta">
       <text class="meta-pill">合计 MYR {{totalAmount}}</text>
       <text class="meta-pill">{{cart.length}} 件商品</text>
+    </view>
+  </view>
+
+  <view class="section-shell">
+    <view class="section-head">
+      <text class="section-title">套餐结算预览</text>
+      <text class="section-subtitle">自动按最优组合拆分</text>
+    </view>
+    <view class="address-card">
+      <text class="line">{{pricingPreview.summaryText}}</text>
+      <view wx:if="{{pricingPreview.comboLines.length}}">
+        <view wx:for="{{pricingPreview.comboLines}}" wx:key="index" class="preview-line">
+          <text>{{item.name}}</text>
+          <text>MYR {{item.price}}</text>
+        </view>
+      </view>
+      <view wx:if="{{pricingPreview.sideLines.length}}">
+        <view wx:for="{{pricingPreview.sideLines}}" wx:key="name" class="preview-line">
+          <text>{{item.name}} x{{item.quantity}}</text>
+          <text>MYR {{item.amount}}</text>
+        </view>
+      </view>
     </view>
   </view>
 
@@ -22,7 +44,7 @@
           <text class="dish-meta">数量 {{item.quantity}}</text>
         </view>
         <view class="cart-side">
-          <text class="dish-price">MYR {{item.lineAmount}}</text>
+          <text class="dish-price">{{item.dish_kind === 'meat' || item.dish_kind === 'veg' ? '选菜后计算' : 'MYR ' + item.lineAmount}}</text>
           <view class="cart-actions">
             <button class="qty-btn" size="mini" data-id="{{item.cart_key}}" bindtap="decreaseQty">-</button>
             <button class="qty-btn" size="mini" data-id="{{item.cart_key}}" bindtap="increaseQty">+</button>
@@ -57,7 +79,7 @@
   <view class="action-panel status-panel">
     <text class="status-title">付款说明</text>
     <text class="line">下单后请上传付款成功截图，商家确认后订单才会进入已付款。</text>
-    <text wx:if="{{!defaultAddress && cart.length}}" class="line">可先浏览购物车，登录后再补地址并下单。</text>
+    <text wx:if="{{!pricingPreview.matched && cart.length}}" class="line">当前选菜还不能组成可结算套餐，请继续补齐荤素组合。</text>
     <text wx:if="{{orderHint}}" class="line strong">{{orderHint}}</text>
     <button class="panel-btn primary-btn" bindtap="checkout" disabled="{{!canCheckout}}">创建订单并上传付款截图</button>
     <button wx:if="{{cart.length}}" class="panel-btn ghost-btn" bindtap="clearCart">清空购物车</button>

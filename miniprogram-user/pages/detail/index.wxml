@@ -12,7 +12,7 @@
   <view class="detail-card">
     <view class="headline-row">
       <view>
-        <text class="price-line">MYR {{product.price_amount}}</text>
+        <text class="price-line">{{category && (category.name === '荤菜' || category.name === '素菜') ? '选菜后计算' : 'MYR ' + product.price_amount}}</text>
         <text class="stock-line">库存 {{product.stock_qty}} 份</text>
       </view>
       <view class="taste-pill">店内招牌</view>
