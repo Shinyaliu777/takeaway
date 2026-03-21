@@ -1,0 +1,11 @@
+.preview-card {
+  padding: 24rpx;
+  border-radius: 32rpx;
+  background: #fffaf2;
+}
+
+.preview-image {
+  width: 100%;
+  border-radius: 24rpx;
+  background: #fff;
+}

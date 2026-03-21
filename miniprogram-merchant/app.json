@@ -1,0 +1,21 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/orders/orders",
+    "pages/order-detail/order-detail",
+    "pages/products/products",
+    "pages/categories/categories",
+    "pages/shop/shop",
+    "pages/messages/messages"
+  ],
+  "window": {
+    "navigationBarTitleText": "商家端",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundTextStyle": "light"
+  },
+  "lazyCodeLoading": "requiredComponents",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

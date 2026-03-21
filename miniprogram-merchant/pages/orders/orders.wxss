@@ -1,0 +1,31 @@
+.order-row {
+  display: flex;
+  gap: 14rpx;
+  align-items: flex-start;
+  padding: 18rpx;
+}
+
+.grow {
+  flex: 1;
+}
+
+.action-col {
+  width: 150rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  justify-content: flex-start;
+}
+
+.action-col .primary-btn,
+.action-col .secondary-btn,
+.grow .ghost-btn {
+  min-height: 60rpx;
+  line-height: 60rpx;
+  font-size: 22rpx;
+  border-radius: 12rpx;
+}
+
+.grow .ghost-btn {
+  margin-top: 12rpx;
+}

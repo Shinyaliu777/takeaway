@@ -1,0 +1,7 @@
+.page {
+  padding-top: 88rpx;
+}
+
+.login-card {
+  margin-top: -28rpx;
+}

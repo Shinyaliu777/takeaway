@@ -1,0 +1,56 @@
+<view class="page">
+  <view class="hero-card list-hero">
+    <text class="eyebrow">ADDRESS BOOK</text>
+    <text class="hero-title">地址管理</text>
+    <text class="hero-note">维护默认地址和常用收货信息，下单时会自动带入。</text>
+  </view>
+
+  <view class="card" wx:if="{{isGuest}}">
+    <text class="section-title">登录后可管理</text>
+    <text class="line">登录后可保存多个收货地址，并选择默认地址用于下单。</text>
+    <button class="primary-btn" bindtap="goLogin">前往登录</button>
+  </view>
+
+  <block wx:else>
+  <view class="section-head">
+    <text class="section-title">已保存地址</text>
+    <text class="section-subtitle">默认地址优先用于下单</text>
+  </view>
+  <view wx:if="{{addresses.length}}">
+    <view wx:for="{{addresses}}" wx:key="id" class="address-card">
+      <view class="address-top">
+        <view>
+          <text class="address-name">{{item.receiver_name}}</text>
+          <text class="address-phone">{{item.receiver_mobile}}</text>
+        </view>
+        <text wx:if="{{item.is_default}}" class="default-tag">默认地址</text>
+      </view>
+      <text class="address-detail">{{item.detail_address}}</text>
+      <view class="address-actions">
+        <button class="ghost-btn mini-action" size="mini" data-address="{{item}}" bindtap="editAddress">编辑</button>
+        <button class="ghost-btn mini-action" size="mini" data-id="{{item.id}}" bindtap="deleteAddress">删除</button>
+      </view>
+    </view>
+  </view>
+  <view class="card empty-card" wx:else>
+    <text class="section-title">还没有地址</text>
+    <text class="line">新增一个默认地址后，下单会更顺。</text>
+  </view>
+
+  <view class="card form-card">
+    <view class="section-head">
+      <text class="section-title">{{editingId ? '编辑地址' : '新增地址'}}</text>
+      <text class="section-subtitle">收货信息尽量完整</text>
+    </view>
+    <input class="input" placeholder="收货人姓名" value="{{form.receiver_name}}" data-key="receiver_name" bindinput="onInput" />
+    <input class="input" placeholder="手机号" value="{{form.receiver_mobile}}" data-key="receiver_mobile" bindinput="onInput" />
+    <input class="input" placeholder="详细地址" value="{{form.detail_address}}" data-key="detail_address" bindinput="onInput" />
+    <view class="switch-row">
+      <text class="line">设为默认地址</text>
+      <switch checked="{{form.is_default}}" bindchange="onSwitch" />
+    </view>
+    <button class="primary-btn" bindtap="saveAddress">保存</button>
+    <button wx:if="{{editingId}}" bindtap="cancelEdit">取消编辑</button>
+  </view>
+  </block>
+</view>

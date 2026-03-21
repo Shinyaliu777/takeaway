@@ -1,0 +1,64 @@
+<view class="page">
+  <view class="hero-panel" wx:if="{{order}}">
+    <text class="eyebrow">DETAIL VIEW</text>
+    <text class="title">{{order.order_status_text}}</text>
+    <text class="hero-line">{{order.order_no}}</text>
+    <view class="hero-grid">
+      <view class="hero-stat">
+        <text class="hero-stat-label">支付状态</text>
+        <text class="hero-stat-value">{{order.payment_status_text}}</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-label">订单金额</text>
+        <text class="hero-stat-value">MYR {{order.total_amount}}</text>
+      </view>
+    </view>
+  </view>
+  <view class="card" wx:if="{{order}}">
+    <text class="line strong">{{order.order_no}}</text>
+    <view class="meta-row">
+      <text class="pill pill-blue">{{order.order_status_text}}</text>
+      <text class="pill pill-green">{{order.payment_status_text}}</text>
+    </view>
+    <view class="meta-row">
+      <text wx:if="{{order.user_nickname}}" class="pill pill-slate">用户 {{order.user_nickname}}</text>
+      <text class="pill {{order.is_repeat_customer ? 'pill-amber' : 'pill-slate'}}">{{order.is_repeat_customer ? ('老客户 · 历史 ' + order.user_order_count + ' 单') : '新客户首单'}}</text>
+    </view>
+    <text class="line">收货人：{{order.receiver_name}}</text>
+    <text class="line">电话：{{order.receiver_mobile}}</text>
+    <text class="line">地址：{{order.receiver_address}}</text>
+    <text class="line">金额：MYR {{order.total_amount}}</text>
+    <text class="line">下单时间：{{order.created_at}}</text>
+    <text class="line" wx:if="{{payment}}">支付方式：{{payment.channel_code}}</text>
+  </view>
+  <view class="card" wx:if="{{payment}}">
+    <view class="section-head">
+      <text class="section-title">付款截图审核</text>
+      <text class="section-subtitle">确认到账后订单才进入已付款</text>
+    </view>
+    <image
+      wx:if="{{payment.proof_image_url}}"
+      class="proof-image"
+      src="{{payment.proof_image_url}}"
+      mode="aspectFit"
+    />
+    <view wx:else class="proof-empty">
+      <text class="line">用户还没有上传付款截图。</text>
+    </view>
+    <view class="action-stack" wx:if="{{payment.status === 'PROOF_UPLOADED'}}">
+      <button class="primary-btn" bindtap="confirmPayment">确认到账</button>
+      <button class="ghost-btn" bindtap="rejectPayment">退回重新上传</button>
+    </view>
+  </view>
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">商品明细</text>
+      <text class="section-subtitle">下单快照</text>
+    </view>
+    <view wx:for="{{items}}" wx:key="id" class="data-card">
+      <text class="line strong">{{item.product_name_snapshot}}</text>
+      <text class="line">数量：{{item.quantity}}</text>
+      <text class="line">MYR {{item.line_amount}}</text>
+    </view>
+  </view>
+</view>

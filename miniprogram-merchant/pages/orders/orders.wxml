@@ -1,0 +1,28 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">ORDER FLOW</text>
+    <text class="title">订单列表</text>
+    <text class="hero-line">先处理最新订单，再推进到配送中和已完成。</text>
+  </view>
+  <view wx:for="{{orders}}" wx:key="id" class="card order-row">
+      <view class="grow">
+        <text class="line strong">{{item.order_no}}</text>
+        <view class="meta-row">
+          <text class="pill pill-blue">{{item.order_status_text}}</text>
+          <text class="pill pill-green">{{item.payment_status_text}}</text>
+        </view>
+        <view class="meta-row">
+          <text wx:if="{{item.user_nickname}}" class="pill pill-slate">用户 {{item.user_nickname}}</text>
+          <text class="pill {{item.is_repeat_customer ? 'pill-amber' : 'pill-slate'}}">{{item.is_repeat_customer ? ('老客户 · ' + item.user_order_count + ' 单') : '新客户首单'}}</text>
+        </view>
+        <text class="line">{{item.receiver_name}} · {{item.receiver_mobile}}</text>
+        <text class="line">{{item.receiver_address}}</text>
+        <text class="line strong">MYR {{item.total_amount}}</text>
+        <button class="ghost-btn" size="mini" data-id="{{item.id}}" bindtap="goDetail">查看详情</button>
+      </view>
+      <view class="action-col">
+        <button wx:if="{{item.order_status === 'PAID'}}" class="secondary-btn" size="mini" data-id="{{item.id}}" data-status="DELIVERING" bindtap="updateStatus">配送中</button>
+        <button wx:if="{{item.order_status === 'DELIVERING'}}" class="primary-btn" size="mini" data-id="{{item.id}}" data-status="COMPLETED" bindtap="updateStatus">已完成</button>
+      </view>
+    </view>
+</view>

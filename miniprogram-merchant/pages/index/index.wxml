@@ -1,0 +1,56 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">MERCHANT CONSOLE</text>
+    <text class="title">商家工作台</text>
+    <text class="hero-line">处理订单、管理商品、维护店铺信息。</text>
+    <view class="hero-grid">
+      <view class="hero-stat">
+        <text class="hero-stat-label">登录状态</text>
+        <text class="hero-stat-value">{{tokenReady ? '在线' : '离线'}}</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-label">未读消息</text>
+        <text class="hero-stat-value">{{messageCount}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">快捷入口</text>
+      <text class="section-subtitle">常用操作</text>
+    </view>
+    <view class="quick-grid">
+      <button class="quick-card quick-card-primary" bindtap="goOrders">
+        <text class="quick-icon">◎</text>
+        <text class="quick-title">订单管理</text>
+        <text class="quick-copy">优先处理已付款订单</text>
+      </button>
+      <button class="quick-card" bindtap="goProducts">
+        <text class="quick-icon">▣</text>
+        <text class="quick-title">商品管理</text>
+        <text class="quick-copy">图片、价格、库存</text>
+      </button>
+      <button class="quick-card" bindtap="goCategories">
+        <text class="quick-icon">◫</text>
+        <text class="quick-title">分类管理</text>
+        <text class="quick-copy">菜单结构与排序</text>
+      </button>
+      <button class="quick-card" bindtap="goShop">
+        <text class="quick-icon">⌂</text>
+        <text class="quick-title">店铺设置</text>
+        <text class="quick-copy">营业信息与展示内容</text>
+      </button>
+      <button class="quick-card" bindtap="goMessages">
+        <text class="quick-icon">✦</text>
+        <text class="quick-title">消息列表</text>
+        <text class="quick-copy">订单提醒与状态通知</text>
+      </button>
+      <button class="quick-card quick-card-danger" bindtap="logout">
+        <text class="quick-icon">↗</text>
+        <text class="quick-title">退出登录</text>
+        <text class="quick-copy">结束当前商家会话</text>
+      </button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">MENU STRUCTURE</text>
+    <text class="title">分类管理</text>
+    <text class="hero-line">让前台分类更清晰，排序和启停都在这里控制。</text>
+  </view>
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">分类列表</text>
+      <text class="section-subtitle">当前分类 {{categories.length}} 个</text>
+    </view>
+    <view class="table-head">
+      <text class="table-head-main">分类信息</text>
+      <text class="table-head-side">操作</text>
+    </view>
+    <view wx:for="{{categories}}" wx:key="id" class="category-item">
+      <view class="category-main">
+        <view>
+          <text class="category-name">{{item.name}}</text>
+          <view class="meta-row">
+            <text class="pill pill-slate">排序 {{item.sort_order}}</text>
+            <text class="pill {{item.status ? 'pill-green' : 'pill-amber'}}">{{item.status ? '启用中' : '已停用'}}</text>
+          </view>
+        </view>
+        <view class="category-actions">
+          <button class="ghost-btn category-btn" size="mini" data-category="{{item}}" bindtap="editCategory">编辑</button>
+          <button class="danger-btn category-btn" size="mini" data-id="{{item.id}}" bindtap="deleteCategory">删</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card editor-card">
+    <view class="section-head">
+      <text class="section-title">{{editingId ? '编辑分类' : '新增分类'}}</text>
+      <text class="section-subtitle">{{editingId ? '修改后立即影响前台分类展示' : '用于商品归类和排序'}}</text>
+    </view>
+    <view class="editor-section">
+      <view class="field-block">
+        <text class="field-label">分类名称</text>
+        <input class="input" placeholder="例如：主食、饮品、小吃" value="{{form.name}}" data-key="name" bindinput="onInput" />
+      </view>
+      <view class="field-grid">
+        <view class="field-block field-grid-item">
+          <text class="field-label">排序</text>
+          <input class="input" placeholder="数字越小越靠前" value="{{form.sort_order}}" data-key="sort_order" bindinput="onInput" />
+        </view>
+        <view class="switch-card">
+          <text class="field-label">状态</text>
+          <view class="switch-row">
+            <text class="switch-copy">{{form.status ? '启用' : '停用'}}</text>
+            <switch checked="{{form.status}}" bindchange="onSwitch" color="#0f172a" />
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="editor-actions">
+      <button class="primary-btn editor-primary" bindtap="saveCategory">保存</button>
+      <button wx:if="{{editingId}}" class="ghost-btn editor-secondary" bindtap="cancelEdit">取消编辑</button>
+    </view>
+  </view>
+</view>

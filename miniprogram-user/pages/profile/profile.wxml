@@ -1,0 +1,66 @@
+<view class="page">
+  <view class="profile-hero" wx:if="{{profile.id}}">
+    <view class="profile-noise"></view>
+    <view class="profile-top">
+      <button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image wx:if="{{avatarUrl || profile.avatar_url}}" class="avatar" src="{{avatarUrl || profile.avatar_url}}" mode="aspectFill"></image>
+        <view wx:else class="avatar avatar-fallback">头像</view>
+      </button>
+      <view class="profile-copy">
+        <text class="profile-name">{{profile.nickname || '微信用户'}}</text>
+        <text class="profile-mobile">外卖账户已启用</text>
+        <text class="profile-hint">外卖账号已连接微信登录</text>
+      </view>
+    </view>
+    <view class="stats-grid">
+      <view wx:for="{{stats}}" wx:key="label" class="stat-card">
+        <text class="stat-label">{{item.label}}</text>
+        <text class="stat-value">{{item.value}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card profile-edit-card" wx:if="{{profile.id}}">
+    <view class="section-head">
+      <text class="section-title">完善资料</text>
+      <text class="section-subtitle">只保留必要编辑项</text>
+    </view>
+    <text class="edit-helper">当前昵称会展示在订单和消息列表里。</text>
+    <input class="input" type="nickname" placeholder="修改昵称" value="{{nickname}}" bindinput="onInput" />
+    <button class="primary-btn" bindtap="saveProfile">保存资料</button>
+  </view>
+
+  <view class="section-head profile-action-head" wx:if="{{profile.id}}">
+    <text class="section-title">常用服务</text>
+    <text class="section-subtitle">高频入口放前面</text>
+  </view>
+
+  <view class="profile-action-grid" wx:if="{{profile.id}}">
+    <button class="service-card" bindtap="goAddresses">
+      <text class="service-icon">⌂</text>
+      <text class="service-title">管理地址</text>
+      <text class="service-copy">默认地址与新增地址</text>
+    </button>
+    <button class="service-card" bindtap="goOrders">
+      <text class="service-icon">◎</text>
+      <text class="service-title">我的订单</text>
+      <text class="service-copy">查看配送与历史订单</text>
+    </button>
+    <button class="service-card" bindtap="goMessages">
+      <text class="service-icon">✦</text>
+      <text class="service-title">消息中心</text>
+      <text class="service-copy">支付和配送通知</text>
+    </button>
+    <button class="service-card service-card-dark" bindtap="logout">
+      <text class="service-icon">↗</text>
+      <text class="service-title">退出登录</text>
+      <text class="service-copy">清除当前登录状态</text>
+    </button>
+  </view>
+
+  <view class="card guest-card" wx:else>
+    <text class="section-title">还未登录</text>
+    <text class="line">登录后可管理地址、查看订单和接收消息通知。</text>
+    <button class="primary-btn" bindtap="goLogin">前往微信登录</button>
+  </view>
+</view>

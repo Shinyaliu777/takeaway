@@ -1,0 +1,33 @@
+<view class="page">
+  <view class="hero-card list-hero">
+    <text class="eyebrow">MESSAGE CENTER</text>
+    <text class="hero-title">消息中心</text>
+    <text class="hero-note">支付成功、开始配送和订单完成提醒都会汇总在这里。</text>
+  </view>
+
+  <view class="card" wx:if="{{isGuest}}">
+    <text class="section-title">登录后可查看</text>
+    <text class="line">登录后可查看支付成功、配送中和订单完成通知。</text>
+    <button class="primary-btn" bindtap="goLogin">前往登录</button>
+  </view>
+
+  <view class="section-head" wx:elif="{{messages.length}}">
+    <text class="section-title">通知列表</text>
+    <text class="section-subtitle">按时间倒序排列</text>
+  </view>
+  <view wx:if="{{!isGuest && messages.length}}">
+      <view wx:for="{{messages}}" wx:key="id" class="message-card {{item.read ? 'is-read' : ''}}">
+        <view class="message-top">
+          <text class="message-title">{{item.title}}</text>
+          <text class="message-time">{{item.created_at}}</text>
+        </view>
+        <text class="message-copy">{{item.content}}</text>
+        <button wx:if="{{!item.read}}" class="ghost-btn mini-action" size="mini" data-id="{{item.id}}" bindtap="markRead">标记已读</button>
+        <text wx:else class="read-tag">已读</text>
+      </view>
+  </view>
+  <view class="card empty-card" wx:elif="{{!isGuest}}">
+    <text class="section-title">暂无消息</text>
+    <text class="line">订单状态更新后会在这里出现提醒。</text>
+  </view>
+</view>

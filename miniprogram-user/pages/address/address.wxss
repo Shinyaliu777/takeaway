@@ -1,0 +1,74 @@
+.list-hero {
+  margin-bottom: 24rpx;
+}
+
+.address-card {
+  background: #fffdf9;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 18rpx;
+  border: 1rpx solid #eadfce;
+  box-shadow: 0 6rpx 16rpx rgba(78, 56, 33, 0.04);
+}
+
+.address-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 18rpx;
+  align-items: flex-start;
+}
+
+.address-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #431407;
+}
+
+.address-phone {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #8a6d56;
+}
+
+.address-detail {
+  display: block;
+  margin-top: 18rpx;
+  color: #6f5a49;
+  font-size: 26rpx;
+  line-height: 1.65;
+}
+
+.default-tag {
+  display: inline-block;
+  color: #f8fff4;
+  background: #6f8e60;
+  border-radius: 999rpx;
+  padding: 10rpx 16rpx;
+  font-size: 20rpx;
+}
+
+.switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.address-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.mini-action {
+  margin: 0;
+}
+
+.form-card {
+  margin-top: 24rpx;
+}
+
+.empty-card {
+  margin-bottom: 20rpx;
+}

@@ -1,0 +1,246 @@
+page {
+  background: #eef2f6;
+  color: #0f172a;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, #0f172a, #172234 58%, #243247);
+  color: #f8fafc;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 16rpx 36rpx rgba(15, 23, 42, 0.18);
+}
+
+.eyebrow {
+  display: block;
+  font-size: 18rpx;
+  letter-spacing: 4rpx;
+  opacity: 0.72;
+  margin-bottom: 10rpx;
+}
+
+.title {
+  display: block;
+  font-size: 38rpx;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.hero-line {
+  display: block;
+  margin-top: 10rpx;
+  color: #cbd5e1;
+  font-size: 22rpx;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.hero-stat {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 14rpx;
+  padding: 14rpx 16rpx;
+}
+
+.hero-stat-label {
+  display: block;
+  font-size: 18rpx;
+  color: #cbd5e1;
+}
+
+.hero-stat-value {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-top: 6rpx;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 18rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+  border: 1rpx solid rgba(203, 213, 225, 0.7);
+  box-shadow: 0 10rpx 24rpx rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(10rpx);
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.section-subtitle {
+  color: #64748b;
+  font-size: 20rpx;
+}
+
+.line {
+  display: block;
+  margin-top: 8rpx;
+  color: #475569;
+  font-size: 24rpx;
+}
+
+.strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.pill {
+  display: inline-block;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  margin-right: 8rpx;
+}
+
+.pill-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.pill-amber {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.pill-green {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.pill-slate {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.input,
+picker .input {
+  height: 76rpx;
+  background: #f8fafc;
+  border-radius: 14rpx;
+  border: 1rpx solid #d8e0e8;
+  padding: 0 18rpx;
+  margin-bottom: 14rpx;
+  font-size: 26rpx;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  color: #0f172a;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.danger-btn {
+  margin-top: 0;
+  border-radius: 14rpx;
+  font-size: 24rpx;
+  min-height: 68rpx;
+  line-height: 68rpx;
+  padding: 0 18rpx;
+  font-weight: 700;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #0f172a, #27364b);
+  color: #ffffff;
+  box-shadow: 0 10rpx 22rpx rgba(15, 23, 42, 0.14);
+}
+
+.secondary-btn {
+  background: #dbe4ee;
+  color: #0f172a;
+}
+
+.secondary-btn::after,
+.primary-btn::after,
+.ghost-btn::after,
+.danger-btn::after {
+  border: 0;
+}
+
+.ghost-btn {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1rpx solid #d6dee7;
+}
+
+.danger-btn {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1rpx solid #fecdd3;
+}
+
+.form-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10rpx 0 4rpx;
+}
+
+.action-row {
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+  margin-top: 10rpx;
+}
+
+.data-card {
+  background: #ffffff;
+  border-radius: 14rpx;
+  border: 1rpx solid rgba(214, 222, 231, 0.9);
+  padding: 18rpx;
+  margin-bottom: 12rpx;
+  box-shadow: none;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-top: 10rpx;
+}
+
+.textarea {
+  min-height: 148rpx;
+  background: #f8fafc;
+  border: 1rpx solid #d8e0e8;
+  border-radius: 14rpx;
+  padding: 18rpx;
+  box-sizing: border-box;
+  font-size: 26rpx;
+  color: #0f172a;
+  margin-bottom: 14rpx;
+  width: 100%;
+  line-height: 1.6;
+}

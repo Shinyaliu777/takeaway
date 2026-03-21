@@ -1,0 +1,64 @@
+<view class="page">
+  <view class="hero-card cart-hero">
+    <text class="eyebrow">READY TO CHECK OUT</text>
+    <text class="hero-title">购物车</text>
+    <text class="hero-note">确认菜品、地址后就可以提交订单。</text>
+    <view class="hero-meta">
+      <text class="meta-pill">合计 MYR {{totalAmount}}</text>
+      <text class="meta-pill">{{cart.length}} 件商品</text>
+    </view>
+  </view>
+
+  <view class="section-shell">
+    <view class="section-head">
+      <text class="section-title">购物车商品</text>
+      <text class="section-subtitle">可随时增减数量</text>
+    </view>
+    <view wx:if="{{cart.length}}">
+      <view wx:for="{{cart}}" wx:key="product_id" class="cart-item-card">
+        <view class="cart-item-main">
+          <text class="dish-name">{{item.name}}</text>
+          <text class="dish-meta">数量 {{item.quantity}}</text>
+        </view>
+        <view class="cart-side">
+          <text class="dish-price">MYR {{item.lineAmount}}</text>
+          <view class="cart-actions">
+            <button class="qty-btn" size="mini" data-id="{{item.product_id}}" bindtap="decreaseQty">-</button>
+            <button class="qty-btn" size="mini" data-id="{{item.product_id}}" bindtap="increaseQty">+</button>
+            <button class="text-btn" size="mini" data-id="{{item.product_id}}" bindtap="removeItem">删除</button>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty-box">
+      <text class="line">购物车为空。</text>
+    </view>
+  </view>
+
+  <view class="section-shell">
+    <view class="section-head">
+      <text class="section-title">配送地址</text>
+      <text class="section-subtitle">默认地址会自动用于下单</text>
+    </view>
+    <view wx:if="{{defaultAddress}}">
+      <view class="address-card">
+        <text class="dish-name">{{defaultAddress.receiver_name}}</text>
+        <text class="dish-meta">{{defaultAddress.receiver_mobile}}</text>
+        <text class="line">{{defaultAddress.detail_address}}</text>
+      </view>
+    </view>
+    <view wx:else class="empty-box">
+      <text class="line">{{cart.length ? '登录后可选择地址。' : '还没有地址。'}}</text>
+    </view>
+    <button class="ghost-btn panel-btn" bindtap="goAddresses">管理地址</button>
+  </view>
+
+  <view class="action-panel status-panel">
+    <text class="status-title">付款说明</text>
+    <text class="line">下单后请上传付款成功截图，商家确认后订单才会进入已付款。</text>
+    <text wx:if="{{!defaultAddress && cart.length}}" class="line">可先浏览购物车，登录后再补地址并下单。</text>
+    <text wx:if="{{orderHint}}" class="line strong">{{orderHint}}</text>
+    <button class="panel-btn primary-btn" bindtap="checkout" disabled="{{!canCheckout}}">创建订单并上传付款截图</button>
+    <button wx:if="{{cart.length}}" class="panel-btn ghost-btn" bindtap="clearCart">清空购物车</button>
+  </view>
+</view>

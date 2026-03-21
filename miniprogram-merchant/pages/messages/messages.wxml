@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">ALERT CENTER</text>
+    <text class="title">商家消息</text>
+    <text class="hero-line">所有新订单和处理提醒都汇总在这里。</text>
+  </view>
+  <view wx:for="{{messages}}" wx:key="id" class="card message-row">
+      <text class="line strong">{{item.title}}</text>
+      <text class="line content-preview">{{item.content}}</text>
+      <text class="line">{{item.created_at}}</text>
+      <view class="meta-row">
+        <text class="pill {{item.read ? 'pill-slate' : 'pill-amber'}}">{{item.read ? '已读' : '未读'}}</text>
+      </view>
+      <button wx:if="{{!item.read}}" class="primary-btn" size="mini" data-id="{{item.id}}" catchtap="markRead">标记已读</button>
+    </view>
+</view>

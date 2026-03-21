@@ -1,0 +1,27 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">STORE ACCESS</text>
+    <text class="title">商家控制台</text>
+    <text class="hero-line">登录后处理订单、维护菜单、更新门店信息。</text>
+    <view class="hero-grid">
+      <view class="hero-stat">
+        <text class="hero-stat-label">工作重点</text>
+        <text class="hero-stat-value">订单优先</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-label">管理方式</text>
+        <text class="hero-stat-value">移动端</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card login-card">
+    <view class="section-head">
+      <text class="section-title">账号验证</text>
+      <text class="section-subtitle">输入账号密码继续</text>
+    </view>
+    <input class="input" placeholder="账号" value="{{username}}" data-key="username" bindinput="onInput" />
+    <input class="input" password placeholder="密码" value="{{password}}" data-key="password" bindinput="onInput" />
+    <button class="primary-btn" bindtap="submit">进入工作台</button>
+  </view>
+</view>

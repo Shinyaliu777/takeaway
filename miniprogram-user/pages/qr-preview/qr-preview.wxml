@@ -1,0 +1,5 @@
+<view class="page">
+  <view class="preview-card">
+    <image wx:if="{{src}}" class="preview-image" src="{{src}}" mode="widthFix"></image>
+  </view>
+</view>

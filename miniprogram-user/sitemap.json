@@ -1,0 +1,9 @@
+{
+  "desc": "takeaway user sitemap",
+  "rules": [
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+.page {
+  padding-top: 36rpx;
+}
+
+.login-stage {
+  position: relative;
+  margin-bottom: 18rpx;
+}
+
+.login-hero {
+  min-height: 300rpx;
+  margin-bottom: 0;
+}
+
+.login-brand {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-ribbon-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 18rpx;
+}
+
+.hero-ribbon {
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: #fff4e3;
+  color: #7d5d41;
+  border: 1rpx solid rgba(226, 202, 168, 0.9);
+  font-size: 20rpx;
+}
+
+.login-card {
+  padding: 22rpx;
+}
+
+.benefit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10rpx;
+  margin-top: 6rpx;
+}
+
+.benefit-card {
+  background: #fffaf2;
+  border: 1rpx solid #eadfce;
+  border-radius: 18rpx;
+  padding: 18rpx 16rpx;
+  min-height: 154rpx;
+}
+
+.benefit-card-wide {
+  grid-column: 1 / -1;
+  min-height: auto;
+}
+
+.benefit-kicker {
+  display: block;
+  font-size: 18rpx;
+  letter-spacing: 2rpx;
+  color: #9d6c44;
+}
+
+.benefit-title {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #3b2a1f;
+}
+
+.benefit-copy {
+  display: block;
+  margin-top: 8rpx;
+  color: #7d6956;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+.one-tap-btn {
+  margin-top: 18rpx;
+  height: 82rpx;
+  line-height: 82rpx;
+  font-size: 28rpx;
+}
+
+.login-footnote {
+  display: block;
+  margin-top: 14rpx;
+  text-align: center;
+  font-size: 20rpx;
+  color: #8a6d56;
+}

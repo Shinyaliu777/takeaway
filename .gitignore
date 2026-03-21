@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local env
+.env.local
+
+# Backend runtime data
+backend/data/
+backend/uploads/*
+!backend/uploads/brand-cover-kitchen.png
+!backend/uploads/brand-store-logo.png
+!backend/uploads/product-bowl-dark.png
+!backend/uploads/product-chicken-rice.png
+!backend/uploads/product-coffee.png
+!backend/uploads/product-curry-chicken.png
+!backend/uploads/product-fries.png
+!backend/uploads/product-milk-tea.png
+!backend/uploads/product-nasi-lemak.png
+
+# Editor
+.vscode/
+.idea/

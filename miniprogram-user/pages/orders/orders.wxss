@@ -1,0 +1,86 @@
+.list-hero {
+  margin-bottom: 18rpx;
+}
+
+.order-card {
+  background: #fffdf9;
+  border-radius: 22rpx;
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+  border: 1rpx solid #eadfce;
+  box-shadow: 0 6rpx 16rpx rgba(78, 56, 33, 0.04);
+}
+
+.order-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 18rpx;
+  align-items: flex-start;
+}
+
+.order-no {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #3b2a1f;
+}
+
+.order-time {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  color: #8a6d56;
+}
+
+.status-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  align-items: flex-end;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 18rpx;
+}
+
+.order-pill {
+  background: #fff3df;
+  color: #87572b;
+}
+
+.payment-pill {
+  background: #eef7f0;
+  color: #2f6b3d;
+}
+
+.order-middle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid #f0e6d9;
+}
+
+.order-amount {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #8f5a2e;
+}
+
+.order-copy {
+  font-size: 22rpx;
+  color: #7d6956;
+}
+
+.detail-btn {
+  margin-top: 14rpx;
+  background: #fff8ef;
+}
+
+.empty-card {
+  margin-top: 12rpx;
+}

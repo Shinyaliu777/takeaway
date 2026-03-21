@@ -1,0 +1,74 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">STORE PROFILE</text>
+    <text class="title">店铺设置</text>
+    <text class="hero-line">更新品牌信息、营业时间和前台展示文案。</text>
+  </view>
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">店铺设置</text>
+      <text class="section-subtitle">营业资料与展示信息</text>
+    </view>
+    <image wx:if="{{form.logo_url}}" class="shop-logo-preview" src="{{form.logo_url}}" mode="aspectFill"></image>
+    <view class="field-block">
+      <text class="field-label">店铺名称</text>
+      <input class="input" placeholder="请输入店铺名称" value="{{form.name}}" data-key="name" bindinput="onInput" />
+    </view>
+    <view class="field-block">
+      <text class="field-label">联系电话</text>
+      <input class="input" placeholder="请输入联系电话" value="{{form.phone}}" data-key="phone" bindinput="onInput" />
+    </view>
+    <view class="field-block">
+      <text class="field-label">店铺地址</text>
+      <textarea class="textarea field-textarea" placeholder="请输入店铺地址" value="{{form.address}}" data-key="address" bindinput="onInput" maxlength="200"></textarea>
+    </view>
+    <view class="field-block">
+      <text class="field-label">店铺公告</text>
+      <textarea class="textarea field-textarea" placeholder="请输入店铺公告" value="{{form.notice}}" data-key="notice" bindinput="onInput" maxlength="200"></textarea>
+    </view>
+    <view class="field-block">
+      <text class="field-label">营业时间</text>
+      <input class="input" placeholder="例如 10:00-22:00" value="{{form.business_hours}}" data-key="business_hours" bindinput="onInput" />
+    </view>
+    <view class="payment-section">
+      <view class="section-head payment-head">
+        <text class="section-title">收款码管理</text>
+        <text class="section-subtitle">用户端首页会自动读取最新收款码</text>
+      </view>
+
+      <view class="payment-upload-card">
+        <view class="payment-upload-top">
+          <view>
+            <text class="payment-upload-title">微信收款码</text>
+            <text class="payment-upload-copy">上传后，用户端会显示微信付款入口。</text>
+          </view>
+          <button class="secondary-btn" bindtap="chooseUpload" data-key="wechat_qr_url">上传</button>
+        </view>
+        <image wx:if="{{form.wechat_qr_url}}" class="payment-qr-preview" src="{{form.wechat_qr_url}}" mode="aspectFit"></image>
+      </view>
+
+      <view class="payment-upload-card">
+        <view class="payment-upload-top">
+          <view>
+            <text class="payment-upload-title">支付宝收款码</text>
+            <text class="payment-upload-copy">上传后，用户端会显示支付宝付款入口。</text>
+          </view>
+          <button class="secondary-btn" bindtap="chooseUpload" data-key="alipay_qr_url">上传</button>
+        </view>
+        <image wx:if="{{form.alipay_qr_url}}" class="payment-qr-preview" src="{{form.alipay_qr_url}}" mode="aspectFit"></image>
+      </view>
+
+      <view class="payment-upload-card">
+        <view class="payment-upload-top">
+          <view>
+            <text class="payment-upload-title">TNG 收款码</text>
+            <text class="payment-upload-copy">上传后，用户端会显示 TNG 付款入口。</text>
+          </view>
+          <button class="secondary-btn" bindtap="chooseUpload" data-key="tng_qr_url">上传</button>
+        </view>
+        <image wx:if="{{form.tng_qr_url}}" class="payment-qr-preview" src="{{form.tng_qr_url}}" mode="aspectFit"></image>
+      </view>
+    </view>
+    <button class="primary-btn" bindtap="saveShop">保存</button>
+  </view>
+</view>

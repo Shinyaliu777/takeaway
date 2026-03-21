@@ -1,0 +1,58 @@
+<view class="page detail-page" wx:if="{{product}}">
+  <view class="poster-shell">
+    <image class="poster-image" src="{{product.image_url}}" mode="aspectFill" lazy-load="true"></image>
+    <view class="poster-overlay"></view>
+    <view class="poster-content">
+      <text class="poster-tag">{{category ? category.name : '热销单品'}}</text>
+      <text class="poster-title">{{product.name}}</text>
+      <text class="poster-note">现做现送，适合高频外卖场景</text>
+    </view>
+  </view>
+
+  <view class="detail-card">
+    <view class="headline-row">
+      <view>
+        <text class="price-line">MYR {{product.price_amount}}</text>
+        <text class="stock-line">库存 {{product.stock_qty}} 份</text>
+      </view>
+      <view class="taste-pill">店内招牌</view>
+    </view>
+
+    <view class="intro-block">
+      <text class="section-title">菜品介绍</text>
+      <text class="intro-copy">{{product.description || '现做热食，适合外卖场景。'}}</text>
+    </view>
+
+    <view class="detail-grid">
+      <view class="detail-chip">
+        <text class="chip-key">出餐节奏</text>
+        <text class="chip-value">现点现做</text>
+      </view>
+      <view class="detail-chip">
+        <text class="chip-key">推荐搭配</text>
+        <text class="chip-value">饮品/小吃</text>
+      </view>
+      <view class="detail-chip">
+        <text class="chip-key">适合场景</text>
+        <text class="chip-value">午餐/晚餐</text>
+      </view>
+      <view class="detail-chip">
+        <text class="chip-key">下单方式</text>
+        <text class="chip-value">扫码支付</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="sticky-bar">
+    <view class="cart-meta">
+      <text class="cart-label">购物车</text>
+      <text class="cart-count">{{cartCount}} 件</text>
+    </view>
+    <button class="cart-btn ghost-btn" bindtap="goCart">查看购物车</button>
+    <button class="cart-btn primary-btn" bindtap="addToCart">加入购物车</button>
+  </view>
+</view>
+
+<view class="page detail-page" wx:elif="{{loading}}">
+  <view class="loading-shell">商品加载中...</view>
+</view>

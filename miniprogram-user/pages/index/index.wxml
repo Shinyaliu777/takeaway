@@ -1,0 +1,153 @@
+<view class="page">
+  <view class="hero-card">
+    <view class="hero-top">
+      <view class="hero-brand">
+        <image wx:if="{{shop.logo_url}}" class="hero-logo" src="{{shop.logo_url}}" mode="aspectFill" lazy-load="true"></image>
+        <view>
+          <text class="eyebrow">TABLE READY</text>
+          <text class="hero-title">{{shop.name}}</text>
+          <text class="hero-subline">轻食感菜单 · 截图付款 · 商家确认后出餐</text>
+        </view>
+      </view>
+      <view class="status-badge {{shopOpen ? 'is-open' : 'is-closed'}}">
+        {{shopOpen ? '营业中' : '休息中'}}
+      </view>
+    </view>
+    <text class="hero-note">{{shop.notice}}</text>
+    <view class="hero-meta">
+      <text class="meta-pill">营业时间 {{shop.business_hours}}</text>
+      <text class="meta-pill">马币结算 MYR</text>
+      <text class="meta-pill">单店直达配送</text>
+    </view>
+    <view class="hero-tools">
+      <button class="hero-tool" bindtap="goOrders">订单</button>
+      <button class="hero-tool" bindtap="goMessages">消息</button>
+      <button class="hero-tool" bindtap="goProfile">我的</button>
+    </view>
+    <view class="feature-grid" wx:if="{{featuredProducts.length}}">
+      <view wx:for="{{featuredProducts}}" wx:key="id" class="feature-tile" bindtap="goProductDetail" data-product-id="{{item.id}}">
+        <image wx:if="{{item.image_url}}" class="feature-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true"></image>
+        <text class="feature-name">{{item.name}}</text>
+        <text class="feature-price">MYR {{item.price_amount}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card payment-card">
+    <view class="section-head">
+      <text class="section-title">付款方式</text>
+      <text class="section-subtitle">选一种查看收款码</text>
+    </view>
+    <view class="payment-chips">
+      <view
+        wx:for="{{paymentCodes}}"
+        wx:key="key"
+        class="payment-chip {{selectedPaymentKey === item.key ? 'payment-chip-active' : ''}}"
+        bindtap="selectPaymentCode"
+        data-key="{{item.key}}"
+      >
+        <text class="payment-chip-title">{{item.title}}</text>
+        <text class="payment-chip-subtitle">{{item.subtitle}}</text>
+      </view>
+    </view>
+    <view class="payment-summary">
+      <view class="payment-summary-copy-wrap">
+        <text class="payment-summary-title">{{selectedPaymentCode.title}}</text>
+        <text class="payment-summary-copy" wx:if="{{selectedPaymentCode.uploaded}}">查看大图后保存到相册，再去对应 App 完成付款。</text>
+        <text class="payment-summary-copy" wx:else>商家还没上传这张收款码，请换一种付款方式或联系商家。</text>
+      </view>
+      <button class="payment-open-btn" bindtap="previewPaymentQr" data-key="{{selectedPaymentCode.key}}" disabled="{{!selectedPaymentCode.uploaded}}">
+        {{selectedPaymentCode.uploaded ? '查看收款码' : '暂未上传'}}
+      </button>
+    </view>
+    <view class="payment-tips">
+      <text class="service-tag">付款后回到订单上传截图</text>
+      <text class="service-tag">商家确认到账后开始配送</text>
+    </view>
+  </view>
+
+  <view class="section-shell">
+    <view class="section-head">
+      <text class="section-title">分类</text>
+      <text class="section-subtitle">按口味快速切换</text>
+    </view>
+    <view class="chips">
+      <text class="chip {{selectedCategoryId === 0 ? 'chip-active' : ''}}" bindtap="selectCategory" data-category-id="0">全部</text>
+      <text
+        wx:for="{{categories}}"
+        wx:key="id"
+        class="chip {{selectedCategoryId === item.id ? 'chip-active' : ''}}"
+        bindtap="selectCategory"
+        data-category-id="{{item.id}}"
+      >{{item.name}}</text>
+    </view>
+  </view>
+
+  <view class="section-shell">
+    <view class="section-head">
+      <text class="section-title">今日菜单</text>
+      <text class="section-subtitle">先看详情，再决定要不要下单</text>
+    </view>
+    <view wx:for="{{filteredProducts}}" wx:key="id" class="dish-card" bindtap="goProductDetail" data-product-id="{{item.id}}">
+      <image wx:if="{{item.image_url}}" class="dish-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true"></image>
+      <view class="dish-main">
+        <view>
+          <text class="dish-name">{{item.name}}</text>
+          <text class="dish-meta">{{item.description || '现做热食，适合外卖场景。'}}</text>
+        </view>
+        <view class="dish-bottom">
+          <view>
+            <text class="dish-price">MYR {{item.price_amount}}</text>
+            <text class="dish-stock">现货 {{item.stock_qty}} 份</text>
+          </view>
+          <button class="add-btn" size="mini" catchtap="addToCart" data-product="{{item}}">加入</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-nav-spacer"></view>
+
+  <view class="action-panel">
+    <button class="panel-btn panel-primary" bindtap="goCart">购物车{{cartLabel}}</button>
+  </view>
+
+  <view wx:if="{{showPaymentSheet}}" class="sheet-mask" bindtap="closePaymentSheet">
+    <view class="payment-sheet" catchtap="stopPaymentSheet">
+      <view class="sheet-handle"></view>
+      <view class="sheet-head">
+        <view>
+          <text class="sheet-title">{{selectedPaymentCode.title}}收款码</text>
+          <text class="sheet-subtitle">{{selectedPaymentCode.subtitle}}</text>
+        </view>
+        <text class="sheet-close" bindtap="closePaymentSheet">关闭</text>
+      </view>
+      <view class="sheet-tabs">
+        <text
+          wx:for="{{paymentCodes}}"
+          wx:key="key"
+          class="sheet-tab {{selectedPaymentKey === item.key ? 'sheet-tab-active' : ''}}"
+          bindtap="selectPaymentCode"
+          data-key="{{item.key}}"
+        >{{item.title}}</text>
+      </view>
+      <view wx:if="{{selectedPaymentCode.uploaded && sheetImageLoading}}" class="sheet-empty">
+        <text class="sheet-empty-title">收款码加载中</text>
+        <text class="sheet-empty-copy">正在准备图片，请稍等一下。</text>
+      </view>
+      <image wx:elif="{{selectedPaymentCode.uploaded && sheetImagePath}}" class="sheet-qr-image" src="{{sheetImagePath}}" mode="aspectFit" lazy-load="true"></image>
+      <view wx:elif="{{selectedPaymentCode.uploaded && sheetImageError}}" class="sheet-empty">
+        <text class="sheet-empty-title">当前预览失败</text>
+        <text class="sheet-empty-copy">图片已可保存到相册，你也可以稍后重新打开再试。</text>
+      </view>
+      <view wx:else class="sheet-empty">
+        <text class="sheet-empty-title">该付款方式暂未配置</text>
+        <text class="sheet-empty-copy">请先切换到已上传的收款码，或联系商家更新付款方式。</text>
+      </view>
+      <view class="sheet-actions">
+        <button class="sheet-btn sheet-btn-secondary" bindtap="closePaymentSheet">我知道了</button>
+        <button class="sheet-btn sheet-btn-primary" bindtap="savePaymentQr" data-key="{{selectedPaymentCode.key}}" disabled="{{!selectedPaymentCode.uploaded}}">保存到相册</button>
+      </view>
+    </view>
+  </view>
+</view>

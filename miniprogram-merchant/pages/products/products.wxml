@@ -1,0 +1,97 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">MENU CONTENT</text>
+    <text class="title">商品管理</text>
+    <text class="hero-line">统一商品图片、介绍、价格和库存，确保前台展示稳定。</text>
+  </view>
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">商品列表</text>
+      <text class="section-subtitle">当前商品 {{products.length}} 个</text>
+    </view>
+    <view class="table-head">
+      <text class="table-head-main">商品信息</text>
+      <text class="table-head-side">操作</text>
+    </view>
+    <view wx:for="{{products}}" wx:key="id" class="product-list-card">
+      <view class="product-top">
+        <image wx:if="{{item.image_url}}" class="product-thumb" src="{{item.image_url}}" mode="aspectFill"></image>
+        <view class="product-main">
+          <view class="product-header">
+            <text class="product-title">{{item.name}}</text>
+            <text class="product-price">MYR {{item.price_amount}}</text>
+          </view>
+          <text class="product-summary">{{item.description || '未填写介绍'}}</text>
+          <view class="meta-row">
+            <text class="pill pill-slate">{{item.category_name}}</text>
+            <text class="pill pill-slate">库存 {{item.stock_qty}}</text>
+            <text class="pill {{item.sale_status ? 'pill-green' : 'pill-amber'}}">{{item.sale_status ? '上架中' : '已下架'}}</text>
+          </view>
+        </view>
+        <view class="product-actions-rail">
+          <button class="ghost-btn product-tool-btn" size="mini" data-product="{{item}}" bindtap="editProduct">编辑</button>
+          <button class="secondary-btn product-tool-btn" size="mini" data-product="{{item}}" bindtap="toggleSaleStatus">
+            {{item.sale_status ? '下架' : '上架'}}
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card editor-card">
+    <view class="section-head">
+      <text class="section-title">{{editingId ? '编辑商品' : '新增商品'}}</text>
+      <text class="section-subtitle">{{editingId ? '修改后前台会立即更新' : '录入后可直接上架售卖'}}</text>
+    </view>
+    <view class="editor-section">
+      <text class="editor-section-title">基础信息</text>
+      <view class="field-block">
+        <text class="field-label">商品分类</text>
+        <picker mode="selector" range="{{categoryOptions}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+          <view class="input picker-input">{{categoryOptions[categoryIndex] || '请选择分类'}}</view>
+        </picker>
+      </view>
+      <view class="field-block">
+        <text class="field-label">商品名称</text>
+        <input class="input" placeholder="例如：招牌鸡饭" value="{{form.name}}" data-key="name" bindinput="onInput" />
+      </view>
+      <view class="field-block">
+        <text class="field-label">菜品介绍</text>
+        <textarea class="textarea" placeholder="写清口味、分量、推荐搭配，让用户更容易下单。" value="{{form.description}}" data-key="description" bindinput="onInput" maxlength="200"></textarea>
+      </view>
+    </view>
+
+    <view class="editor-section">
+      <text class="editor-section-title">图片与展示</text>
+      <view class="image-upload-panel">
+        <view class="image-preview-wrap">
+          <image wx:if="{{form.image_url}}" class="preview-image" src="{{form.image_url}}" mode="aspectFill"></image>
+          <view wx:else class="image-placeholder">暂无图片</view>
+        </view>
+        <view class="image-upload-actions">
+          <button class="ghost-btn upload-btn" bindtap="chooseImage">{{form.image_url ? '重新上传图片' : '上传本地图片'}}</button>
+          <button wx:if="{{form.image_url}}" class="danger-btn upload-btn" bindtap="clearImage">移除当前图片</button>
+          <text class="upload-tip">建议上传清晰的方图，用户端展示会更稳定。</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="editor-section">
+      <text class="editor-section-title">价格与库存</text>
+      <view class="field-grid">
+        <view class="field-block field-grid-item">
+          <text class="field-label">价格</text>
+          <input class="input" placeholder="MYR" value="{{form.price_amount}}" data-key="price_amount" bindinput="onInput" />
+        </view>
+        <view class="field-block field-grid-item">
+          <text class="field-label">库存</text>
+          <input class="input" placeholder="可售数量" value="{{form.stock_qty}}" data-key="stock_qty" bindinput="onInput" />
+        </view>
+      </view>
+    </view>
+    <view class="editor-actions">
+      <button class="primary-btn editor-primary" bindtap="saveProduct">保存</button>
+      <button wx:if="{{editingId}}" class="ghost-btn editor-secondary" bindtap="cancelEdit">取消编辑</button>
+    </view>
+  </view>
+</view>

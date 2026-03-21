@@ -1,0 +1,42 @@
+<view class="page">
+  <view class="hero-card list-hero">
+    <text class="eyebrow">ORDER CENTER</text>
+    <text class="hero-title">我的订单</text>
+    <text class="hero-note">按支付和配送进度查看当前订单，常用信息都集中到一页。</text>
+  </view>
+
+  <view class="card" wx:if="{{isGuest}}">
+    <text class="section-title">登录后可查看</text>
+    <text class="line">历史订单、配送状态和下单金额都会在这里展示。</text>
+    <button class="primary-btn" bindtap="goLogin">前往登录</button>
+  </view>
+
+  <view class="section-head" wx:elif="{{orders.length}}">
+    <text class="section-title">订单列表</text>
+    <text class="section-subtitle">最近下单优先显示</text>
+  </view>
+  <view wx:if="{{!isGuest && orders.length}}">
+    <view wx:for="{{orders}}" wx:key="id" class="order-card">
+      <view class="order-top">
+        <view>
+          <text class="order-no">{{item.order_no}}</text>
+          <text class="order-time">{{item.created_at}}</text>
+        </view>
+        <view class="status-stack">
+          <text class="status-pill order-pill">{{item.order_status_text}}</text>
+          <text class="status-pill payment-pill">{{item.payment_status_text}}</text>
+        </view>
+      </view>
+      <view class="order-middle">
+        <text class="order-amount">MYR {{item.total_amount}}</text>
+        <text class="order-copy">收货人 {{item.receiver_name}}</text>
+      </view>
+      <button class="ghost-btn detail-btn" data-id="{{item.id}}" bindtap="goDetail">查看订单详情</button>
+    </view>
+  </view>
+
+  <view class="card empty-card" wx:elif="{{!isGuest}}">
+    <text class="section-title">还没有订单</text>
+    <text class="line">你下的第一笔订单会出现在这里。</text>
+  </view>
+</view>

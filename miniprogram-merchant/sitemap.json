@@ -1,0 +1,9 @@
+{
+  "desc": "takeaway merchant sitemap",
+  "rules": [
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
+}

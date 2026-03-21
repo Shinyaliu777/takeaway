@@ -1,0 +1,23 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/detail/index",
+    "pages/qr-preview/qr-preview",
+    "pages/login/login",
+    "pages/cart/cart",
+    "pages/address/address",
+    "pages/orders/orders",
+    "pages/order-detail/order-detail",
+    "pages/profile/profile",
+    "pages/messages/messages"
+  ],
+  "window": {
+    "navigationBarTitleText": "点餐小程序",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundTextStyle": "light"
+  },
+  "lazyCodeLoading": "requiredComponents",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
