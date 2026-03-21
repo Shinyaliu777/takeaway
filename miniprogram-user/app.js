@@ -15,12 +15,13 @@ App({
       wx.login({
         success: (loginRes) => {
           if (!loginRes.code) {
-            reject(new Error("wx.login failed"));
+            reject({ detail: "微信登录凭证获取失败" });
             return;
           }
           wx.request({
             url: `${this.globalData.apiBase}/api/user/login`,
             method: "POST",
+            timeout: 12000,
             data: {
               code: loginRes.code,
               nickname,
@@ -42,10 +43,19 @@ App({
               }
               reject(res.data || { detail: "登录失败" });
             },
-            fail: reject
+            fail: (error) => {
+              const errMsg = (error && error.errMsg) || "";
+              if (errMsg.includes("timeout")) {
+                reject({ detail: "登录超时，请确认云端服务已发布" });
+                return;
+              }
+              reject({ detail: "网络异常，请稍后重试" });
+            }
           });
         },
-        fail: reject
+        fail: () => {
+          reject({ detail: "微信登录能力调用失败" });
+        }
       });
     });
   },

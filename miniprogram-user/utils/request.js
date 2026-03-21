@@ -13,6 +13,7 @@ function request(path, method = "GET", data) {
       method,
       data,
       header,
+      timeout: 12000,
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
@@ -28,6 +29,11 @@ function request(path, method = "GET", data) {
         reject(res.data || { detail: "Request failed" });
       },
       fail(err) {
+        const errMsg = (err && err.errMsg) || "";
+        if (errMsg.includes("timeout")) {
+          reject({ detail: "请求超时，请确认云端服务可用" });
+          return;
+        }
         reject(err);
       }
     });
