@@ -7,7 +7,8 @@ Page({
     messageCount: 0,
     pendingOrders: 0,
     reviewCount: 0,
-    featuredEnabled: false
+    featuredEnabled: false,
+    userCount: 0
   },
   onShow() {
     this.ensureLogin();
@@ -15,17 +16,19 @@ Page({
   async ensureLogin() {
     try {
       await app.ensureMerchantLogin();
-      const [messages, orders, shop] = await Promise.all([
+      const [messages, orders, shop, users] = await Promise.all([
         api.getMessages(),
         api.getOrders(),
-        api.getShop()
+        api.getShop(),
+        api.getUsers()
       ]);
       this.setData({
         tokenReady: true,
         messageCount: (messages || []).filter((item) => !item.read).length,
         pendingOrders: (orders || []).filter((item) => item.order_status === "PAID" || item.order_status === "PAYMENT_REVIEW").length,
         reviewCount: (orders || []).filter((item) => item.payment_status === "PROOF_UPLOADED").length,
-        featuredEnabled: !!(shop && shop.featured_enabled)
+        featuredEnabled: !!(shop && shop.featured_enabled),
+        userCount: (users || []).length
       });
     } catch (error) {
       wx.redirectTo({ url: "/pages/login/login" });
@@ -36,6 +39,9 @@ Page({
   },
   goProducts() {
     wx.navigateTo({ url: "/pages/products/products" });
+  },
+  goUsers() {
+    wx.navigateTo({ url: "/pages/users/users" });
   },
   goCategories() {
     wx.navigateTo({ url: "/pages/categories/categories" });

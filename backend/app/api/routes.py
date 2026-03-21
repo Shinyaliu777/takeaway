@@ -258,6 +258,30 @@ def build_order_user_summary(session: Session, order: Order) -> dict:
     }
 
 
+def build_registered_user_summary(session: Session, user: User) -> dict:
+    orders = session.exec(select(Order).where(Order.user_id == user.id).order_by(Order.id.desc())).all()
+    addresses = session.exec(select(UserAddress).where(UserAddress.user_id == user.id)).all()
+    latest_order = orders[0] if orders else None
+    fallback_name = (latest_order.receiver_name if latest_order else "").strip()
+    display_name = (user.nickname or "").strip() or fallback_name or f"用户#{user.id}"
+    return {
+        "id": user.id,
+        "nickname": user.nickname,
+        "avatar_url": user.avatar_url,
+        "mobile": user.mobile,
+        "display_name": display_name,
+        "created_at": user.created_at,
+        "order_count": len(orders),
+        "address_count": len(addresses),
+        "is_repeat_customer": len(orders) > 1,
+        "latest_order_id": latest_order.id if latest_order else None,
+        "latest_order_no": latest_order.order_no if latest_order else "",
+        "latest_order_status": latest_order.order_status if latest_order else "",
+        "latest_receiver_name": (latest_order.receiver_name if latest_order else "").strip(),
+        "latest_receiver_mobile": (latest_order.receiver_mobile if latest_order else "").strip(),
+    }
+
+
 def build_group_name(kind: str, index: int) -> str:
     if kind == "meat":
         return f"荤菜{index}"
@@ -993,6 +1017,26 @@ def update_merchant_shop(payload: ShopUpdatePayload, session: Session = Depends(
 @router.get("/api/merchant/messages", dependencies=[Depends(require_merchant)])
 def merchant_messages(session: Session = Depends(get_session)):
     return session.exec(select(MerchantMessage).order_by(MerchantMessage.id.desc())).all()
+
+
+@router.get("/api/merchant/users", dependencies=[Depends(require_merchant)])
+def merchant_users(session: Session = Depends(get_session)):
+    users = session.exec(select(User).order_by(User.id.desc())).all()
+    return [build_registered_user_summary(session, user) for user in users]
+
+
+@router.get("/api/merchant/users/{user_id}", dependencies=[Depends(require_merchant)])
+def merchant_user_detail(user_id: int, session: Session = Depends(get_session)):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    addresses = session.exec(select(UserAddress).where(UserAddress.user_id == user_id)).all()
+    orders = session.exec(select(Order).where(Order.user_id == user_id).order_by(Order.id.desc())).all()
+    return {
+        "user": build_registered_user_summary(session, user),
+        "addresses": dump(addresses),
+        "orders": [{**dump(order), **build_order_user_summary(session, order)} for order in orders],
+    }
 
 
 @router.patch("/api/merchant/messages/{message_id}/read", dependencies=[Depends(require_merchant)])

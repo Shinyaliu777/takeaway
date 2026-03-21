@@ -46,6 +46,8 @@ module.exports = {
   updateProduct: (productId, data) => request(`/api/merchant/products/${productId}`, "PATCH", data),
   getShop: () => request("/api/merchant/shop"),
   updateShop: (data) => request("/api/merchant/shop", "PUT", data),
+  getUsers: () => request("/api/merchant/users"),
+  getUserDetail: (userId) => request(`/api/merchant/users/${userId}`),
   getMessages: () => request("/api/merchant/messages"),
   readMessage: (messageId) => request(`/api/merchant/messages/${messageId}/read`, "PATCH"),
   uploadImage(filePath) {

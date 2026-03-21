@@ -1,0 +1,66 @@
+<view class="page" wx:if="{{user}}">
+  <view class="hero-panel">
+    <text class="eyebrow">CUSTOMER PROFILE</text>
+    <text class="title">{{user.display_name}}</text>
+    <text class="hero-line">{{user.mobile || '暂未补充手机号'}} · 历史 {{user.order_count}} 单</text>
+    <view class="hero-grid">
+      <view class="hero-stat">
+        <text class="hero-stat-label">注册时间</text>
+        <text class="hero-stat-value">{{user.created_at}}</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-label">地址数量</text>
+        <text class="hero-stat-value">{{user.address_count}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">基础信息</text>
+      <text class="section-subtitle">当前注册资料</text>
+    </view>
+    <text class="line strong">昵称：{{user.nickname || '未填写'}}</text>
+    <text class="line">手机号：{{user.mobile || '未填写'}}</text>
+    <text class="line">最近收货人：{{user.latest_receiver_name || '暂无'}} {{user.latest_receiver_mobile || ''}}</text>
+    <text class="line" wx:if="{{user.latest_order_no}}">最近订单：{{user.latest_order_no}}</text>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">地址信息</text>
+      <text class="section-subtitle">历史收货地址</text>
+    </view>
+    <view wx:if="{{addresses.length}}">
+      <view wx:for="{{addresses}}" wx:key="id" class="data-card">
+        <text class="line strong">{{item.receiver_name}} · {{item.receiver_mobile}}</text>
+        <text class="line">{{item.detail_address}}</text>
+        <text wx:if="{{item.is_default}}" class="pill pill-green">默认地址</text>
+      </view>
+    </view>
+    <view wx:else>
+      <text class="line">这个用户还没有保存地址。</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">历史订单</text>
+      <text class="section-subtitle">点击可查看订单详情</text>
+    </view>
+    <view wx:if="{{orders.length}}">
+      <view wx:for="{{orders}}" wx:key="id" class="data-card" bindtap="goOrderDetail" data-id="{{item.id}}">
+        <text class="line strong">{{item.order_no}}</text>
+        <view class="meta-row">
+          <text class="pill pill-blue">{{item.order_status_text}}</text>
+          <text class="pill pill-slate">MYR {{item.total_amount}}</text>
+        </view>
+        <text class="line">{{item.receiver_name}} · {{item.receiver_mobile}}</text>
+        <text class="line">{{item.receiver_address}}</text>
+      </view>
+    </view>
+    <view wx:else>
+      <text class="line">这个用户还没有历史订单。</text>
+    </view>
+  </view>
+</view>

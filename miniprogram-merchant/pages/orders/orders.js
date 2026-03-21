@@ -49,6 +49,13 @@ Page({
     const id = event.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/order-detail/order-detail?id=${id}` });
   },
+  goUserDetail(event) {
+    const userId = Number(event.currentTarget.dataset.userId || 0);
+    if (!userId) {
+      return;
+    }
+    wx.navigateTo({ url: `/pages/user-detail/user-detail?id=${userId}` });
+  },
   async updateStatus(event) {
     const { id, status } = event.currentTarget.dataset;
     try {

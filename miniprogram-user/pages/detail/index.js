@@ -135,5 +135,15 @@ Page({
       return;
     }
     wx.navigateTo({ url: "/pages/cart/cart" });
+  },
+  previewProductImage() {
+    const imageUrl = ((this.data.product || {}).image_url || "").trim();
+    if (!imageUrl) {
+      return;
+    }
+    wx.previewImage({
+      current: imageUrl,
+      urls: [imageUrl]
+    });
   }
 });

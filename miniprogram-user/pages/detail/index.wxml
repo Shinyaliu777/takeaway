@@ -1,6 +1,6 @@
 <view class="page detail-page" wx:if="{{product}}">
   <view class="poster-shell">
-    <image class="poster-image" src="{{product.image_url}}" mode="aspectFill" lazy-load="true"></image>
+    <image class="poster-image" src="{{product.image_url}}" mode="aspectFill" lazy-load="true" bindtap="previewProductImage"></image>
     <view class="poster-overlay"></view>
     <view class="poster-content">
       <text class="poster-tag">{{category ? category.name : '热销单品'}}</text>

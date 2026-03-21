@@ -1,0 +1,4 @@
+.hero-stat-value {
+  font-size: 22rpx;
+  line-height: 1.5;
+}

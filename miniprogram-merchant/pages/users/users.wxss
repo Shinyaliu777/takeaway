@@ -1,0 +1,21 @@
+.user-card {
+  padding: 22rpx;
+}
+
+.user-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14rpx;
+}
+
+.user-main {
+  flex: 1;
+}
+
+.user-name {
+  display: block;
+  color: #0f172a;
+  font-size: 30rpx;
+  font-weight: 800;
+}

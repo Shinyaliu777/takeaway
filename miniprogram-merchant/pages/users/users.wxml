@@ -1,0 +1,31 @@
+<view class="page">
+  <view class="hero-panel">
+    <text class="eyebrow">CUSTOMER DIRECTORY</text>
+    <text class="title">注册用户</text>
+    <text class="hero-line">查看每位用户的基础资料、最近订单和历史下单情况。</text>
+  </view>
+
+  <view wx:if="{{users.length}}">
+    <view wx:for="{{users}}" wx:key="id" class="card user-card" bindtap="goDetail" data-id="{{item.id}}">
+      <view class="user-top">
+        <view class="user-main">
+          <text class="user-name">{{item.display_name}}</text>
+          <text class="line">{{item.mobile || '暂未补充手机号'}}</text>
+        </view>
+        <text class="pill {{item.is_repeat_customer ? 'pill-amber' : 'pill-slate'}}">
+          {{item.is_repeat_customer ? ('老客户 · ' + item.order_count + ' 单') : '新注册用户'}}
+        </text>
+      </view>
+      <view class="meta-row">
+        <text class="pill pill-slate">地址 {{item.address_count}}</text>
+        <text wx:if="{{item.latest_order_no}}" class="pill pill-blue">最近订单 {{item.latest_order_no}}</text>
+      </view>
+      <text wx:if="{{item.latest_receiver_name}}" class="line">最近收货人：{{item.latest_receiver_name}} · {{item.latest_receiver_mobile}}</text>
+      <text class="line muted">注册时间：{{item.created_at}}</text>
+    </view>
+  </view>
+
+  <view wx:else class="card">
+    <text class="line">当前还没有注册用户。</text>
+  </view>
+</view>

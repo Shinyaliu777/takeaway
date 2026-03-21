@@ -247,6 +247,16 @@ Page({
     }
     this.goProductDetail({ currentTarget: { dataset: { productId } } });
   },
+  previewDishImage(event) {
+    const imageUrl = event.currentTarget.dataset.imageUrl || "";
+    if (!imageUrl) {
+      return;
+    }
+    wx.previewImage({
+      current: imageUrl,
+      urls: [imageUrl]
+    });
+  },
   syncCartCount() {
     const cart = wx.getStorageSync("user-cart") || [];
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);

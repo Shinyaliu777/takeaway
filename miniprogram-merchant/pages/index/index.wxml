@@ -20,6 +20,10 @@
         <text class="hero-stat-label">待审付款</text>
         <text class="hero-stat-value">{{reviewCount}}</text>
       </view>
+      <view class="hero-stat">
+        <text class="hero-stat-label">注册用户</text>
+        <text class="hero-stat-value">{{userCount}}</text>
+      </view>
     </view>
   </view>
 
@@ -72,6 +76,11 @@
         <text class="quick-icon">✦</text>
         <text class="quick-title">消息列表</text>
         <text class="quick-copy">订单提醒与状态通知</text>
+      </button>
+      <button class="quick-card" bindtap="goUsers">
+        <text class="quick-icon">◌</text>
+        <text class="quick-title">用户中心</text>
+        <text class="quick-copy">查看注册用户和历史订单</text>
       </button>
       <button class="quick-card quick-card-danger" bindtap="logout">
         <text class="quick-icon">↗</text>

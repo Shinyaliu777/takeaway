@@ -12,7 +12,7 @@
           <text class="pill pill-green">{{item.payment_status_text}}</text>
         </view>
         <view class="meta-row">
-          <text class="pill pill-slate">{{item.user_display_name}}</text>
+          <text class="pill pill-slate" bindtap="goUserDetail" data-user-id="{{item.user_id}}">{{item.user_display_name}}</text>
           <text wx:if="{{item.user_mobile_tail}}" class="pill pill-slate">尾号 {{item.user_mobile_tail}}</text>
           <text class="pill {{item.is_repeat_customer ? 'pill-amber' : 'pill-slate'}}">{{item.is_repeat_customer ? ('老客户 · ' + item.user_order_count + ' 单') : '新客户首单'}}</text>
         </view>

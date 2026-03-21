@@ -33,7 +33,7 @@
     <scroll-view class="feature-strip" scroll-x="true" show-scrollbar="false">
       <view class="feature-row">
         <view wx:for="{{featuredProducts}}" wx:key="index" class="feature-tile" bindtap="goFeaturedProduct" data-product-id="{{item.target_product_id}}">
-          <image wx:if="{{item.image_url}}" class="feature-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true"></image>
+          <image wx:if="{{item.image_url}}" class="feature-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true" catchtap="previewDishImage" data-image-url="{{item.image_url}}"></image>
           <text class="feature-name">{{item.title}}</text>
           <text class="feature-price">{{item.subtitle}}</text>
         </view>
@@ -82,7 +82,7 @@
     </view>
     <view wx:if="{{filteredProducts.length}}">
       <view wx:for="{{filteredProducts}}" wx:key="id" class="dish-card">
-        <image wx:if="{{item.image_url}}" class="dish-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true"></image>
+        <image wx:if="{{item.image_url}}" class="dish-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true" catchtap="previewDishImage" data-image-url="{{item.image_url}}"></image>
         <view class="dish-main">
           <view class="dish-copy">
             <view class="dish-name-row">

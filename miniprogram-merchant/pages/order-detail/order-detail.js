@@ -79,5 +79,12 @@ Page({
     } catch (error) {
       wx.showToast({ title: "退回失败", icon: "none" });
     }
+  },
+  goUserDetail() {
+    const userId = Number((this.data.order && this.data.order.user_id) || 0);
+    if (!userId) {
+      return;
+    }
+    wx.navigateTo({ url: `/pages/user-detail/user-detail?id=${userId}` });
   }
 });
