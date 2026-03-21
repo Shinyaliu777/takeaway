@@ -33,16 +33,16 @@
       <text class="section-subtitle">先看待办，再看经营结果</text>
     </view>
     <view class="quick-grid">
-      <button class="quick-card quick-card-primary" bindtap="goOrders">
+      <view class="quick-card quick-card-primary" hover-class="quick-card-hover" bindtap="goOrders">
         <text class="quick-icon">◎</text>
         <text class="quick-title">待审付款 {{reviewCount}}</text>
         <text class="quick-copy">优先确认用户上传的付款截图。</text>
-      </button>
-      <button class="quick-card" bindtap="goOrders">
+      </view>
+      <view class="quick-card" hover-class="quick-card-hover" bindtap="goOrders">
         <text class="quick-icon">⇢</text>
         <text class="quick-title">配送中 {{deliveringCount}}</text>
         <text class="quick-copy">查看正在履约的订单状态。</text>
-      </button>
+      </view>
     </view>
   </view>
 
@@ -96,46 +96,46 @@
       <text class="section-subtitle">订单优先，配置靠后</text>
     </view>
     <view class="quick-grid">
-      <button class="quick-card quick-card-primary" bindtap="goOrders">
+      <view class="quick-card quick-card-primary" hover-class="quick-card-hover" bindtap="goOrders">
         <text class="quick-icon">◎</text>
         <text class="quick-title">订单管理</text>
         <text class="quick-copy">优先处理已付款订单</text>
-      </button>
-      <button class="quick-card" bindtap="goProducts">
+      </view>
+      <view class="quick-card" hover-class="quick-card-hover" bindtap="goProducts">
         <text class="quick-icon">▣</text>
         <text class="quick-title">商品管理</text>
         <text class="quick-copy">图片、库存、午晚餐可点</text>
-      </button>
-      <button class="quick-card" bindtap="goRules">
+      </view>
+      <view class="quick-card" hover-class="quick-card-hover" bindtap="goRules">
         <text class="quick-icon">≋</text>
         <text class="quick-title">规则管理</text>
         <text class="quick-copy">套餐规则、价格和加饭费用</text>
-      </button>
-      <button class="quick-card" bindtap="goCategories">
+      </view>
+      <view class="quick-card" hover-class="quick-card-hover" bindtap="goCategories">
         <text class="quick-icon">◫</text>
         <text class="quick-title">分类管理</text>
         <text class="quick-copy">菜单结构与排序</text>
-      </button>
-      <button class="quick-card" bindtap="goShop">
+      </view>
+      <view class="quick-card" hover-class="quick-card-hover" bindtap="goShop">
         <text class="quick-icon">⌂</text>
         <text class="quick-title">店铺设置</text>
         <text class="quick-copy">营业信息与展示内容</text>
-      </button>
-      <button class="quick-card" bindtap="goMessages">
+      </view>
+      <view class="quick-card" hover-class="quick-card-hover" bindtap="goMessages">
         <text class="quick-icon">✦</text>
         <text class="quick-title">消息列表</text>
         <text class="quick-copy">订单提醒与状态通知</text>
-      </button>
-      <button class="quick-card" bindtap="goUsers">
+      </view>
+      <view class="quick-card" hover-class="quick-card-hover" bindtap="goUsers">
         <text class="quick-icon">◌</text>
         <text class="quick-title">用户中心</text>
         <text class="quick-copy">查看注册用户和历史订单</text>
-      </button>
-      <button class="quick-card quick-card-danger" bindtap="logout">
+      </view>
+      <view class="quick-card quick-card-danger" hover-class="quick-card-hover" bindtap="logout">
         <text class="quick-icon">↗</text>
         <text class="quick-title">退出登录</text>
         <text class="quick-copy">结束当前商家会话</text>
-      </button>
+      </view>
     </view>
   </view>
 </view>

@@ -17,43 +17,41 @@
 
 .kpi-label {
   display: block;
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #64748b;
 }
 
 .kpi-value {
   display: block;
   margin-top: 10rpx;
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: 700;
   color: #0f172a;
 }
 
 .quick-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12rpx;
 }
 
 .quick-card {
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   box-sizing: border-box;
   margin: 0;
-  padding: 22rpx;
-  min-height: 176rpx;
+  padding: 24rpx;
+  min-height: 188rpx;
   border-radius: 18rpx;
   background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
   border: 1rpx solid rgba(214, 222, 231, 0.9);
   text-align: left;
   box-shadow: none;
-}
-
-.quick-card::after {
-  border: 0;
 }
 
 .quick-card-primary {
@@ -75,14 +73,14 @@
 
 .quick-icon {
   display: block;
-  font-size: 36rpx;
+  font-size: 38rpx;
   color: #334155;
 }
 
 .quick-title {
   display: block;
   margin-top: 14rpx;
-  font-size: 30rpx;
+  font-size: 34rpx;
   font-weight: 700;
   line-height: 1.35;
   color: #0f172a;
@@ -91,7 +89,12 @@
 .quick-copy {
   display: block;
   margin-top: 8rpx;
-  font-size: 22rpx;
+  font-size: 24rpx;
   line-height: 1.6;
   color: #64748b;
+}
+
+.quick-card-hover {
+  transform: translateY(-2rpx);
+  opacity: 0.96;
 }
