@@ -22,6 +22,7 @@ Page({
     reviewCount: 0,
     featuredEnabled: false,
     userCount: 0,
+    todayNewUsers: 0,
     todayOrderCount: 0,
     todayRevenue: "0.00",
     deliveringCount: 0,
@@ -41,6 +42,7 @@ Page({
         api.getComboRules()
       ]);
       const todaysOrders = (orders || []).filter((item) => isToday(item.created_at));
+      const todaysUsers = (users || []).filter((item) => isToday(item.created_at));
       const todayRevenue = todaysOrders.reduce((sum, item) => sum + Number(item.total_amount || 0), 0);
       this.setData({
         tokenReady: true,
@@ -49,6 +51,7 @@ Page({
         reviewCount: (orders || []).filter((item) => item.payment_status === "PROOF_UPLOADED").length,
         featuredEnabled: !!(shop && shop.featured_enabled),
         userCount: (users || []).length,
+        todayNewUsers: todaysUsers.length,
         todayOrderCount: todaysOrders.length,
         todayRevenue: todayRevenue.toFixed(2),
         deliveringCount: (orders || []).filter((item) => item.order_status === "DELIVERING").length,

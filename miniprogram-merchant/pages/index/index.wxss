@@ -1,53 +1,58 @@
 .hero-meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10rpx;
-  margin-top: 14rpx;
+  gap: 12rpx;
+  margin-top: 18rpx;
 }
 
 .hero-meta-chip {
   display: inline-flex;
   align-items: center;
-  min-height: 40rpx;
-  padding: 0 16rpx;
+  min-height: 52rpx;
+  padding: 0 20rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.08);
-  border: 1rpx solid rgba(255, 255, 255, 0.08);
-  color: #dbe4ee;
-  font-size: 22rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  color: #f1e6d8;
+  font-size: 25rpx;
+  font-weight: 600;
 }
 
 .hero-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14rpx;
-  margin-top: 16rpx;
+  margin-top: 18rpx;
 }
 
 .kpi-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12rpx;
+  gap: 14rpx;
 }
 
 .kpi-card {
-  padding: 22rpx 24rpx;
-  border-radius: 18rpx;
-  background: #f8fafc;
-  border: 1rpx solid rgba(214, 222, 231, 0.9);
+  padding: 26rpx 24rpx;
+  border-radius: 20rpx;
+  background: #f8f2e9;
+  border: 1rpx solid rgba(212, 199, 181, 0.9);
+  min-height: 150rpx;
+  box-sizing: border-box;
 }
 
 .kpi-label {
   display: block;
-  font-size: 24rpx;
-  color: #64748b;
+  font-size: 27rpx;
+  color: #726253;
+  font-weight: 600;
 }
 
 .kpi-value {
   display: block;
   margin-top: 10rpx;
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #17191f;
+  line-height: 1.12;
 }
 
 .quick-grid {
@@ -72,21 +77,23 @@
   justify-content: flex-start;
   box-sizing: border-box;
   margin: 0;
-  padding: 24rpx;
-  min-height: 196rpx;
-  border-radius: 18rpx;
-  background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
-  border: 1rpx solid rgba(214, 222, 231, 0.9);
+  padding: 26rpx;
+  min-height: 224rpx;
+  border-radius: 20rpx;
+  background: linear-gradient(180deg, #fffdfa 0%, #f8f2e9 100%);
+  border: 1rpx solid rgba(212, 199, 181, 0.9);
   text-align: left;
   box-shadow: none;
 }
 
 .quick-card-primary {
-  background: linear-gradient(135deg, #0f172a, #334155);
+  background:
+    radial-gradient(circle at top right, rgba(214, 190, 157, 0.12), transparent 34%),
+    linear-gradient(145deg, #17191f 0%, #222834 100%);
 }
 
 .quick-card-danger {
-  background: linear-gradient(135deg, #3f1d2e, #7f1d1d);
+  background: linear-gradient(135deg, #3b1e23, #6e2331);
 }
 
 .quick-card-primary .quick-icon,
@@ -100,34 +107,37 @@
 
 .quick-icon {
   display: block;
-  font-size: 38rpx;
-  color: #334155;
+  font-size: 34rpx;
+  color: #6e5a46;
+  line-height: 1;
 }
 
 .quick-title {
   display: block;
-  margin-top: 14rpx;
-  font-size: 34rpx;
-  font-weight: 700;
-  line-height: 1.35;
-  color: #0f172a;
+  margin-top: 16rpx;
+  font-size: 39rpx;
+  font-weight: 800;
+  line-height: 1.24;
+  color: #17191f;
+  word-break: break-word;
 }
 
 .quick-copy {
   display: block;
-  margin-top: 10rpx;
-  font-size: 24rpx;
-  line-height: 1.6;
-  color: #64748b;
+  margin-top: 12rpx;
+  font-size: 27rpx;
+  line-height: 1.52;
+  color: #66594d;
+  word-break: break-word;
 }
 
 .quick-link {
   display: block;
   margin-top: auto;
-  padding-top: 14rpx;
-  font-size: 24rpx;
-  font-weight: 700;
-  color: #0f172a;
+  padding-top: 18rpx;
+  font-size: 27rpx;
+  font-weight: 800;
+  color: #2e241c;
 }
 
 .quick-card-primary .quick-link,

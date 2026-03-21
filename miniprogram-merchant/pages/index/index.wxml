@@ -2,10 +2,11 @@
   <view class="hero-panel">
     <text class="eyebrow">MERCHANT CONSOLE</text>
     <text class="title">商家工作台</text>
-    <text class="hero-line">优先处理付款审核和配送，再统一维护菜单、规则和首页运营位。</text>
+    <text class="hero-line">先处理付款和配送，再管理菜单、规则和首页运营位。</text>
     <view class="hero-meta-row">
       <text class="hero-meta-chip">当前状态：{{tokenReady ? '在线' : '离线'}}</text>
-      <text class="hero-meta-chip">注册用户：{{userCount}}</text>
+      <text class="hero-meta-chip">未读消息：{{messageCount}}</text>
+      <text class="hero-meta-chip">待处理订单：{{pendingOrders}}</text>
     </view>
     <view class="hero-grid">
       <view class="hero-stat">
@@ -13,16 +14,16 @@
         <text class="hero-stat-value">{{reviewCount}}</text>
       </view>
       <view class="hero-stat">
-        <text class="hero-stat-label">未读消息</text>
-        <text class="hero-stat-value">{{messageCount}}</text>
-      </view>
-      <view class="hero-stat">
         <text class="hero-stat-label">配送中</text>
         <text class="hero-stat-value">{{deliveringCount}}</text>
       </view>
       <view class="hero-stat">
-        <text class="hero-stat-label">待处理订单</text>
-        <text class="hero-stat-value">{{pendingOrders}}</text>
+        <text class="hero-stat-label">总用户数</text>
+        <text class="hero-stat-value">{{userCount}}</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-label">今日新增用户</text>
+        <text class="hero-stat-value">{{todayNewUsers}}</text>
       </view>
     </view>
   </view>
