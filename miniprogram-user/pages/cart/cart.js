@@ -11,16 +11,11 @@ Page({
     orderHint: ""
   },
   async onShow() {
-    await this.syncCartWithCatalog();
-    const token = app.globalData.userToken || wx.getStorageSync("user-token");
-    if (!token) {
-      this.setData({
-        addresses: [],
-        defaultAddress: null,
-        canCheckout: false
-      });
+    if (!app.requireUserLogin("/pages/cart/cart")) {
       return;
     }
+    await this.syncCartWithCatalog();
+    const token = app.globalData.userToken || wx.getStorageSync("user-token");
     app.globalData.userToken = token;
     this.loadAddresses();
   },
@@ -39,8 +34,11 @@ Page({
       const nextCart = rawCart
         .filter((item) => productMap[item.product_id] && productMap[item.product_id].sale_status)
         .map((item) => ({
+          cart_key: item.cart_key || `${item.product_id}`,
           product_id: item.product_id,
           name: productMap[item.product_id].name,
+          selection_label: item.selection_label || "",
+          selected_options: item.selected_options || [],
           price_amount: productMap[item.product_id].price_amount,
           quantity: item.quantity
         }));
@@ -69,23 +67,23 @@ Page({
     });
   },
   increaseQty(event) {
-    const productId = event.currentTarget.dataset.id;
+    const cartKey = event.currentTarget.dataset.id;
     const cart = wx.getStorageSync("user-cart") || [];
-    const item = cart.find((row) => row.product_id === productId);
+    const item = cart.find((row) => row.cart_key === cartKey);
     if (item) item.quantity += 1;
     this.syncCart(cart);
   },
   decreaseQty(event) {
-    const productId = event.currentTarget.dataset.id;
+    const cartKey = event.currentTarget.dataset.id;
     let cart = wx.getStorageSync("user-cart") || [];
     cart = cart
-      .map((row) => (row.product_id === productId ? { ...row, quantity: row.quantity - 1 } : row))
+      .map((row) => (row.cart_key === cartKey ? { ...row, quantity: row.quantity - 1 } : row))
       .filter((row) => row.quantity > 0);
     this.syncCart(cart);
   },
   removeItem(event) {
-    const productId = event.currentTarget.dataset.id;
-    const cart = (wx.getStorageSync("user-cart") || []).filter((row) => row.product_id !== productId);
+    const cartKey = event.currentTarget.dataset.id;
+    const cart = (wx.getStorageSync("user-cart") || []).filter((row) => row.cart_key !== cartKey);
     this.syncCart(cart);
   },
   clearCart() {
@@ -133,7 +131,8 @@ Page({
         channel_code: "QR",
         items: this.data.cart.map((item) => ({
           product_id: item.product_id,
-          quantity: item.quantity
+          quantity: item.quantity,
+          selected_options: item.selected_options || []
         }))
       });
       wx.removeStorageSync("user-cart");

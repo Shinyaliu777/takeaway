@@ -20,6 +20,10 @@ function mapPaymentStatus(status) {
   }[status] || status;
 }
 
+function formatSelectedOptions(selectedOptions) {
+  return (selectedOptions || []).map((item) => `${item.group_name}:${item.option_name}`).join(" / ");
+}
+
 Page({
   data: {
     order: null,
@@ -51,7 +55,10 @@ Page({
               payment_status_text: mapPaymentStatus(detail.order.payment_status)
             }
           : null,
-        items: detail.items || [],
+        items: (detail.items || []).map((item) => ({
+          ...item,
+          selected_options_text: formatSelectedOptions(item.selected_options || [])
+        })),
         payment: detail.payment && detail.payment.proof_image_url
           ? {
               ...detail.payment,

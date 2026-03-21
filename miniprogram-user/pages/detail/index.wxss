@@ -106,6 +106,39 @@
   line-height: 1.72;
 }
 
+.option-group {
+  margin-top: 22rpx;
+}
+
+.option-title {
+  display: block;
+  margin-bottom: 12rpx;
+  color: #3b2a1f;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.option-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.option-pill {
+  padding: 12rpx 20rpx;
+  border-radius: 999rpx;
+  background: #fff4e8;
+  border: 1rpx solid #eadfce;
+  color: #6b4e39;
+  font-size: 24rpx;
+}
+
+.option-pill-active {
+  background: #8f5a2e;
+  border-color: #8f5a2e;
+  color: #fffdf9;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

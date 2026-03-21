@@ -57,6 +57,7 @@
     </view>
     <view wx:for="{{items}}" wx:key="id" class="data-card">
       <text class="line strong">{{item.product_name_snapshot}}</text>
+      <text wx:if="{{item.selected_options_text}}" class="line">{{item.selected_options_text}}</text>
       <text class="line">数量：{{item.quantity}}</text>
       <text class="line">MYR {{item.line_amount}}</text>
     </view>

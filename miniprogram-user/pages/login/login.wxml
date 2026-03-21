@@ -5,7 +5,7 @@
         <text class="eyebrow">KITCHEN ACCESS</text>
         <text class="hero-title">3 秒进入点餐</text>
       </view>
-      <text class="hero-note">保留高频外卖场景的最短路径，不额外打断，先浏览和下单，再慢慢完善资料。</text>
+      <text class="hero-note">下单、购物车、订单和消息都需要先完成微信授权，一键登录后即可继续操作。</text>
       <view class="hero-ribbon-row">
         <text class="hero-ribbon">地址管理</text>
         <text class="hero-ribbon">订单追踪</text>
@@ -24,8 +24,8 @@
     <view class="benefit-grid">
       <view class="benefit-card">
         <text class="benefit-kicker">01</text>
-        <text class="benefit-title">直接进入</text>
-        <text class="benefit-copy">不用手机号授权，先把入口做顺。</text>
+        <text class="benefit-title">一键授权</text>
+        <text class="benefit-copy">点击一次就拉起微信授权并完成登录。</text>
       </view>
       <view class="benefit-card">
         <text class="benefit-kicker">02</text>
@@ -34,11 +34,11 @@
       </view>
       <view class="benefit-card benefit-card-wide">
         <text class="benefit-kicker">03</text>
-        <text class="benefit-title">资料后补</text>
-        <text class="benefit-copy">头像和昵称留到个人中心再处理，不挡主流程。</text>
+        <text class="benefit-title">自动带资料</text>
+        <text class="benefit-copy">登录后自动带上微信昵称和头像，不再手动补资料。</text>
       </view>
     </view>
-    <button class="primary-btn one-tap-btn" bindtap="submitLogin">微信登录进入</button>
-    <text class="login-footnote">继续即表示使用微信身份完成基础登录。</text>
+    <button class="primary-btn one-tap-btn" bindtap="submitLogin" loading="{{submitting}}">一键微信授权登录</button>
+    <text class="login-footnote">继续即表示使用微信昵称和头像完成登录，用于下单与订单同步。</text>
   </view>
 </view>

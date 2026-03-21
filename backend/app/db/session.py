@@ -32,6 +32,9 @@ def ensure_legacy_columns() -> None:
         product_columns = {
             row[1] for row in connection.execute("PRAGMA table_info(product)")
         }
+        order_item_columns = {
+            row[1] for row in connection.execute("PRAGMA table_info(orderitem)")
+        }
         payment_columns = {
             row[1] for row in connection.execute("PRAGMA table_info(paymentorder)")
         }
@@ -47,6 +50,10 @@ def ensure_legacy_columns() -> None:
             connection.execute("ALTER TABLE shop ADD COLUMN tng_qr_url TEXT NOT NULL DEFAULT ''")
         if "description" not in product_columns:
             connection.execute("ALTER TABLE product ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+        if "option_groups_json" not in product_columns:
+            connection.execute("ALTER TABLE product ADD COLUMN option_groups_json TEXT NOT NULL DEFAULT ''")
+        if "selected_options_json" not in order_item_columns:
+            connection.execute("ALTER TABLE orderitem ADD COLUMN selected_options_json TEXT NOT NULL DEFAULT ''")
         if "proof_image_url" not in payment_columns:
             connection.execute("ALTER TABLE paymentorder ADD COLUMN proof_image_url TEXT NOT NULL DEFAULT ''")
         if "reviewed_at" not in payment_columns:

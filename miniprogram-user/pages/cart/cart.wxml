@@ -15,17 +15,18 @@
       <text class="section-subtitle">可随时增减数量</text>
     </view>
     <view wx:if="{{cart.length}}">
-      <view wx:for="{{cart}}" wx:key="product_id" class="cart-item-card">
+      <view wx:for="{{cart}}" wx:key="cart_key" class="cart-item-card">
         <view class="cart-item-main">
           <text class="dish-name">{{item.name}}</text>
+          <text wx:if="{{item.selection_label}}" class="line">{{item.selection_label}}</text>
           <text class="dish-meta">数量 {{item.quantity}}</text>
         </view>
         <view class="cart-side">
           <text class="dish-price">MYR {{item.lineAmount}}</text>
           <view class="cart-actions">
-            <button class="qty-btn" size="mini" data-id="{{item.product_id}}" bindtap="decreaseQty">-</button>
-            <button class="qty-btn" size="mini" data-id="{{item.product_id}}" bindtap="increaseQty">+</button>
-            <button class="text-btn" size="mini" data-id="{{item.product_id}}" bindtap="removeItem">删除</button>
+            <button class="qty-btn" size="mini" data-id="{{item.cart_key}}" bindtap="decreaseQty">-</button>
+            <button class="qty-btn" size="mini" data-id="{{item.cart_key}}" bindtap="increaseQty">+</button>
+            <button class="text-btn" size="mini" data-id="{{item.cart_key}}" bindtap="removeItem">删除</button>
           </view>
         </view>
       </view>

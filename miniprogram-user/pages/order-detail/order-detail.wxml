@@ -80,6 +80,7 @@
     <view wx:for="{{items}}" wx:key="id" class="item-row">
       <view>
         <text class="item-name">{{item.product_name_snapshot}}</text>
+        <text wx:if="{{item.selected_options_text}}" class="item-qty">{{item.selected_options_text}}</text>
         <text class="item-qty">数量 x{{item.quantity}}</text>
       </view>
       <text class="item-amount">MYR {{item.line_amount}}</text>

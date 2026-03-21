@@ -27,6 +27,7 @@ class AddressCreate(BaseModel):
 class CartItemPayload(BaseModel):
     product_id: int
     quantity: int = Field(gt=0)
+    selected_options: list[dict] = Field(default_factory=list)
 
 
 class OrderCreate(BaseModel):

@@ -126,9 +126,68 @@ def require_user(
 def dump(model):
     if isinstance(model, list):
         return [dump(item) for item in model]
+    if isinstance(model, Product):
+        payload = jsonable_encoder(model)
+        payload["option_groups"] = parse_json_field(model.option_groups_json)
+        return payload
+    if isinstance(model, OrderItem):
+        payload = jsonable_encoder(model)
+        payload["selected_options"] = parse_json_field(model.selected_options_json)
+        return payload
     if hasattr(model, "model_dump"):
         return model.model_dump()
     return jsonable_encoder(model)
+
+
+def parse_json_field(raw_value: str):
+    if not raw_value:
+        return []
+    try:
+        return json.loads(raw_value)
+    except json.JSONDecodeError:
+        return []
+
+
+def build_cart_item_label(product: Product, selected_options: list[dict]) -> str:
+    if not selected_options:
+        return product.name
+    chosen = " / ".join(
+        f"{item.get('group_name', '').strip()}:{item.get('option_name', '').strip()}"
+        for item in selected_options
+        if item.get("group_name") and item.get("option_name")
+    )
+    return f"{product.name}（{chosen}）" if chosen else product.name
+
+
+def validate_selected_options(product: Product, selected_options: list[dict]) -> list[dict]:
+    option_groups = parse_json_field(product.option_groups_json)
+    if not option_groups:
+        return []
+    if not isinstance(selected_options, list):
+        raise HTTPException(status_code=400, detail=f"Missing selections for {product.name}")
+
+    validated = []
+    selected_map = {}
+    for item in selected_options:
+        if not isinstance(item, dict):
+            continue
+        group_name = (item.get("group_name") or "").strip()
+        option_name = (item.get("option_name") or "").strip()
+        if group_name and option_name:
+            selected_map[group_name] = option_name
+
+    for group in option_groups:
+        group_name = (group.get("group_name") or "").strip()
+        options = group.get("options") or []
+        required = bool(group.get("required", True))
+        chosen = (selected_map.get(group_name) or "").strip()
+        if required and not chosen:
+            raise HTTPException(status_code=400, detail=f"Please choose {group_name} for {product.name}")
+        if chosen and chosen not in options:
+            raise HTTPException(status_code=400, detail=f"Invalid choice for {group_name} in {product.name}")
+        if chosen:
+            validated.append({"group_name": group_name, "option_name": chosen})
+    return validated
 
 
 def sanitize_merchant(merchant: MerchantUser) -> dict:
@@ -515,11 +574,12 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
         product = session.get(Product, item.product_id)
         if not product or not product.sale_status:
             raise HTTPException(status_code=400, detail=f"Invalid product {item.product_id}")
+        selected_options = validate_selected_options(product, item.selected_options)
         if product.stock_qty < item.quantity:
             raise HTTPException(status_code=400, detail=f"Insufficient stock for {product.name}")
         line_amount = round(product.price_amount * item.quantity, 2)
         total_amount += line_amount
-        line_items.append((product, item.quantity, line_amount))
+        line_items.append((product, item.quantity, line_amount, selected_options))
 
     order = Order(
         order_no=f"ORD-{uuid4().hex[:10].upper()}",
@@ -533,13 +593,14 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
     session.add(order)
     session.flush()
 
-    for product, quantity, line_amount in line_items:
+    for product, quantity, line_amount, selected_options in line_items:
         session.add(
             OrderItem(
                 order_id=order.id,
                 product_id=product.id,
-                product_name_snapshot=product.name,
+                product_name_snapshot=build_cart_item_label(product, selected_options),
                 product_price_snapshot=product.price_amount,
+                selected_options_json=json.dumps(selected_options, ensure_ascii=False),
                 quantity=quantity,
                 line_amount=line_amount,
             )

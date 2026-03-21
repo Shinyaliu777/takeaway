@@ -100,11 +100,18 @@ Page({
     }
   },
   addToCart(event) {
+    if (!app.requireUserLogin("/pages/index/index")) {
+      return;
+    }
     if (!this.data.shopOpen) {
       wx.showToast({ title: "当前不在营业时间", icon: "none" });
       return;
     }
     const product = event.currentTarget.dataset.product;
+    if (product && product.option_groups && product.option_groups.length) {
+      wx.navigateTo({ url: `/pages/detail/index?id=${product.id}` });
+      return;
+    }
     const cart = wx.getStorageSync("user-cart") || [];
     const found = cart.find((item) => item.product_id === product.id);
     if (found) {
@@ -147,15 +154,27 @@ Page({
     });
   },
   goCart() {
+    if (!app.requireUserLogin("/pages/cart/cart")) {
+      return;
+    }
     wx.navigateTo({ url: "/pages/cart/cart" });
   },
   goOrders() {
+    if (!app.requireUserLogin("/pages/orders/orders")) {
+      return;
+    }
     wx.navigateTo({ url: "/pages/orders/orders" });
   },
   goProfile() {
+    if (!app.requireUserLogin("/pages/profile/profile")) {
+      return;
+    }
     wx.navigateTo({ url: "/pages/profile/profile" });
   },
   goMessages() {
+    if (!app.requireUserLogin("/pages/messages/messages")) {
+      return;
+    }
     wx.navigateTo({ url: "/pages/messages/messages" });
   },
   previewPaymentQr(event) {

@@ -47,6 +47,7 @@ class Product(SQLModel, table=True):
     name: str
     image_url: str = ""
     description: str = ""
+    option_groups_json: str = ""
     price_amount: float
     stock_qty: int = 0
     sale_status: bool = True
@@ -84,6 +85,7 @@ class OrderItem(SQLModel, table=True):
     product_id: int
     product_name_snapshot: str
     product_price_snapshot: float
+    selected_options_json: str = ""
     quantity: int
     line_amount: float
 

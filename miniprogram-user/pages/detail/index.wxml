@@ -23,6 +23,26 @@
       <text class="intro-copy">{{product.description || '现做热食，适合外卖场景。'}}</text>
     </view>
 
+    <view class="intro-block" wx:if="{{product.option_groups && product.option_groups.length}}">
+      <text class="section-title">套餐选菜</text>
+      <view wx:for="{{product.option_groups}}" wx:for-item="group" wx:key="group_name" class="option-group">
+        <text class="option-title">{{group.group_name}}</text>
+        <view class="option-list">
+          <view
+            wx:for="{{group.options}}"
+            wx:for-item="option"
+            wx:key="*this"
+            class="option-pill {{selectedOptions[group.group_name] === option ? 'option-pill-active' : ''}}"
+            data-group="{{group.group_name}}"
+            data-option="{{option}}"
+            bindtap="chooseOption"
+          >
+            {{option}}
+          </view>
+        </view>
+      </view>
+    </view>
+
     <view class="detail-grid">
       <view class="detail-chip">
         <text class="chip-key">出餐节奏</text>

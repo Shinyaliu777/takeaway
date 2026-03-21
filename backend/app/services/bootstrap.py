@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import hashlib
+import json
 
 from sqlmodel import Session, select
 
@@ -35,6 +36,49 @@ PACKAGE_PRODUCTS = [
     ("三素套餐", 11.8, 60, "product-fries.png", "已含米饭，适合清淡口味。"),
     ("三荤套餐", 26.8, 50, "product-bowl-dark.png", "已含米饭，当前最足量套餐。"),
 ]
+
+PACKAGE_OPTION_PRESETS = {
+    "荤菜": ["土豆焖鸡", "小炒肉", "香菇鸡", "辣子鸡", "黑椒牛肉", "红烧肉"],
+    "素菜": ["手撕包菜", "清炒生菜", "番茄炒蛋", "炒豆角", "炒土豆丝", "麻婆豆腐"],
+}
+
+
+def build_package_option_groups(name: str) -> list[dict]:
+    if "套餐" not in name:
+        return []
+    groups = []
+    if "三荤" in name:
+        meat_count, veg_count = 3, 0
+    elif "两荤两素" in name:
+        meat_count, veg_count = 2, 2
+    elif "两荤一素" in name:
+        meat_count, veg_count = 2, 1
+    elif "两荤套餐" in name:
+        meat_count, veg_count = 2, 0
+    elif "一荤两素" in name:
+        meat_count, veg_count = 1, 2
+    elif "一荤一素" in name:
+        meat_count, veg_count = 1, 1
+    elif "两素套餐" in name:
+        meat_count, veg_count = 0, 2
+    elif "三素" in name:
+        meat_count, veg_count = 0, 3
+    else:
+        meat_count, veg_count = 0, 0
+
+    for index in range(meat_count):
+        groups.append({
+            "group_name": f"荤菜{index + 1}",
+            "required": True,
+            "options": PACKAGE_OPTION_PRESETS["荤菜"],
+        })
+    for index in range(veg_count):
+        groups.append({
+            "group_name": f"素菜{index + 1}",
+            "required": True,
+            "options": PACKAGE_OPTION_PRESETS["素菜"],
+        })
+    return groups
 
 SIDE_PRODUCTS = [
     ("手工馒头", 1.5, 120, "product-milk-tea.png", "单点主食，不含在套餐里。"),
@@ -97,6 +141,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
     for name, price, stock, image_name, description in PACKAGE_PRODUCTS:
         product = existing_map.get(name)
         image_url = f"{asset_base}/{image_name}?{asset_version}"
+        option_groups_json = json.dumps(build_package_option_groups(name), ensure_ascii=False)
         if not product:
             session.add(
                 Product(
@@ -104,6 +149,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
                     name=name,
                     image_url=image_url,
                     description=description,
+                    option_groups_json=option_groups_json,
                     price_amount=price,
                     stock_qty=stock,
                     sale_status=True,
@@ -117,6 +163,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             or product.stock_qty != stock
             or product.image_url != image_url
             or product.description != description
+            or product.option_groups_json != option_groups_json
             or product.sale_status is not True
         ):
             product.category_id = package_category_id
@@ -124,6 +171,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             product.stock_qty = stock
             product.image_url = image_url
             product.description = description
+            product.option_groups_json = option_groups_json
             product.sale_status = True
             session.add(product)
             updated = True
@@ -138,6 +186,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
                     name=name,
                     image_url=image_url,
                     description=description,
+                    option_groups_json="[]",
                     price_amount=price,
                     stock_qty=stock,
                     sale_status=True,
@@ -151,6 +200,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             or product.stock_qty != stock
             or product.image_url != image_url
             or product.description != description
+            or product.option_groups_json != "[]"
             or product.sale_status is not True
         ):
             product.category_id = side_category_id
@@ -158,6 +208,7 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             product.stock_qty = stock
             product.image_url = image_url
             product.description = description
+            product.option_groups_json = "[]"
             product.sale_status = True
             session.add(product)
             updated = True
@@ -290,11 +341,11 @@ def seed_data(session: Session) -> None:
 
     saved_categories = session.exec(select(Category).order_by(Category.sort_order)).all()
     session.add_all([
-        Product(category_id=saved_categories[0].id, name=name, image_url=f"{asset_base}/{image_name}?{asset_version}", description=description, price_amount=price, stock_qty=stock)
+        Product(category_id=saved_categories[0].id, name=name, image_url=f"{asset_base}/{image_name}?{asset_version}", description=description, option_groups_json=json.dumps(build_package_option_groups(name), ensure_ascii=False), price_amount=price, stock_qty=stock)
         for name, price, stock, image_name, description in PACKAGE_PRODUCTS
     ])
     session.add_all([
-        Product(category_id=saved_categories[1].id, name=name, image_url=f"{asset_base}/{image_name}?{asset_version}", description=description, price_amount=price, stock_qty=stock)
+        Product(category_id=saved_categories[1].id, name=name, image_url=f"{asset_base}/{image_name}?{asset_version}", description=description, option_groups_json="[]", price_amount=price, stock_qty=stock)
         for name, price, stock, image_name, description in SIDE_PRODUCTS
     ])
     session.add_all(
