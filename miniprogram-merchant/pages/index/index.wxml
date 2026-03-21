@@ -3,26 +3,26 @@
     <text class="eyebrow">MERCHANT CONSOLE</text>
     <text class="title">商家工作台</text>
     <text class="hero-line">优先处理付款审核和配送，再统一维护菜单、规则和首页运营位。</text>
+    <view class="hero-meta-row">
+      <text class="hero-meta-chip">当前状态：{{tokenReady ? '在线' : '离线'}}</text>
+      <text class="hero-meta-chip">注册用户：{{userCount}}</text>
+    </view>
     <view class="hero-grid">
       <view class="hero-stat">
-        <text class="hero-stat-label">登录状态</text>
-        <text class="hero-stat-value">{{tokenReady ? '在线' : '离线'}}</text>
+        <text class="hero-stat-label">待审付款</text>
+        <text class="hero-stat-value">{{reviewCount}}</text>
       </view>
       <view class="hero-stat">
         <text class="hero-stat-label">未读消息</text>
         <text class="hero-stat-value">{{messageCount}}</text>
       </view>
       <view class="hero-stat">
+        <text class="hero-stat-label">配送中</text>
+        <text class="hero-stat-value">{{deliveringCount}}</text>
+      </view>
+      <view class="hero-stat">
         <text class="hero-stat-label">待处理订单</text>
         <text class="hero-stat-value">{{pendingOrders}}</text>
-      </view>
-      <view class="hero-stat">
-        <text class="hero-stat-label">待审付款</text>
-        <text class="hero-stat-value">{{reviewCount}}</text>
-      </view>
-      <view class="hero-stat">
-        <text class="hero-stat-label">注册用户</text>
-        <text class="hero-stat-value">{{userCount}}</text>
       </view>
     </view>
   </view>
@@ -30,18 +30,19 @@
   <view class="card">
     <view class="section-head">
       <text class="section-title">今日优先处理</text>
-      <text class="section-subtitle">先看待办，再看经营结果</text>
     </view>
-    <view class="quick-grid">
+    <view class="todo-grid">
       <view class="quick-card quick-card-primary" hover-class="quick-card-hover" bindtap="goOrders">
         <text class="quick-icon">◎</text>
         <text class="quick-title">待审付款 {{reviewCount}}</text>
-        <text class="quick-copy">优先确认用户上传的付款截图。</text>
+        <text class="quick-copy">先处理付款确认，避免订单积压。</text>
+        <text class="quick-link">立即查看</text>
       </view>
       <view class="quick-card" hover-class="quick-card-hover" bindtap="goOrders">
         <text class="quick-icon">⇢</text>
         <text class="quick-title">配送中 {{deliveringCount}}</text>
-        <text class="quick-copy">查看正在履约的订单状态。</text>
+        <text class="quick-copy">跟进正在履约的订单状态。</text>
+        <text class="quick-link">进入订单</text>
       </view>
     </view>
   </view>
@@ -49,7 +50,6 @@
   <view class="card">
     <view class="section-head">
       <text class="section-title">今日经营结果</text>
-      <text class="section-subtitle">核心经营指标</text>
     </view>
     <view class="kpi-grid">
       <view class="kpi-card">
@@ -74,7 +74,6 @@
   <view class="card">
     <view class="section-head">
       <text class="section-title">运营状态</text>
-      <text class="section-subtitle">高频配置</text>
     </view>
     <view class="quick-grid">
       <view class="quick-card quick-card-primary">
@@ -93,7 +92,6 @@
   <view class="card">
     <view class="section-head">
       <text class="section-title">快捷入口</text>
-      <text class="section-subtitle">订单优先，配置靠后</text>
     </view>
     <view class="quick-grid">
       <view class="quick-card quick-card-primary" hover-class="quick-card-hover" bindtap="goOrders">
