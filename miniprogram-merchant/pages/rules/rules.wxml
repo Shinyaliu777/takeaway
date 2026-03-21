@@ -24,6 +24,10 @@
       <text class="section-title">套餐规则列表</text>
       <text class="section-subtitle">当前规则 {{rules.length}} 条</text>
     </view>
+    <view class="card-inline-actions">
+      <button class="ghost-btn inline-action-btn" bindtap="loadPreview">刷新预览</button>
+      <button class="danger-btn inline-action-btn" bindtap="restoreDefaults">恢复默认</button>
+    </view>
     <view wx:for="{{rules}}" wx:key="id" class="category-item">
       <view class="category-main">
         <view>
@@ -40,6 +44,32 @@
           <button class="ghost-btn category-btn" size="mini" data-rule="{{item}}" bindtap="editRule">编辑</button>
           <button class="danger-btn category-btn" size="mini" data-id="{{item.id}}" bindtap="deleteRule">删</button>
         </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">规则效果预览</text>
+      <text class="section-subtitle">提前检查某组荤素数量会如何结算</text>
+    </view>
+    <view class="field-grid">
+      <view class="field-block field-grid-item">
+        <text class="field-label">荤菜数量</text>
+        <input class="input" placeholder="例如 2" value="{{previewForm.meat_count}}" data-key="meat_count" bindinput="onPreviewInput" />
+      </view>
+      <view class="field-block field-grid-item">
+        <text class="field-label">素菜数量</text>
+        <input class="input" placeholder="例如 1" value="{{previewForm.veg_count}}" data-key="veg_count" bindinput="onPreviewInput" />
+      </view>
+    </view>
+    <button class="primary-btn" bindtap="loadPreview">预览当前规则</button>
+    <view wx:if="{{previewResult}}" class="preview-panel">
+      <text class="preview-title">{{previewResult.message}}</text>
+      <text class="preview-total">预估结算 MYR {{previewResult.combo_total}}</text>
+      <view wx:for="{{previewResult.combo_lines}}" wx:key="index" class="preview-line">
+        <text class="preview-line-name">{{item.name}}</text>
+        <text class="preview-line-copy">{{item.meat_count}} 荤 {{item.veg_count}} 素 · MYR {{item.price}}</text>
       </view>
     </view>
   </view>

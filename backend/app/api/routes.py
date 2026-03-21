@@ -53,6 +53,7 @@ from app.schemas.contracts import (
     UserLoginPayload,
     UserProfileUpdatePayload,
 )
+from app.services.bootstrap import DEFAULT_COMBO_RULES
 from app.services.pricing import EXTRA_RICE_PRICE, build_best_combo_plan
 
 router = APIRouter()
@@ -199,9 +200,41 @@ def serialize_shop(session: Session, shop: Shop | None) -> dict | None:
     return payload
 
 
-def validate_combo_rule_payload(payload: ComboRulePayload) -> None:
+def validate_combo_rule_payload(payload: ComboRulePayload, session: Session, current_rule_id: int | None = None) -> None:
     if payload.meat_count <= 0 and payload.veg_count <= 0:
         raise HTTPException(status_code=400, detail="Combo rule must contain meat or veg count")
+    if payload.price <= 0:
+        raise HTTPException(status_code=400, detail="Combo rule price must be greater than 0")
+    existing = session.exec(
+        select(ComboRule).where(
+            ComboRule.meat_count == payload.meat_count,
+            ComboRule.veg_count == payload.veg_count,
+        )
+    ).all()
+    for rule in existing:
+        if current_rule_id is None or rule.id != current_rule_id:
+            raise HTTPException(status_code=400, detail="A combo rule with the same meat/veg counts already exists")
+
+
+def reset_combo_rules_to_defaults(session: Session) -> list[ComboRule]:
+    existing_rules = session.exec(select(ComboRule)).all()
+    for rule in existing_rules:
+        session.delete(rule)
+    session.flush()
+    restored = []
+    for name, meat_count, veg_count, price, sort_order in DEFAULT_COMBO_RULES:
+        rule = ComboRule(
+            name=name,
+            meat_count=meat_count,
+            veg_count=veg_count,
+            price=price,
+            sort_order=sort_order,
+            enabled=True,
+        )
+        session.add(rule)
+        restored.append(rule)
+    session.commit()
+    return restored
 
 
 def infer_product_kind(product: Product, category_map: dict[int, Category]) -> str:
@@ -1071,9 +1104,37 @@ def merchant_combo_rules(session: Session = Depends(get_session)):
     return serialize_combo_rules(get_all_combo_rules(session))
 
 
+@router.get("/api/merchant/combo-rules/preview", dependencies=[Depends(require_merchant)])
+def merchant_combo_rule_preview(meat_count: int = 0, veg_count: int = 0, session: Session = Depends(get_session)):
+    meat_units = [{"name": f"荤菜{i + 1}"} for i in range(max(meat_count, 0))]
+    veg_units = [{"name": f"素菜{i + 1}"} for i in range(max(veg_count, 0))]
+    plan = build_best_combo_plan(meat_units, veg_units, serialize_combo_rules(get_active_combo_rules(session)))
+    return {
+        "matched": plan["matched"],
+        "combo_total": plan["combo_total"],
+        "combo_lines": [
+            {
+                "name": line["name"],
+                "price": line["price"],
+                "meat_count": line["meat_count"],
+                "veg_count": line["veg_count"],
+                "item_count": len(line["items"]),
+            }
+            for line in plan["combo_lines"]
+        ],
+        "message": "可以完整结算" if plan["matched"] else "当前数量无法完整组成套餐",
+    }
+
+
+@router.post("/api/merchant/combo-rules/reset-defaults", dependencies=[Depends(require_merchant)])
+def merchant_combo_rules_reset_defaults(session: Session = Depends(get_session)):
+    rules = reset_combo_rules_to_defaults(session)
+    return {"message": "Default combo rules restored", "rules": serialize_combo_rules(rules)}
+
+
 @router.post("/api/merchant/combo-rules", dependencies=[Depends(require_merchant)])
 def create_merchant_combo_rule(payload: ComboRulePayload, session: Session = Depends(get_session)):
-    validate_combo_rule_payload(payload)
+    validate_combo_rule_payload(payload, session)
     rule = ComboRule(**payload.model_dump())
     session.add(rule)
     session.commit()
@@ -1083,7 +1144,7 @@ def create_merchant_combo_rule(payload: ComboRulePayload, session: Session = Dep
 
 @router.patch("/api/merchant/combo-rules/{rule_id}", dependencies=[Depends(require_merchant)])
 def update_merchant_combo_rule(rule_id: int, payload: ComboRulePayload, session: Session = Depends(get_session)):
-    validate_combo_rule_payload(payload)
+    validate_combo_rule_payload(payload, session, rule_id)
     rule = session.get(ComboRule, rule_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Combo rule not found")

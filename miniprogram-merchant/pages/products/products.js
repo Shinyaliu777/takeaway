@@ -4,9 +4,13 @@ const app = getApp();
 Page({
   data: {
     products: [],
+    filteredProducts: [],
     categories: [],
     categoryOptions: [],
     categoryIndex: 0,
+    searchKeyword: "",
+    periodFilter: "all",
+    saleFilter: "all",
     editingId: null,
     form: {
       category_id: 1,
@@ -47,9 +51,43 @@ Page({
         };
       });
       this.setData({ products: productsWithCategory });
+      this.applyFilters();
     } catch (error) {
       wx.showToast({ title: "加载失败", icon: "none" });
     }
+  },
+  onSearchInput(event) {
+    this.setData({ searchKeyword: event.detail.value || "" });
+    this.applyFilters();
+  },
+  setPeriodFilter(event) {
+    this.setData({ periodFilter: event.currentTarget.dataset.value || "all" });
+    this.applyFilters();
+  },
+  setSaleFilter(event) {
+    this.setData({ saleFilter: event.currentTarget.dataset.value || "all" });
+    this.applyFilters();
+  },
+  applyFilters() {
+    const keyword = (this.data.searchKeyword || "").trim().toLowerCase();
+    const periodFilter = this.data.periodFilter;
+    const saleFilter = this.data.saleFilter;
+    const filteredProducts = (this.data.products || []).filter((item) => {
+      const matchesKeyword =
+        !keyword ||
+        (item.name || "").toLowerCase().includes(keyword) ||
+        (item.category_name || "").toLowerCase().includes(keyword);
+      const matchesPeriod =
+        periodFilter === "all" ||
+        (periodFilter === "lunch" && item.available_lunch) ||
+        (periodFilter === "dinner" && item.available_dinner);
+      const matchesSale =
+        saleFilter === "all" ||
+        (saleFilter === "on" && item.sale_status) ||
+        (saleFilter === "off" && !item.sale_status);
+      return matchesKeyword && matchesPeriod && matchesSale;
+    });
+    this.setData({ filteredProducts });
   },
   onInput(event) {
     const key = event.currentTarget.dataset.key;

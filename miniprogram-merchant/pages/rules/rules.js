@@ -17,7 +17,12 @@ Page({
     rules: [],
     editingId: null,
     extraRicePrice: "2",
-    form: defaultRuleForm()
+    form: defaultRuleForm(),
+    previewForm: {
+      meat_count: "2",
+      veg_count: "1"
+    },
+    previewResult: null
   },
   async onShow() {
     try {
@@ -34,6 +39,7 @@ Page({
         rules: rules || [],
         extraRicePrice: `${shop && shop.extra_rice_price !== undefined ? shop.extra_rice_price : 2}`
       });
+      this.loadPreview();
     } catch (error) {
       wx.showToast({ title: "规则加载失败", icon: "none" });
     }
@@ -47,6 +53,12 @@ Page({
   onExtraRiceInput(event) {
     this.setData({
       extraRicePrice: event.detail.value
+    });
+  },
+  onPreviewInput(event) {
+    const key = event.currentTarget.dataset.key;
+    this.setData({
+      [`previewForm.${key}`]: event.detail.value
     });
   },
   onSwitchChange(event) {
@@ -74,6 +86,37 @@ Page({
       form: defaultRuleForm()
     });
   },
+  async loadPreview() {
+    try {
+      const result = await api.previewComboRules(
+        Number(this.data.previewForm.meat_count || 0),
+        Number(this.data.previewForm.veg_count || 0)
+      );
+      this.setData({ previewResult: result || null });
+    } catch (error) {
+      this.setData({ previewResult: null });
+    }
+  },
+  validateForm() {
+    const payload = {
+      name: (this.data.form.name || "").trim(),
+      meat_count: Number(this.data.form.meat_count || 0),
+      veg_count: Number(this.data.form.veg_count || 0),
+      price: Number(this.data.form.price || 0),
+      sort_order: Number(this.data.form.sort_order || 0),
+      enabled: !!this.data.form.enabled
+    };
+    if (!payload.name) {
+      return "请填写规则名称";
+    }
+    if (payload.meat_count <= 0 && payload.veg_count <= 0) {
+      return "规则至少要包含荤菜或素菜数量";
+    }
+    if (payload.price <= 0) {
+      return "规则价格必须大于 0";
+    }
+    return "";
+  },
   async saveExtraRicePrice() {
     try {
       const shop = await api.getShop();
@@ -99,6 +142,11 @@ Page({
     }
   },
   async saveRule() {
+    const validationMessage = this.validateForm();
+    if (validationMessage) {
+      wx.showToast({ title: validationMessage, icon: "none" });
+      return;
+    }
     const payload = {
       name: this.data.form.name,
       meat_count: Number(this.data.form.meat_count || 0),
@@ -136,6 +184,33 @@ Page({
     } catch (error) {
       const detail = error && error.detail ? error.detail : "";
       wx.showToast({ title: detail || "删除失败", icon: "none" });
+    }
+  },
+  async restoreDefaults() {
+    try {
+      await new Promise((resolve, reject) => {
+        wx.showModal({
+          title: "恢复默认规则",
+          content: "会用系统默认套餐规则覆盖当前规则，确认继续吗？",
+          success(res) {
+            if (res.confirm) {
+              resolve();
+              return;
+            }
+            reject(new Error("cancelled"));
+          },
+          fail: reject
+        });
+      });
+      await api.resetComboRules();
+      await this.loadData();
+      wx.showToast({ title: "已恢复默认规则", icon: "success" });
+    } catch (error) {
+      if (error && error.message === "cancelled") {
+        return;
+      }
+      const detail = error && error.detail ? error.detail : "";
+      wx.showToast({ title: detail || "恢复失败", icon: "none" });
     }
   }
 });

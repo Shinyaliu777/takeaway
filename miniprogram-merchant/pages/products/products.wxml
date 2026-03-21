@@ -7,9 +7,22 @@
   <view class="card">
     <view class="section-head">
       <text class="section-title">商品列表</text>
-      <text class="section-subtitle">当前商品 {{products.length}} 个</text>
+      <text class="section-subtitle">筛选后 {{filteredProducts.length}} / {{products.length}} 个</text>
     </view>
-    <view wx:for="{{products}}" wx:key="id" class="product-list-card">
+    <view class="filter-stack">
+      <input class="input" placeholder="搜索商品名或分类" value="{{searchKeyword}}" bindinput="onSearchInput" />
+      <view class="filter-row">
+        <button class="filter-pill {{periodFilter === 'all' ? 'filter-pill-active' : ''}}" size="mini" data-value="all" bindtap="setPeriodFilter">全部时段</button>
+        <button class="filter-pill {{periodFilter === 'lunch' ? 'filter-pill-active' : ''}}" size="mini" data-value="lunch" bindtap="setPeriodFilter">午餐可点</button>
+        <button class="filter-pill {{periodFilter === 'dinner' ? 'filter-pill-active' : ''}}" size="mini" data-value="dinner" bindtap="setPeriodFilter">晚餐可点</button>
+      </view>
+      <view class="filter-row">
+        <button class="filter-pill {{saleFilter === 'all' ? 'filter-pill-active' : ''}}" size="mini" data-value="all" bindtap="setSaleFilter">全部状态</button>
+        <button class="filter-pill {{saleFilter === 'on' ? 'filter-pill-active' : ''}}" size="mini" data-value="on" bindtap="setSaleFilter">仅上架</button>
+        <button class="filter-pill {{saleFilter === 'off' ? 'filter-pill-active' : ''}}" size="mini" data-value="off" bindtap="setSaleFilter">仅下架</button>
+      </view>
+    </view>
+    <view wx:for="{{filteredProducts}}" wx:key="id" class="product-list-card">
       <view class="product-top">
         <image wx:if="{{item.image_url}}" class="product-thumb" src="{{item.image_url}}" mode="aspectFill"></image>
         <view class="product-main">
@@ -34,6 +47,7 @@
         </view>
       </view>
     </view>
+    <view wx:if="{{!filteredProducts.length}}" class="empty-copy">当前筛选条件下没有商品。</view>
   </view>
 
   <view class="card editor-card">

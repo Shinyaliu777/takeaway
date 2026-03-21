@@ -47,6 +47,8 @@ module.exports = {
   getShop: () => request("/api/merchant/shop"),
   updateShop: (data) => request("/api/merchant/shop", "PUT", data),
   getComboRules: () => request("/api/merchant/combo-rules"),
+  previewComboRules: (meatCount, vegCount) => request(`/api/merchant/combo-rules/preview?meat_count=${meatCount}&veg_count=${vegCount}`),
+  resetComboRules: () => request("/api/merchant/combo-rules/reset-defaults", "POST"),
   createComboRule: (data) => request("/api/merchant/combo-rules", "POST", data),
   updateComboRule: (ruleId, data) => request(`/api/merchant/combo-rules/${ruleId}`, "PATCH", data),
   deleteComboRule: (ruleId) => request(`/api/merchant/combo-rules/${ruleId}`, "DELETE"),

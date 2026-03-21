@@ -2,7 +2,7 @@
   <view class="hero-panel">
     <text class="eyebrow">MERCHANT CONSOLE</text>
     <text class="title">商家工作台</text>
-    <text class="hero-line">处理订单、管理商品、维护首页运营位和店铺展示信息。</text>
+    <text class="hero-line">优先处理付款审核和配送，再统一维护菜单、规则和首页运营位。</text>
     <view class="hero-grid">
       <view class="hero-stat">
         <text class="hero-stat-label">登录状态</text>
@@ -29,8 +29,52 @@
 
   <view class="card">
     <view class="section-head">
-      <text class="section-title">今日运营状态</text>
-      <text class="section-subtitle">高频数据</text>
+      <text class="section-title">今日优先处理</text>
+      <text class="section-subtitle">先看待办，再看经营结果</text>
+    </view>
+    <view class="quick-grid">
+      <button class="quick-card quick-card-primary" bindtap="goOrders">
+        <text class="quick-icon">◎</text>
+        <text class="quick-title">待审付款 {{reviewCount}}</text>
+        <text class="quick-copy">优先确认用户上传的付款截图。</text>
+      </button>
+      <button class="quick-card" bindtap="goOrders">
+        <text class="quick-icon">⇢</text>
+        <text class="quick-title">配送中 {{deliveringCount}}</text>
+        <text class="quick-copy">查看正在履约的订单状态。</text>
+      </button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">今日经营结果</text>
+      <text class="section-subtitle">核心经营指标</text>
+    </view>
+    <view class="kpi-grid">
+      <view class="kpi-card">
+        <text class="kpi-label">今日订单</text>
+        <text class="kpi-value">{{todayOrderCount}}</text>
+      </view>
+      <view class="kpi-card">
+        <text class="kpi-label">今日销售额</text>
+        <text class="kpi-value">MYR {{todayRevenue}}</text>
+      </view>
+      <view class="kpi-card">
+        <text class="kpi-label">启用规则</text>
+        <text class="kpi-value">{{activeRuleCount}}</text>
+      </view>
+      <view class="kpi-card">
+        <text class="kpi-label">推荐位</text>
+        <text class="kpi-value">{{featuredEnabled ? '已开启' : '未开启'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">运营状态</text>
+      <text class="section-subtitle">高频配置</text>
     </view>
     <view class="quick-grid">
       <view class="quick-card quick-card-primary">
@@ -49,7 +93,7 @@
   <view class="card">
     <view class="section-head">
       <text class="section-title">快捷入口</text>
-      <text class="section-subtitle">常用操作</text>
+      <text class="section-subtitle">订单优先，配置靠后</text>
     </view>
     <view class="quick-grid">
       <button class="quick-card quick-card-primary" bindtap="goOrders">
@@ -60,7 +104,7 @@
       <button class="quick-card" bindtap="goProducts">
         <text class="quick-icon">▣</text>
         <text class="quick-title">商品管理</text>
-        <text class="quick-copy">图片、价格、库存</text>
+        <text class="quick-copy">图片、库存、午晚餐可点</text>
       </button>
       <button class="quick-card" bindtap="goRules">
         <text class="quick-icon">≋</text>
