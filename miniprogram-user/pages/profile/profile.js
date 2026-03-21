@@ -6,6 +6,7 @@ Page({
     profile: {},
     nickname: "",
     avatarUrl: "",
+    mobile: "",
     stats: []
   },
   onShow() {
@@ -19,6 +20,7 @@ Page({
         profile,
         nickname: profile.nickname || "",
         avatarUrl: profile.avatar_url || "",
+        mobile: profile.mobile || "",
         stats: [
           { label: "账号状态", value: "已登录" },
           { label: "地址管理", value: "多地址" },
@@ -30,7 +32,8 @@ Page({
     }
   },
   onInput(event) {
-    this.setData({ nickname: event.detail.value });
+    const key = event.currentTarget.dataset.key || "nickname";
+    this.setData({ [key]: event.detail.value });
   },
   onChooseAvatar(event) {
     this.setData({
@@ -39,14 +42,18 @@ Page({
   },
   async saveProfile() {
     try {
-      await app.loginUser(this.data.nickname || "微信用户", this.data.avatarUrl || "");
+      const profile = await api.updateUserProfile({
+        nickname: this.data.nickname || "微信用户",
+        avatar_url: this.data.avatarUrl || "",
+        mobile: this.data.mobile || ""
+      });
+      app.globalData.userInfo = profile || null;
+      wx.setStorageSync("user-info", profile || null);
+      wx.setStorageSync("user-nickname", (profile && profile.nickname) || "微信用户");
       this.loadProfile();
       wx.showToast({ title: "已保存", icon: "success" });
     } catch (error) {
-      wx.showToast({
-        title: error && error.detail === "WeChat login is not configured" ? "后端未配置微信登录" : "保存失败",
-        icon: "none"
-      });
+      wx.showToast({ title: "保存失败", icon: "none" });
     }
   },
   goAddresses() {

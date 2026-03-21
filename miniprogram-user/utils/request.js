@@ -37,6 +37,7 @@ function request(path, method = "GET", data) {
 module.exports = {
   userLogin: (data) => request("/api/user/login", "POST", data),
   getUserProfile: () => request("/api/user/profile"),
+  updateUserProfile: (data) => request("/api/user/profile", "PATCH", data),
   getShop: () => request("/api/shop"),
   getCategories: () => request("/api/categories"),
   getProducts: () => request("/api/products"),

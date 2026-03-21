@@ -26,7 +26,8 @@
       <text class="section-subtitle">只保留必要编辑项</text>
     </view>
     <text class="edit-helper">当前昵称会展示在订单和消息列表里。</text>
-    <input class="input" type="nickname" placeholder="修改昵称" value="{{nickname}}" bindinput="onInput" />
+    <input class="input" data-key="nickname" type="nickname" placeholder="修改昵称" value="{{nickname}}" bindinput="onInput" />
+    <input class="input" data-key="mobile" type="number" placeholder="手机号（用于商家识别）" value="{{mobile}}" bindinput="onInput" />
     <button class="primary-btn" bindtap="saveProfile">保存资料</button>
   </view>
 

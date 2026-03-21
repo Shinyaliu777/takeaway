@@ -21,7 +21,8 @@
       <text class="pill pill-green">{{order.payment_status_text}}</text>
     </view>
     <view class="meta-row">
-      <text wx:if="{{order.user_nickname}}" class="pill pill-slate">用户 {{order.user_nickname}}</text>
+      <text class="pill pill-slate">{{order.user_display_name}}</text>
+      <text wx:if="{{order.user_mobile_tail}}" class="pill pill-slate">尾号 {{order.user_mobile_tail}}</text>
       <text class="pill {{order.is_repeat_customer ? 'pill-amber' : 'pill-slate'}}">{{order.is_repeat_customer ? ('老客户 · 历史 ' + order.user_order_count + ' 单') : '新客户首单'}}</text>
     </view>
     <text class="line">收货人：{{order.receiver_name}}</text>

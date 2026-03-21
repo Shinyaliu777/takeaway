@@ -74,3 +74,9 @@ class ShopUpdatePayload(BaseModel):
     address: str = Field(min_length=1)
     notice: str = ""
     business_hours: str = Field(min_length=1)
+
+
+class UserProfileUpdatePayload(BaseModel):
+    nickname: str = Field(min_length=1)
+    avatar_url: Optional[str] = ""
+    mobile: Optional[str] = ""

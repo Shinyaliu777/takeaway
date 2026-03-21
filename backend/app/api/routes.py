@@ -49,6 +49,7 @@ from app.schemas.contracts import (
     ProductPayload,
     ShopUpdatePayload,
     UserLoginPayload,
+    UserProfileUpdatePayload,
 )
 
 router = APIRouter()
@@ -209,9 +210,16 @@ def create_merchant_message(session: Session, title: str, content: str):
 def build_order_user_summary(session: Session, order: Order) -> dict:
     user = session.get(User, order.user_id)
     order_count = len(session.exec(select(Order).where(Order.user_id == order.user_id)).all())
+    fallback_name = (order.receiver_name or "").strip()
+    nickname = (user.nickname if user else "").strip() or fallback_name or f"用户#{order.user_id}"
+    mobile = (user.mobile if user else "").strip() or (order.receiver_mobile or "").strip()
+    mobile_tail = mobile[-4:] if len(mobile) >= 4 else mobile
     return {
         "user_nickname": user.nickname if user else "",
         "user_avatar_url": user.avatar_url if user else "",
+        "user_mobile": mobile,
+        "user_mobile_tail": mobile_tail,
+        "user_display_name": nickname,
         "user_order_count": order_count,
         "is_repeat_customer": order_count > 1,
     }
@@ -393,6 +401,22 @@ def user_login(payload: UserLoginPayload, session: Session = Depends(get_session
 
 @router.get("/api/user/profile")
 def user_profile(user: User = Depends(require_user)):
+    return dump(user)
+
+
+@router.patch("/api/user/profile")
+def update_user_profile(
+    payload: UserProfileUpdatePayload,
+    user: User = Depends(require_user),
+    session: Session = Depends(get_session),
+):
+    user.nickname = payload.nickname.strip()
+    user.avatar_url = (payload.avatar_url or "").strip()
+    if payload.mobile is not None:
+        user.mobile = payload.mobile.strip()
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return dump(user)
 
 
