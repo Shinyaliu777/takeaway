@@ -50,7 +50,9 @@ Page({
       const todayRevenue = todaysOrders.reduce((sum, item) => sum + Number(item.total_amount || 0), 0);
       const unreadMessages = (messages || []).filter((item) => !item.read);
       const pendingReviewCount = (orders || []).filter((item) => item.payment_status === "PROOF_UPLOADED").length;
-      const pendingDeliveryCount = (orders || []).filter((item) => item.order_status === "PAID").length;
+      const pendingDeliveryCount = (orders || []).filter(
+        (item) => item.order_status === "PAID" && item.payment_status === "SUCCESS"
+      ).length;
       this.setData({
         tokenReady: true,
         messageCount: unreadMessages.length,

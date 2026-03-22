@@ -63,7 +63,8 @@ Page({
       this.loadOrders();
       wx.showToast({ title: "已更新", icon: "success" });
     } catch (error) {
-      wx.showToast({ title: "更新失败", icon: "none" });
+      const detail = error && error.detail ? error.detail : "";
+      wx.showToast({ title: detail || "更新失败", icon: "none" });
     }
   }
 });

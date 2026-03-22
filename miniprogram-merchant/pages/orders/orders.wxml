@@ -22,7 +22,7 @@
         <button class="ghost-btn" size="mini" data-id="{{item.id}}" bindtap="goDetail">查看详情</button>
       </view>
       <view class="action-col">
-        <button wx:if="{{item.order_status === 'PAID'}}" class="secondary-btn" size="mini" data-id="{{item.id}}" data-status="DELIVERING" bindtap="updateStatus">配送中</button>
+        <button wx:if="{{item.order_status === 'PAID' && item.payment_status === 'SUCCESS'}}" class="secondary-btn" size="mini" data-id="{{item.id}}" data-status="DELIVERING" bindtap="updateStatus">配送中</button>
         <button wx:if="{{item.order_status === 'DELIVERING'}}" class="primary-btn" size="mini" data-id="{{item.id}}" data-status="COMPLETED" bindtap="updateStatus">已完成</button>
       </view>
     </view>
