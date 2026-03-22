@@ -4,31 +4,38 @@
       <view class="hero-brand">
         <image wx:if="{{shop.logo_url}}" class="hero-logo" src="{{shop.logo_url}}" mode="aspectFill" lazy-load="true"></image>
         <view class="hero-copy">
-          <text class="eyebrow">ORDER STATION</text>
+          <text class="eyebrow">店铺</text>
           <text class="hero-title">{{shop.name}}</text>
-          <text class="hero-subline">{{shop.notice || '先登录，再直接选菜，系统自动拆成套餐结算。'}}</text>
         </view>
       </view>
-      <view class="status-badge {{shopOpen ? 'is-open' : 'is-closed'}}">
-        {{shopOpen ? '营业中' : '休息中'}}
-      </view>
+      <text class="status-badge {{shopOpen ? 'is-open' : 'is-closed'}}">{{shopOpen ? '营业中' : '休息中'}}</text>
     </view>
-    <view class="hero-meta">
-      <text class="meta-pill">营业时间 {{shop.business_hours}}</text>
-      <text class="meta-pill">套餐默认含饭</text>
-      <text class="meta-pill">额外米饭 +{{shop.extra_rice_price || 2}} MYR</text>
+    <view class="hero-summary">
+      <text class="hero-subline">{{shop.notice || (isGuest ? '先看菜，再登录下单。' : '直接选菜，系统会自动按套餐结算。')}}</text>
+      <text class="hero-utility">营业时间 {{shop.business_hours}} · 加饭 +{{shop.extra_rice_price || 2}} MYR</text>
     </view>
-    <view class="hero-tools">
-      <button class="hero-tool" bindtap="goOrders">订单</button>
-      <button class="hero-tool" bindtap="goMessages">消息</button>
-      <button class="hero-tool" bindtap="goProfile">我的</button>
+    <view wx:if="{{isGuest}}" class="guest-banner">
+      <text class="guest-banner-copy">游客可先浏览，加入购物车时再登录。</text>
+    </view>
+  </view>
+
+  <view class="section-shell quick-nav-shell">
+    <view class="quick-nav-bar">
+      <button class="nav-chip nav-chip-order" plain="true" bindtap="goOrders">
+        <text class="nav-chip-title">订单</text>
+      </button>
+      <button class="nav-chip" plain="true" bindtap="goMessages">
+        <text class="nav-chip-title">消息</text>
+      </button>
+      <button class="nav-chip" plain="true" bindtap="goProfile">
+        <text class="nav-chip-title">我的</text>
+      </button>
     </view>
   </view>
 
   <view wx:if="{{featuredProducts.length}}" class="section-shell">
     <view class="section-head">
-      <text class="section-title">推荐商品</text>
-      <text class="section-subtitle">商家精选</text>
+      <text class="section-title">推荐</text>
     </view>
     <scroll-view class="feature-strip" scroll-x="true" show-scrollbar="false">
       <view class="feature-row">
@@ -42,43 +49,43 @@
   </view>
 
   <view class="section-shell">
-    <view class="section-head">
-      <text class="section-title">时段</text>
-      <text class="section-subtitle">只显示当前可点菜品</text>
-    </view>
-    <view class="period-switch">
-      <view class="period-pill {{currentPeriod === 'lunch' ? 'period-pill-active' : ''}}" bindtap="selectPeriod" data-period="lunch">
-        <text class="period-title">午餐</text>
-        <text class="period-copy">午餐可点</text>
+    <view class="compact-controls">
+      <view class="section-head inline-head">
+        <text class="section-title">时段</text>
       </view>
-      <view class="period-pill {{currentPeriod === 'dinner' ? 'period-pill-active' : ''}}" bindtap="selectPeriod" data-period="dinner">
-        <text class="period-title">晚餐</text>
-        <text class="period-copy">晚餐可点</text>
+      <view class="period-switch">
+        <view class="period-pill {{currentPeriod === 'lunch' ? 'period-pill-active' : ''}}" bindtap="selectPeriod" data-period="lunch">
+          <text class="period-title">午餐</text>
+        </view>
+        <view class="period-pill {{currentPeriod === 'dinner' ? 'period-pill-active' : ''}}" bindtap="selectPeriod" data-period="dinner">
+          <text class="period-title">晚餐</text>
+        </view>
       </view>
     </view>
   </view>
 
   <view class="section-shell">
-    <view class="section-head">
-      <text class="section-title">分类</text>
-      <text class="section-subtitle">按菜品类型筛选</text>
-    </view>
-    <view class="chips">
-      <text class="chip {{selectedCategoryId === 0 ? 'chip-active' : ''}}" bindtap="selectCategory" data-category-id="0">全部</text>
-      <text
-        wx:for="{{categories}}"
-        wx:key="id"
-        class="chip {{selectedCategoryId === item.id ? 'chip-active' : ''}}"
-        bindtap="selectCategory"
-        data-category-id="{{item.id}}"
-      >{{item.name}}</text>
+    <view class="compact-controls compact-controls-last">
+      <view class="section-head inline-head">
+        <text class="section-title">分类</text>
+      </view>
+      <view class="chips">
+        <text class="chip {{selectedCategoryId === 0 ? 'chip-active' : ''}}" bindtap="selectCategory" data-category-id="0">全部</text>
+        <text
+          wx:for="{{categories}}"
+          wx:key="id"
+          class="chip {{selectedCategoryId === item.id ? 'chip-active' : ''}}"
+          bindtap="selectCategory"
+          data-category-id="{{item.id}}"
+        >{{item.name}}</text>
+      </view>
     </view>
   </view>
 
   <view class="section-shell menu-shell">
-    <view class="section-head">
+    <view class="section-head menu-head">
       <text class="section-title">{{currentPeriod === 'lunch' ? '午餐菜单' : '晚餐菜单'}}</text>
-      <text class="section-subtitle">直接加减菜品，底部实时显示结算结果</text>
+      <text class="section-subtitle">{{filteredProducts.length}} 道</text>
     </view>
     <view wx:if="{{filteredProducts.length}}">
       <view wx:for="{{filteredProducts}}" wx:key="id" class="dish-card">
@@ -91,17 +98,20 @@
                 {{item.dish_kind === 'meat' ? '荤菜' : item.dish_kind === 'veg' ? '素菜' : item.name.includes('米饭') ? '米饭' : '单点'}}
               </text>
             </view>
-            <text class="dish-meta">{{item.description || '现做热食，适合外卖场景。'}}</text>
+            <text class="dish-meta">{{item.description || '现做现送。'}}</text>
           </view>
           <view class="dish-bottom">
-            <view>
+            <view class="dish-side">
               <text wx:if="{{item.dish_kind !== 'meat' && item.dish_kind !== 'veg'}}" class="dish-price">MYR {{item.price_amount}}</text>
-              <text class="dish-stock">库存 {{item.stock_qty}}</text>
+              <text class="dish-stock">{{item.stock_qty > 0 ? '剩余 ' + item.stock_qty : '售罄'}}</text>
             </view>
-            <view class="stepper">
-              <button wx:if="{{item.selected_qty}}" class="stepper-btn stepper-minus" size="mini" catchtap="decreaseDish" data-product-id="{{item.id}}">-</button>
-              <text class="stepper-count">{{item.selected_qty || 0}}</text>
-              <button class="stepper-btn add-btn" size="mini" catchtap="increaseDish" data-product="{{item}}">+</button>
+            <view class="stepper {{isGuest ? 'stepper-guest' : ''}}">
+              <text wx:if="{{isGuest}}" class="stepper-guest-copy">登录后加菜</text>
+              <block wx:else>
+                <button wx:if="{{item.selected_qty}}" class="stepper-btn stepper-minus" size="mini" catchtap="decreaseDish" data-product-id="{{item.id}}">-</button>
+                <text class="stepper-count">{{item.selected_qty || 0}}</text>
+                <button class="stepper-btn add-btn" size="mini" catchtap="increaseDish" data-product="{{item}}">+</button>
+              </block>
             </view>
           </view>
         </view>
@@ -116,11 +126,11 @@
 
   <view class="action-panel compact-panel">
     <view class="pricing-inline">
-      <text class="pricing-inline-main">已选 {{pricingPreview.selectedCount}} 份</text>
+      <text class="pricing-inline-main">MYR {{pricingPreview.totalAmount}}</text>
       <text class="pricing-inline-copy">{{pricingPreview.summaryText}}</text>
       <text wx:if="{{pricingPreview.missingHint && !pricingPreview.matched}}" class="pricing-inline-missing">{{pricingPreview.missingHint}}</text>
-      <text class="pricing-inline-total">MYR {{pricingPreview.totalAmount}}</text>
+      <text class="pricing-inline-total">已选 {{pricingPreview.selectedCount}} 份</text>
     </view>
-    <button class="panel-btn panel-primary panel-cart-btn" bindtap="goCart">去核对订单{{cartLabel}}</button>
+    <button class="panel-btn panel-primary panel-cart-btn" bindtap="goCart">{{isGuest ? '登录后下单' : '去核对订单'}}{{isGuest ? '' : cartLabel}}</button>
   </view>
 </view>

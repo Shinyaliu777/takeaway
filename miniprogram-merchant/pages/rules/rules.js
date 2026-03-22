@@ -22,7 +22,15 @@ Page({
       meat_count: "2",
       veg_count: "1"
     },
-    previewResult: null
+    previewResult: null,
+    commonCombos: [
+      { label: "1 荤 1 素", meat_count: 1, veg_count: 1 },
+      { label: "2 荤 1 素", meat_count: 2, veg_count: 1 },
+      { label: "1 荤 2 素", meat_count: 1, veg_count: 2 },
+      { label: "2 荤 2 素", meat_count: 2, veg_count: 2 },
+      { label: "3 荤", meat_count: 3, veg_count: 0 },
+      { label: "3 素", meat_count: 0, veg_count: 3 }
+    ]
   },
   async onShow() {
     try {
@@ -96,6 +104,22 @@ Page({
     } catch (error) {
       this.setData({ previewResult: null });
     }
+  },
+  previewCombo(event) {
+    const index = Number(event.currentTarget.dataset.index || 0);
+    const combo = this.data.commonCombos[index];
+    if (!combo) {
+      return;
+    }
+    this.setData(
+      {
+        previewForm: {
+          meat_count: `${combo.meat_count}`,
+          veg_count: `${combo.veg_count}`
+        }
+      },
+      () => this.loadPreview()
+    );
   },
   validateForm() {
     const payload = {

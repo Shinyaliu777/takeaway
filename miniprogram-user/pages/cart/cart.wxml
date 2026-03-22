@@ -1,18 +1,36 @@
 <view class="page">
   <view class="hero-card cart-hero">
-    <text class="eyebrow">CHECK ORDER</text>
-    <text class="hero-title">核对订单</text>
-    <text class="hero-note">这里只负责核对菜品、套餐拆分和最终金额，不再重复计算。</text>
+    <view class="cart-hero-top">
+      <view class="cart-hero-copy">
+        <text class="hero-title">确认订单</text>
+        <text class="hero-note">{{pricingSummary.checkoutHint}}</text>
+      </view>
+      <view class="amount-spotlight">
+        <text class="amount-spotlight-label">应付</text>
+        <text class="amount-spotlight-value">MYR {{totalAmount}}</text>
+      </view>
+    </view>
     <view class="hero-meta">
       <text class="meta-pill">已选 {{pricingPreview.selectedCount}} 份</text>
-      <text class="meta-pill">合计 MYR {{totalAmount}}</text>
+      <text class="meta-pill">套餐 {{pricingSummary.comboCount}} 组</text>
+      <text class="meta-pill">单点 MYR {{pricingSummary.sideTotalText}}</text>
+    </view>
+    <view class="hero-breakdown">
+      <view class="breakdown-line">
+        <text class="breakdown-key">套餐金额</text>
+        <text class="breakdown-value">MYR {{pricingSummary.comboTotalText}}</text>
+      </view>
+      <view class="breakdown-line">
+        <text class="breakdown-key">单点金额</text>
+        <text class="breakdown-value">MYR {{pricingSummary.sideTotalText}}</text>
+      </view>
     </view>
   </view>
 
-  <view class="section-shell">
-    <view class="section-head">
-      <text class="section-title">已选菜品</text>
-      <text class="section-subtitle">先核对数量</text>
+  <view class="sheet-card">
+    <view class="sheet-head">
+      <text class="sheet-title">菜品</text>
+      <text class="sheet-meta">{{cart.length}} 项</text>
     </view>
     <view wx:if="{{cart.length}}">
       <view wx:for="{{cart}}" wx:key="cart_key" class="cart-item-card">
@@ -40,14 +58,16 @@
     </view>
   </view>
 
-  <view class="section-shell">
-    <view class="section-head">
-      <text class="section-title">套餐拆分结果</text>
-      <text class="section-subtitle">系统已自动按最优组合结算</text>
+  <view class="sheet-card">
+    <view class="sheet-head">
+      <text class="sheet-title">结算结果</text>
+      <text class="sheet-meta">金额以这里为准</text>
     </view>
-    <view class="address-card">
-      <text class="line">{{pricingPreview.summaryText}}</text>
-      <text wx:if="{{pricingPreview.missingHint && !pricingPreview.matched}}" class="line strong">{{pricingPreview.missingHint}}</text>
+    <view class="settlement-card">
+      <view class="settlement-banner {{pricingPreview.matched ? 'is-ready' : 'is-pending'}}">
+        <text class="settlement-banner-title">{{pricingPreview.matched ? '可以创建订单' : '还不能结算'}}</text>
+        <text class="settlement-banner-copy">{{pricingPreview.matched ? pricingPreview.summaryText : (pricingPreview.missingHint || pricingPreview.summaryText)}}</text>
+      </view>
       <view wx:if="{{pricingPreview.comboLines.length}}">
         <view wx:for="{{pricingPreview.comboLines}}" wx:key="index" class="combo-card">
           <view class="combo-head">
@@ -75,12 +95,11 @@
     </view>
   </view>
 
-  <view class="section-shell">
-    <view class="section-head">
-      <text class="section-title">配送地址</text>
-      <text class="section-subtitle">下单会默认使用这里</text>
+  <view class="sheet-card">
+    <view class="sheet-head">
+      <text class="sheet-title">地址</text>
     </view>
-    <view wx:if="{{defaultAddress}}" class="address-card">
+    <view wx:if="{{defaultAddress}}" class="address-card address-card-compact">
       <text class="dish-name">{{defaultAddress.receiver_name}}</text>
       <text class="dish-meta">{{defaultAddress.receiver_mobile}}</text>
       <text class="line">{{defaultAddress.detail_address}}</text>
@@ -93,12 +112,12 @@
 
   <view class="action-panel status-panel">
     <view class="status-copy">
-      <text class="status-title">提交前说明</text>
-      <text class="line">必须先凑成完整套餐才能下单。下单后再上传付款截图，商家确认到账后开始配送。</text>
-      <text wx:if="{{!pricingPreview.matched && cart.length}}" class="line strong">当前选菜还不能组成可结算套餐，请继续补齐荤素组合。</text>
+      <text class="status-title">创建订单</text>
+      <text class="line">创建后完成转账，再上传付款截图给商家确认。</text>
+      <text wx:if="{{!pricingPreview.matched && cart.length}}" class="line strong">{{pricingSummary.checkoutHint}}</text>
       <text wx:if="{{orderHint}}" class="line strong">{{orderHint}}</text>
     </view>
-    <button class="panel-btn primary-btn" bindtap="checkout" disabled="{{!canCheckout}}">创建订单</button>
-    <button wx:if="{{cart.length}}" class="panel-btn ghost-btn" bindtap="clearCart">清空购物车</button>
+    <button class="panel-btn primary-btn action-btn-primary" bindtap="checkout" disabled="{{!canCheckout}}">创建订单</button>
+    <button wx:if="{{cart.length}}" class="panel-btn ghost-btn subtle-ghost-btn action-btn-secondary" bindtap="clearCart">清空购物车</button>
   </view>
 </view>

@@ -6,6 +6,13 @@ Page({
   data: {
     cart: [],
     totalAmount: "0.00",
+    pricingSummary: {
+      comboCount: 0,
+      comboTotalText: "0.00",
+      sideTotalText: "0.00",
+      totalAmountText: "0.00",
+      checkoutHint: ""
+    },
     pricingPreview: {
       matched: false,
       comboLines: [],
@@ -78,14 +85,23 @@ Page({
     const rawCart = wx.getStorageSync("user-cart") || [];
     const pricingConfig = this.data.pricingConfig || normalizePricingConfig(wx.getStorageSync("pricing-config") || {});
     const pricingPreview = buildPricingPreview(rawCart, pricingConfig);
+    const pricingSummary = {
+      comboCount: pricingPreview.comboLines.length,
+      comboTotalText: pricingPreview.comboTotal.toFixed(2),
+      sideTotalText: pricingPreview.sideTotal.toFixed(2),
+      totalAmountText: pricingPreview.totalAmount.toFixed(2),
+      checkoutHint: pricingPreview.checkoutReady
+        ? "当前组合可直接创建订单"
+        : (pricingPreview.missingHint || "当前组合还不能结算，请继续补齐荤素搭配")
+    };
     const cart = (wx.getStorageSync("user-cart") || []).map((item) => ({
       ...item,
       lineAmount: item.dish_kind === "meat" || item.dish_kind === "veg"
         ? ""
         : ((item.dish_kind === "rice" ? pricingConfig.extraRicePrice : item.price_amount) * item.quantity).toFixed(2)
     }));
-    const totalAmount = pricingPreview.totalAmount.toFixed(2);
-    this.setData({ cart, totalAmount, pricingPreview, pricingConfig });
+    const totalAmount = pricingSummary.totalAmountText;
+    this.setData({ cart, totalAmount, pricingPreview, pricingSummary, pricingConfig });
   },
   syncCart(cart) {
     wx.setStorageSync("user-cart", cart);
@@ -154,7 +170,9 @@ Page({
       return;
     }
     if (!this.data.canCheckout) {
-      const title = !this.data.pricingPreview.matched ? "当前选菜还不能结算" : "缺少购物车或地址";
+      const title = !this.data.pricingPreview.matched
+        ? (this.data.pricingPreview.missingHint || "当前选菜还不能结算")
+        : "缺少购物车或地址";
       wx.showToast({ title, icon: "none" });
       return;
     }

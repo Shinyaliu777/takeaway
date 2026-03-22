@@ -1,56 +1,51 @@
-<view class="page">
-  <view class="hero-panel">
-    <text class="eyebrow">MERCHANT CONSOLE</text>
-    <text class="title">商家工作台</text>
-    <text class="hero-line">先处理付款和配送，再管理菜单、规则和首页运营位。</text>
+<view class="page merchant-home">
+  <view class="hero-panel dashboard-hero">
+    <text class="eyebrow">运营控制台</text>
+    <text class="title">今天先处理要出单的事</text>
+    <text class="hero-line">付款审核、待配送和消息提醒优先，经营数据放在第二层查看。</text>
     <view class="hero-meta-row">
-      <text class="hero-meta-chip">当前状态：{{tokenReady ? '在线' : '离线'}}</text>
-      <text class="hero-meta-chip">未读消息：{{messageCount}}</text>
-      <text class="hero-meta-chip">待处理订单：{{pendingOrders}}</text>
+      <text class="hero-meta-chip hero-meta-chip-strong">{{tokenReady ? '在线处理中' : '等待登录'}}</text>
+      <text class="hero-meta-chip">待处理 {{todoCount}}</text>
     </view>
-    <view class="hero-grid">
-      <view class="hero-stat">
-        <text class="hero-stat-label">待审付款</text>
-        <text class="hero-stat-value">{{reviewCount}}</text>
+  </view>
+
+  <view class="card task-card">
+    <view class="section-head section-head-compact">
+      <view>
+        <text class="section-title">今日待办</text>
+        <text class="section-subtitle section-subtitle-left">先处理会影响履约和用户感知的任务。</text>
       </view>
-      <view class="hero-stat">
-        <text class="hero-stat-label">配送中</text>
-        <text class="hero-stat-value">{{deliveringCount}}</text>
+      <text class="section-badge">共 {{todoCount}} 项</text>
+    </view>
+    <view class="queue-list">
+      <view class="queue-item queue-item-primary" hover-class="queue-item-hover" bindtap="goOrders">
+        <view class="queue-copy-wrap">
+          <text class="queue-title">待审付款</text>
+          <text class="queue-copy">确认到账后才能进入配送。</text>
+        </view>
+        <text class="queue-value">{{pendingReviewCount}}</text>
       </view>
-      <view class="hero-stat">
-        <text class="hero-stat-label">总用户数</text>
-        <text class="hero-stat-value">{{userCount}}</text>
+      <view class="queue-item" hover-class="queue-item-hover" bindtap="goOrders">
+        <view class="queue-copy-wrap">
+          <text class="queue-title">待配送</text>
+          <text class="queue-copy">已付款订单等待出餐配送。</text>
+        </view>
+        <text class="queue-value">{{pendingDeliveryCount}}</text>
       </view>
-      <view class="hero-stat">
-        <text class="hero-stat-label">今日新增用户</text>
-        <text class="hero-stat-value">{{todayNewUsers}}</text>
+      <view class="queue-item" hover-class="queue-item-hover" bindtap="goMessages">
+        <view class="queue-copy-wrap">
+          <text class="queue-title">未读消息</text>
+          <text class="queue-copy">订单提醒和系统通知。</text>
+        </view>
+        <text class="queue-value">{{unreadMessageCount}}</text>
       </view>
     </view>
   </view>
 
-  <view class="card">
-    <view class="section-head">
-      <text class="section-title">今日优先处理</text>
-    </view>
-    <view class="todo-grid">
-      <view class="quick-card quick-card-primary" hover-class="quick-card-hover" bindtap="goOrders">
-        <text class="quick-icon">◎</text>
-        <text class="quick-title">待审付款 {{reviewCount}}</text>
-        <text class="quick-copy">先处理付款确认，避免订单积压。</text>
-        <text class="quick-link">立即查看</text>
-      </view>
-      <view class="quick-card" hover-class="quick-card-hover" bindtap="goOrders">
-        <text class="quick-icon">⇢</text>
-        <text class="quick-title">配送中 {{deliveringCount}}</text>
-        <text class="quick-copy">跟进正在履约的订单状态。</text>
-        <text class="quick-link">进入订单</text>
-      </view>
-    </view>
-  </view>
-
-  <view class="card">
+  <view class="card data-card">
     <view class="section-head">
       <text class="section-title">今日经营结果</text>
+      <text class="section-subtitle section-subtitle-left">快速扫数，不抢任务注意力。</text>
     </view>
     <view class="kpi-grid">
       <view class="kpi-card">
@@ -72,68 +67,43 @@
     </view>
   </view>
 
-  <view class="card">
+  <view class="card data-card shortcut-card">
     <view class="section-head">
-      <text class="section-title">运营状态</text>
+      <text class="section-title">常用入口</text>
+      <text class="section-subtitle section-subtitle-left">高频操作放前面，设置放后面。</text>
     </view>
-    <view class="quick-grid">
-      <view class="quick-card quick-card-primary">
-        <text class="quick-icon">◉</text>
-        <text class="quick-title">推荐位{{featuredEnabled ? '已开启' : '未开启'}}</text>
-        <text class="quick-copy">去店铺设置里编辑首页推荐卡片和图片。</text>
+    <view class="shortcut-grid">
+      <view class="shortcut-item shortcut-item-primary" hover-class="shortcut-item-hover" bindtap="goOrders">
+        <text class="shortcut-title">订单管理</text>
+        <text class="shortcut-copy">审核和配送</text>
       </view>
-      <view class="quick-card">
-        <text class="quick-icon">¤</text>
-        <text class="quick-title">商品时段</text>
-        <text class="quick-copy">午餐、晚餐可点状态已并入商品管理。</text>
+      <view class="shortcut-item" hover-class="shortcut-item-hover" bindtap="goRules">
+        <text class="shortcut-title">规则管理</text>
+        <text class="shortcut-copy">套餐和价格</text>
       </view>
-    </view>
-  </view>
-
-  <view class="card">
-    <view class="section-head">
-      <text class="section-title">快捷入口</text>
-    </view>
-    <view class="quick-grid">
-      <view class="quick-card quick-card-primary" hover-class="quick-card-hover" bindtap="goOrders">
-        <text class="quick-icon">◎</text>
-        <text class="quick-title">订单管理</text>
-        <text class="quick-copy">优先处理已付款订单</text>
+      <view class="shortcut-item" hover-class="shortcut-item-hover" bindtap="goProducts">
+        <text class="shortcut-title">商品管理</text>
+        <text class="shortcut-copy">库存和上下架</text>
       </view>
-      <view class="quick-card" hover-class="quick-card-hover" bindtap="goProducts">
-        <text class="quick-icon">▣</text>
-        <text class="quick-title">商品管理</text>
-        <text class="quick-copy">图片、库存、午晚餐可点</text>
+      <view class="shortcut-item" hover-class="shortcut-item-hover" bindtap="goMessages">
+        <text class="shortcut-title">消息列表</text>
+        <text class="shortcut-copy">提醒和通知</text>
       </view>
-      <view class="quick-card" hover-class="quick-card-hover" bindtap="goRules">
-        <text class="quick-icon">≋</text>
-        <text class="quick-title">规则管理</text>
-        <text class="quick-copy">套餐规则、价格和加饭费用</text>
+      <view class="shortcut-item" hover-class="shortcut-item-hover" bindtap="goUsers">
+        <text class="shortcut-title">用户中心</text>
+        <text class="shortcut-copy">用户和订单</text>
       </view>
-      <view class="quick-card" hover-class="quick-card-hover" bindtap="goCategories">
-        <text class="quick-icon">◫</text>
-        <text class="quick-title">分类管理</text>
-        <text class="quick-copy">菜单结构与排序</text>
+      <view class="shortcut-item" hover-class="shortcut-item-hover" bindtap="goCategories">
+        <text class="shortcut-title">分类管理</text>
+        <text class="shortcut-copy">菜单结构</text>
       </view>
-      <view class="quick-card" hover-class="quick-card-hover" bindtap="goShop">
-        <text class="quick-icon">⌂</text>
-        <text class="quick-title">店铺设置</text>
-        <text class="quick-copy">营业信息与展示内容</text>
+      <view class="shortcut-item" hover-class="shortcut-item-hover" bindtap="goShop">
+        <text class="shortcut-title">店铺设置</text>
+        <text class="shortcut-copy">营业和展示</text>
       </view>
-      <view class="quick-card" hover-class="quick-card-hover" bindtap="goMessages">
-        <text class="quick-icon">✦</text>
-        <text class="quick-title">消息列表</text>
-        <text class="quick-copy">订单提醒与状态通知</text>
-      </view>
-      <view class="quick-card" hover-class="quick-card-hover" bindtap="goUsers">
-        <text class="quick-icon">◌</text>
-        <text class="quick-title">用户中心</text>
-        <text class="quick-copy">查看注册用户和历史订单</text>
-      </view>
-      <view class="quick-card quick-card-danger" hover-class="quick-card-hover" bindtap="logout">
-        <text class="quick-icon">↗</text>
-        <text class="quick-title">退出登录</text>
-        <text class="quick-copy">结束当前商家会话</text>
+      <view class="shortcut-item shortcut-item-danger" hover-class="shortcut-item-hover" bindtap="logout">
+        <text class="shortcut-title">退出登录</text>
+        <text class="shortcut-copy">结束当前会话</text>
       </view>
     </view>
   </view>

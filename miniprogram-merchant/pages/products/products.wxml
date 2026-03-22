@@ -1,16 +1,21 @@
 <view class="page">
   <view class="hero-panel">
-    <text class="eyebrow">MENU CONTENT</text>
+    <text class="eyebrow">商品维护</text>
     <text class="title">商品管理</text>
-    <text class="hero-line">统一商品图片、介绍、库存与午晚餐可售状态，确保前台选菜顺畅。</text>
-  </view>
-  <view class="card">
-    <view class="section-head">
-      <text class="section-title">商品列表</text>
-      <text class="section-subtitle">筛选后 {{filteredProducts.length}} / {{products.length}} 个</text>
+    <text class="hero-line">先筛选，再改状态。</text>
+    <view class="hero-meta-row">
+      <text class="hero-meta-chip hero-meta-chip-strong">当前筛选 {{filteredProducts.length}}</text>
+      <text class="hero-meta-chip">商品总数 {{products.length}}</text>
+      <text class="hero-meta-chip">分类 / 时段 / 上架状态</text>
     </view>
+  </view>
+  <view class="card tool-card">
     <view class="filter-stack">
       <input class="input" placeholder="搜索商品名或分类" value="{{searchKeyword}}" bindinput="onSearchInput" />
+      <view class="filter-row">
+        <button class="filter-pill {{categoryFilter === 'all' ? 'filter-pill-active' : ''}}" size="mini" data-value="all" bindtap="setCategoryFilter">全部分类</button>
+        <button wx:for="{{categories}}" wx:key="id" class="filter-pill {{categoryFilter == item.id ? 'filter-pill-active' : ''}}" size="mini" data-value="{{item.id}}" bindtap="setCategoryFilter">{{item.name}}</button>
+      </view>
       <view class="filter-row">
         <button class="filter-pill {{periodFilter === 'all' ? 'filter-pill-active' : ''}}" size="mini" data-value="all" bindtap="setPeriodFilter">全部时段</button>
         <button class="filter-pill {{periodFilter === 'lunch' ? 'filter-pill-active' : ''}}" size="mini" data-value="lunch" bindtap="setPeriodFilter">午餐可点</button>
@@ -22,6 +27,19 @@
         <button class="filter-pill {{saleFilter === 'off' ? 'filter-pill-active' : ''}}" size="mini" data-value="off" bindtap="setSaleFilter">仅下架</button>
       </view>
     </view>
+    <view class="summary-banner">
+      <view class="summary-copy-wrap">
+        <text class="summary-banner-title">结果</text>
+        <text class="summary-banner-copy">{{summaryText}}</text>
+      </view>
+      <button class="ghost-btn summary-clear-btn" size="mini" bindtap="clearFilters">清空筛选</button>
+    </view>
+  </view>
+  <view class="card list-card">
+    <view class="section-head">
+      <text class="section-title">商品结果</text>
+      <text class="section-subtitle">{{filteredProducts.length}} / {{products.length}}</text>
+    </view>
     <view wx:for="{{filteredProducts}}" wx:key="id" class="product-list-card">
       <view class="product-top">
         <image wx:if="{{item.image_url}}" class="product-thumb" src="{{item.image_url}}" mode="aspectFill"></image>
@@ -30,7 +48,6 @@
             <text class="product-title">{{item.name}}</text>
             <text class="product-price">{{item.price_amount ? 'MYR ' + item.price_amount : '自动套餐价'}}</text>
           </view>
-          <text class="product-summary">{{item.description || '未填写介绍'}}</text>
           <view class="meta-row">
             <text class="pill pill-slate">{{item.category_name}}</text>
             <text class="pill pill-slate">库存 {{item.stock_qty}}</text>
@@ -47,16 +64,15 @@
         </view>
       </view>
     </view>
-    <view wx:if="{{!filteredProducts.length}}" class="empty-copy">当前筛选条件下没有商品。</view>
+    <view wx:if="{{!filteredProducts.length}}" class="empty-copy">当前条件下没有商品，试试清空筛选。</view>
   </view>
 
   <view class="card editor-card">
     <view class="section-head">
       <text class="section-title">{{editingId ? '编辑商品' : '新增商品'}}</text>
-      <text class="section-subtitle">{{editingId ? '修改后前台会立即更新' : '录入后可直接上架售卖'}}</text>
+      <text class="section-subtitle">{{editingId ? '修改后立即生效' : '保存后可直接上架'}}</text>
     </view>
     <view class="editor-section">
-      <text class="editor-section-title">基础信息</text>
       <view class="field-block">
         <text class="field-label">商品分类</text>
         <picker mode="selector" range="{{categoryOptions}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
@@ -74,7 +90,7 @@
     </view>
 
     <view class="editor-section">
-      <text class="editor-section-title">图片与展示</text>
+      <text class="editor-section-title">图片</text>
       <view class="image-upload-panel">
         <view class="image-preview-wrap">
           <image wx:if="{{form.image_url}}" class="preview-image" src="{{form.image_url}}" mode="aspectFill"></image>
@@ -89,7 +105,7 @@
     </view>
 
     <view class="editor-section">
-      <text class="editor-section-title">价格、库存与售卖时段</text>
+      <text class="editor-section-title">价格、库存、时段</text>
       <view class="field-grid">
         <view class="field-block field-grid-item">
           <text class="field-label">价格</text>

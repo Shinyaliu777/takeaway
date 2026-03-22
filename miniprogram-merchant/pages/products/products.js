@@ -8,9 +8,11 @@ Page({
     categories: [],
     categoryOptions: [],
     categoryIndex: 0,
+    categoryFilter: "all",
     searchKeyword: "",
     periodFilter: "all",
     saleFilter: "all",
+    summaryText: "加载商品后可按名称、分类和时段快速筛选。",
     editingId: null,
     form: {
       category_id: 1,
@@ -60,6 +62,10 @@ Page({
     this.setData({ searchKeyword: event.detail.value || "" });
     this.applyFilters();
   },
+  setCategoryFilter(event) {
+    this.setData({ categoryFilter: event.currentTarget.dataset.value || "all" });
+    this.applyFilters();
+  },
   setPeriodFilter(event) {
     this.setData({ periodFilter: event.currentTarget.dataset.value || "all" });
     this.applyFilters();
@@ -68,8 +74,18 @@ Page({
     this.setData({ saleFilter: event.currentTarget.dataset.value || "all" });
     this.applyFilters();
   },
+  clearFilters() {
+    this.setData({
+      searchKeyword: "",
+      categoryFilter: "all",
+      periodFilter: "all",
+      saleFilter: "all"
+    });
+    this.applyFilters();
+  },
   applyFilters() {
     const keyword = (this.data.searchKeyword || "").trim().toLowerCase();
+    const categoryFilter = this.data.categoryFilter;
     const periodFilter = this.data.periodFilter;
     const saleFilter = this.data.saleFilter;
     const filteredProducts = (this.data.products || []).filter((item) => {
@@ -77,6 +93,8 @@ Page({
         !keyword ||
         (item.name || "").toLowerCase().includes(keyword) ||
         (item.category_name || "").toLowerCase().includes(keyword);
+      const matchesCategory =
+        categoryFilter === "all" || Number(item.category_id) === Number(categoryFilter);
       const matchesPeriod =
         periodFilter === "all" ||
         (periodFilter === "lunch" && item.available_lunch) ||
@@ -85,9 +103,33 @@ Page({
         saleFilter === "all" ||
         (saleFilter === "on" && item.sale_status) ||
         (saleFilter === "off" && !item.sale_status);
-      return matchesKeyword && matchesPeriod && matchesSale;
+      return matchesKeyword && matchesCategory && matchesPeriod && matchesSale;
     });
-    this.setData({ filteredProducts });
+    this.setData({
+      filteredProducts,
+      summaryText: this.buildSummary(filteredProducts.length)
+    });
+  },
+  buildSummary(filteredCount) {
+    const parts = [];
+    const keyword = (this.data.searchKeyword || "").trim();
+    if (keyword) {
+      parts.push(`关键词「${keyword}」`);
+    }
+    if (this.data.categoryFilter !== "all") {
+      const category = (this.data.categories || []).find((item) => Number(item.id) === Number(this.data.categoryFilter));
+      parts.push(category ? category.name : "当前分类");
+    }
+    if (this.data.periodFilter !== "all") {
+      parts.push(this.data.periodFilter === "lunch" ? "午餐可点" : "晚餐可点");
+    }
+    if (this.data.saleFilter !== "all") {
+      parts.push(this.data.saleFilter === "on" ? "仅上架" : "仅下架");
+    }
+    if (!parts.length) {
+      return `当前显示 ${filteredCount} 个商品，可直接搜索和筛选。`;
+    }
+    return `按 ${parts.join("、")} 筛选后显示 ${filteredCount} 个商品。`;
   },
   onInput(event) {
     const key = event.currentTarget.dataset.key;

@@ -18,8 +18,12 @@ Page({
   data: {
     tokenReady: false,
     messageCount: 0,
+    unreadMessageCount: 0,
     pendingOrders: 0,
     reviewCount: 0,
+    pendingReviewCount: 0,
+    pendingDeliveryCount: 0,
+    todoCount: 0,
     featuredEnabled: false,
     userCount: 0,
     todayNewUsers: 0,
@@ -44,11 +48,18 @@ Page({
       const todaysOrders = (orders || []).filter((item) => isToday(item.created_at));
       const todaysUsers = (users || []).filter((item) => isToday(item.created_at));
       const todayRevenue = todaysOrders.reduce((sum, item) => sum + Number(item.total_amount || 0), 0);
+      const unreadMessages = (messages || []).filter((item) => !item.read);
+      const pendingReviewCount = (orders || []).filter((item) => item.payment_status === "PROOF_UPLOADED").length;
+      const pendingDeliveryCount = (orders || []).filter((item) => item.order_status === "PAID").length;
       this.setData({
         tokenReady: true,
-        messageCount: (messages || []).filter((item) => !item.read).length,
-        pendingOrders: (orders || []).filter((item) => item.order_status === "PAID" || item.order_status === "PAYMENT_REVIEW").length,
-        reviewCount: (orders || []).filter((item) => item.payment_status === "PROOF_UPLOADED").length,
+        messageCount: unreadMessages.length,
+        unreadMessageCount: unreadMessages.length,
+        pendingOrders: pendingReviewCount + pendingDeliveryCount,
+        reviewCount: pendingReviewCount,
+        pendingReviewCount,
+        pendingDeliveryCount,
+        todoCount: pendingReviewCount + pendingDeliveryCount + unreadMessages.length,
         featuredEnabled: !!(shop && shop.featured_enabled),
         userCount: (users || []).length,
         todayNewUsers: todaysUsers.length,

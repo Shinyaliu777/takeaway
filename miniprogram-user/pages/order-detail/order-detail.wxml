@@ -1,18 +1,68 @@
 <view class="page">
   <view class="hero-card detail-hero" wx:if="{{order}}">
-    <text class="eyebrow">ORDER DETAIL</text>
-    <text class="hero-title">{{order.order_status_text}}</text>
-    <text class="hero-note">{{order.order_no}}</text>
+    <view class="detail-hero-top">
+      <view class="detail-hero-copy">
+        <text class="eyebrow">订单状态</text>
+        <text class="hero-title">{{paymentBanner.title}}</text>
+        <text class="hero-note">{{order.order_no}}</text>
+      </view>
+      <view class="hero-amount-box">
+        <text class="hero-amount-label">订单金额</text>
+        <text class="hero-amount-value">MYR {{order.total_amount}}</text>
+      </view>
+    </view>
     <view class="hero-meta">
+      <text class="meta-pill">{{order.order_status_text}}</text>
       <text class="meta-pill">{{order.payment_status_text}}</text>
-      <text class="meta-pill">MYR {{order.total_amount}}</text>
+      <text class="meta-pill">下一步 {{paymentBanner.nextAction}}</text>
+    </view>
+    <view class="status-banner status-{{paymentBanner.tone}}">
+      <text class="status-banner-title">{{paymentBanner.title}}</text>
+      <text class="status-banner-copy">{{paymentBanner.copy}}</text>
+    </view>
+  </view>
+
+  <view class="card detail-card" wx:if="{{payment && (order.payment_status === 'UNPAID' || order.payment_status === 'FAILED' || order.payment_status === 'PROOF_UPLOADED')}}">
+    <view class="section-head">
+      <text class="section-title">当前动作</text>
+      <text class="section-subtitle">先处理付款，再等待商家确认</text>
+    </view>
+    <view class="proof-panel proof-panel-priority">
+      <image
+        wx:if="{{payment.proof_image_url}}"
+        class="proof-image"
+        src="{{payment.proof_image_url}}"
+        mode="aspectFit"
+        lazy-load="true"
+        bindtap="previewProofImage"
+        binderror="handleProofError"
+      />
+      <view wx:if="{{payment.proof_image_url && proofImageFailed}}" class="proof-empty">
+        <text class="line">截图已保存，但当前预览加载失败。</text>
+        <button class="ghost-btn proof-secondary-btn" bindtap="previewProofImage">查看大图</button>
+      </view>
+      <view wx:if="{{!payment.proof_image_url}}" class="proof-empty">
+        <text class="line">还没有上传付款成功截图。</text>
+      </view>
+      <text class="line muted" wx:if="{{order.payment_status === 'FAILED'}}">商家未通过当前截图，请重新上传清晰截图。</text>
+      <text class="line muted" wx:if="{{order.payment_status === 'PROOF_UPLOADED'}}">截图已提交，请等待商家确认，不需要重复上传。</text>
+      <text class="line muted" wx:if="{{order.payment_status === 'UNPAID'}}">先完成转账，再上传付款截图。</text>
+      <button wx:if="{{payment.proof_image_url}}" class="ghost-btn proof-secondary-btn" bindtap="previewProofImage">查看大图</button>
+      <button
+        wx:if="{{order.payment_status === 'UNPAID' || order.payment_status === 'FAILED'}}"
+        class="primary-btn proof-btn proof-btn-primary"
+        bindtap="choosePaymentProof"
+        loading="{{uploading}}"
+      >
+        {{payment.proof_image_url ? '重新上传付款截图' : '上传付款截图'}}
+      </button>
     </view>
   </view>
 
   <view class="card detail-card" wx:if="{{timeline.length}}">
     <view class="section-head">
       <text class="section-title">订单进度</text>
-      <text class="section-subtitle">让你清楚知道订单当前在哪一步</text>
+      <text class="section-subtitle">查看完整流程</text>
     </view>
     <view class="timeline">
       <view wx:for="{{timeline}}" wx:key="key" class="timeline-item">
@@ -31,7 +81,7 @@
   <view class="card detail-card" wx:if="{{order}}">
     <view class="section-head">
       <text class="section-title">配送信息</text>
-      <text class="section-subtitle">收货与下单信息</text>
+      <text class="section-subtitle">收货信息</text>
     </view>
     <view class="info-row">
       <text class="info-label">收货人</text>
@@ -55,10 +105,10 @@
     </view>
   </view>
 
-  <view class="card detail-card" wx:if="{{payment}}">
+  <view class="card detail-card" wx:if="{{payment && order.payment_status !== 'UNPAID' && order.payment_status !== 'FAILED' && order.payment_status !== 'PROOF_UPLOADED'}}">
     <view class="section-head">
       <text class="section-title">付款截图</text>
-      <text class="section-subtitle">上传成功后等待商家手动确认</text>
+      <text class="section-subtitle">付款凭证</text>
     </view>
     <view class="proof-panel">
       <image
@@ -77,24 +127,15 @@
       <view wx:if="{{!payment.proof_image_url}}" class="proof-empty">
         <text class="line">还没有上传付款成功截图。</text>
       </view>
-      <text class="line muted" wx:if="{{order.payment_status === 'FAILED'}}">商家未通过当前截图，请重新上传清晰截图。</text>
-      <text class="line muted" wx:if="{{order.payment_status === 'PROOF_UPLOADED'}}">截图已提交，等待商家确认到账。</text>
+      <text class="line muted" wx:if="{{order.payment_status === 'SUCCESS'}}">商家已确认到账，订单可以继续往下配送。</text>
       <button wx:if="{{payment.proof_image_url}}" class="ghost-btn proof-secondary-btn" bindtap="previewProofImage">查看大图</button>
-      <button
-        wx:if="{{order.order_status === 'PENDING_PAYMENT' || order.payment_status === 'FAILED' || order.payment_status === 'PROOF_UPLOADED'}}"
-        class="primary-btn proof-btn"
-        bindtap="choosePaymentProof"
-        loading="{{uploading}}"
-      >
-        {{payment.proof_image_url ? '重新上传付款截图' : '上传付款截图'}}
-      </button>
     </view>
   </view>
 
   <view class="card detail-card" wx:if="{{items.length}}">
     <view class="section-head">
       <text class="section-title">商品明细</text>
-      <text class="section-subtitle">本单已确认商品</text>
+      <text class="section-subtitle">{{items.length}} 项</text>
     </view>
     <view wx:for="{{items}}" wx:key="id" class="item-row">
       <view>

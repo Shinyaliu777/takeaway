@@ -1,16 +1,59 @@
 <view class="page">
   <view class="hero-panel">
-    <text class="eyebrow">PRICING RULES</text>
+    <text class="eyebrow">规则维护</text>
     <text class="title">规则管理</text>
-    <text class="hero-line">在后台直接维护套餐组合、价格和额外加饭费用，用户端会实时按最新规则结算。</text>
+    <text class="hero-line">先看能不能卖，再改规则。</text>
   </view>
 
-  <view class="card">
+  <view class="card preview-card">
     <view class="section-head">
-      <text class="section-title">额外米饭价格</text>
-      <text class="section-subtitle">套餐默认含 1 份饭，额外米饭单独加价</text>
+      <text class="section-title">规则效果预览</text>
+      <text class="section-subtitle">先判断常见组合</text>
+    </view>
+    <view class="preview-stage {{previewResult && previewResult.matched ? 'preview-stage-pass' : 'preview-stage-pending'}}">
+      <view class="preview-stage-copy">
+        <text class="preview-kicker">{{previewResult ? previewResult.message : '选择常见组合后，结果会直接显示在这里。'}}</text>
+        <text class="preview-title">{{previewResult ? '预估结算 MYR ' + previewResult.combo_total : '规则结果会优先显示'}}</text>
+        <text class="preview-copy">{{previewResult ? '当前规则共匹配 ' + previewResult.combo_lines.length + ' 组套餐，可直接对照前台结算结果。' : '这个区域是本页最重要的判断区。'}}</text>
+      </view>
+      <view class="preview-stage-amount">
+        <text class="preview-stage-amount-label">套餐总价</text>
+        <text class="preview-stage-amount-value">{{previewResult ? 'MYR ' + previewResult.combo_total : '--'}}</text>
+      </view>
+    </view>
+    <view class="preset-row">
+      <button wx:for="{{commonCombos}}" wx:for-index="index" wx:key="label" class="preset-pill" size="mini" data-index="{{index}}" bindtap="previewCombo">{{item.label}}</button>
     </view>
     <view class="field-grid">
+      <view class="field-block field-grid-item">
+        <text class="field-label">荤菜数量</text>
+        <input class="input" placeholder="例如 2" value="{{previewForm.meat_count}}" data-key="meat_count" bindinput="onPreviewInput" />
+      </view>
+      <view class="field-block field-grid-item">
+        <text class="field-label">素菜数量</text>
+        <input class="input" placeholder="例如 1" value="{{previewForm.veg_count}}" data-key="veg_count" bindinput="onPreviewInput" />
+      </view>
+    </view>
+    <button class="primary-btn" bindtap="loadPreview">预览当前规则</button>
+    <view wx:if="{{previewResult}}" class="preview-panel">
+      <view class="preview-panel-head">
+        <text class="preview-panel-title">匹配结果</text>
+        <text class="preview-panel-badge">{{previewResult.matched ? '可结算' : '待补齐'}}</text>
+      </view>
+      <text class="preview-total-copy">当前规则共匹配 {{previewResult.combo_lines.length}} 组套餐，可直接对照前台结算结果。</text>
+      <view wx:for="{{previewResult.combo_lines}}" wx:key="index" class="preview-line">
+        <text class="preview-line-name">{{item.name}}</text>
+        <text class="preview-line-copy">{{item.meat_count}} 荤 {{item.veg_count}} 素 · MYR {{item.price}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card support-card">
+    <view class="section-head">
+      <text class="section-title">额外米饭价格</text>
+      <text class="section-subtitle">单独加价</text>
+    </view>
+    <view class="field-grid field-grid-tight">
       <view class="field-block field-grid-item">
         <text class="field-label">额外米饭单价（MYR）</text>
         <input class="input" placeholder="例如 2" value="{{extraRicePrice}}" bindinput="onExtraRiceInput" />
@@ -19,10 +62,10 @@
     <button class="primary-btn" bindtap="saveExtraRicePrice">保存加饭价格</button>
   </view>
 
-  <view class="card">
+  <view class="card list-card">
     <view class="section-head">
       <text class="section-title">套餐规则列表</text>
-      <text class="section-subtitle">当前规则 {{rules.length}} 条</text>
+      <text class="section-subtitle">{{rules.length}} 条</text>
     </view>
     <view class="card-inline-actions">
       <button class="ghost-btn inline-action-btn" bindtap="loadPreview">刷新预览</button>
@@ -48,36 +91,10 @@
     </view>
   </view>
 
-  <view class="card">
-    <view class="section-head">
-      <text class="section-title">规则效果预览</text>
-      <text class="section-subtitle">提前检查某组荤素数量会如何结算</text>
-    </view>
-    <view class="field-grid">
-      <view class="field-block field-grid-item">
-        <text class="field-label">荤菜数量</text>
-        <input class="input" placeholder="例如 2" value="{{previewForm.meat_count}}" data-key="meat_count" bindinput="onPreviewInput" />
-      </view>
-      <view class="field-block field-grid-item">
-        <text class="field-label">素菜数量</text>
-        <input class="input" placeholder="例如 1" value="{{previewForm.veg_count}}" data-key="veg_count" bindinput="onPreviewInput" />
-      </view>
-    </view>
-    <button class="primary-btn" bindtap="loadPreview">预览当前规则</button>
-    <view wx:if="{{previewResult}}" class="preview-panel">
-      <text class="preview-title">{{previewResult.message}}</text>
-      <text class="preview-total">预估结算 MYR {{previewResult.combo_total}}</text>
-      <view wx:for="{{previewResult.combo_lines}}" wx:key="index" class="preview-line">
-        <text class="preview-line-name">{{item.name}}</text>
-        <text class="preview-line-copy">{{item.meat_count}} 荤 {{item.veg_count}} 素 · MYR {{item.price}}</text>
-      </view>
-    </view>
-  </view>
-
   <view class="card editor-card">
     <view class="section-head">
       <text class="section-title">{{editingId ? '编辑规则' : '新增规则'}}</text>
-      <text class="section-subtitle">规则会直接影响前台自动拆套餐结果</text>
+      <text class="section-subtitle">修改后立即影响前台结算</text>
     </view>
     <view class="editor-section">
       <view class="field-block">

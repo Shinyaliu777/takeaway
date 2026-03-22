@@ -1,12 +1,17 @@
 const api = require("../../utils/request");
 const app = getApp();
 
+function getStoredCart() {
+  return wx.getStorageSync("user-cart") || [];
+}
+
 Page({
   data: {
     loading: true,
     product: null,
     category: null,
     cartCount: 0,
+    isGuest: true,
     selectedOptions: {}
   },
   inferDishKind() {
@@ -27,9 +32,8 @@ Page({
     this.productId = Number(options.id || 0);
   },
   onShow() {
-    if (!app.requireUserLogin(`/pages/detail/index?id=${this.productId}`)) {
-      return;
-    }
+    const token = app.globalData.userToken || wx.getStorageSync("user-token") || "";
+    this.setData({ isGuest: !token });
     this.loadDetail();
     this.syncCartCount();
   },
@@ -58,7 +62,7 @@ Page({
     }
   },
   syncCartCount() {
-    const cart = wx.getStorageSync("user-cart") || [];
+    const cart = this.data.isGuest ? [] : getStoredCart();
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     this.setData({ cartCount });
   },

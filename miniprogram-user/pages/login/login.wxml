@@ -1,44 +1,11 @@
 <view class="page">
-  <view class="login-stage">
-    <view class="hero-card login-hero">
-      <view class="login-brand">
-        <text class="eyebrow">KITCHEN ACCESS</text>
-        <text class="hero-title">3 秒进入点餐</text>
-      </view>
-      <text class="hero-note">下单、购物车、订单和消息都需要先完成微信登录。主流程先登录，头像昵称后续再补，不阻塞下单。</text>
-      <view class="hero-ribbon-row">
-        <text class="hero-ribbon">地址管理</text>
-        <text class="hero-ribbon">订单追踪</text>
-        <text class="hero-ribbon">消息提醒</text>
-      </view>
-      <view class="login-orb login-orb-large"></view>
-      <view class="login-orb login-orb-small"></view>
-    </view>
-  </view>
-
-  <view class="card login-card">
-    <view class="section-head">
-      <text class="section-title">登录后立即可用</text>
-      <text class="section-subtitle">为下单流程准备好的 3 项能力</text>
-    </view>
-    <view class="benefit-grid">
-      <view class="benefit-card">
-        <text class="benefit-kicker">01</text>
-        <text class="benefit-title">一键登录</text>
-        <text class="benefit-copy">点击一次完成微信登录，登录成功后立即进入菜单。</text>
-      </view>
-      <view class="benefit-card">
-        <text class="benefit-kicker">02</text>
-        <text class="benefit-title">订单同步</text>
-        <text class="benefit-copy">下单、配送、完成状态都能快速查看。</text>
-      </view>
-      <view class="benefit-card benefit-card-wide">
-        <text class="benefit-kicker">03</text>
-        <text class="benefit-title">资料后补</text>
-        <text class="benefit-copy">头像和昵称放到后续资料页补充，不阻塞交易主流程。</text>
-      </view>
-    </view>
-    <button class="primary-btn one-tap-btn" bindtap="submitLogin" loading="{{submitting}}">一键微信登录</button>
-    <text class="login-footnote">继续即表示使用微信登录完成基础账号识别，用于下单与订单同步。</text>
+  <view class="login-shell">
+    <text class="eyebrow">继续下单</text>
+    <text class="hero-title">登录后继续结算</text>
+    <text class="hero-note">只在加入购物车、地址和订单状态场景需要登录。</text>
+    <text class="login-promise">不改菜单，不丢进度，登录后直接回到刚才的位置。</text>
+    <button class="primary-btn one-tap-btn" bindtap="submitLogin" loading="{{submitting}}">微信一键登录并继续</button>
+    <text class="login-reassure">微信授权完成后继续当前流程。</text>
+    <text class="login-footnote">{{statusText}}</text>
   </view>
 </view>

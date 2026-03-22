@@ -28,6 +28,7 @@ function buildOrderTimeline(order) {
   if (!order) {
     return [];
   }
+  const proofSubmitted = order.payment_status === "PROOF_UPLOADED" || order.payment_status === "SUCCESS";
   const steps = [
     {
       key: "created",
@@ -39,12 +40,14 @@ function buildOrderTimeline(order) {
       key: "proof",
       title: "上传付款截图",
       desc: order.payment_status === "FAILED" ? "当前截图未通过，请重新上传清晰截图" : "上传截图后，商家才能开始审核",
-      done: order.payment_status !== "UNPAID"
+      done: proofSubmitted
     },
     {
       key: "review",
-      title: "商家审核中",
-      desc: order.payment_status === "PROOF_UPLOADED" ? "截图已提交，商家通常会尽快确认到账" : "商家确认到账后订单会进入已付款",
+      title: order.payment_status === "FAILED" ? "截图未通过" : "商家审核中",
+      desc: order.payment_status === "FAILED"
+        ? "请重新上传清晰截图后再次提交"
+        : (order.payment_status === "PROOF_UPLOADED" ? "截图已提交，等待商家确认到账" : "商家确认到账后订单会进入已付款"),
       done: order.payment_status === "SUCCESS"
     },
     {
@@ -68,6 +71,63 @@ function buildOrderTimeline(order) {
   }));
 }
 
+function buildPaymentBanner(order) {
+  if (!order) {
+    return {
+      title: "",
+      copy: "",
+      nextAction: "",
+      tone: "info"
+    };
+  }
+  if (order.payment_status === "FAILED") {
+    return {
+      title: "截图未通过",
+      copy: "请重新上传清晰付款截图，商家会再次审核。",
+      nextAction: "重新上传付款截图",
+      tone: "danger"
+    };
+  }
+  if (order.payment_status === "PROOF_UPLOADED") {
+    return {
+      title: "截图已提交",
+      copy: "商家正在审核，请耐心等待，不需要重复上传。",
+      nextAction: "等待商家确认",
+      tone: "info"
+    };
+  }
+  if (order.payment_status === "SUCCESS" && order.order_status === "PAID") {
+    return {
+      title: "商家已确认到账",
+      copy: "订单已进入已付款状态，下一步是商家安排配送。",
+      nextAction: "等待开始配送",
+      tone: "success"
+    };
+  }
+  if (order.order_status === "DELIVERING") {
+    return {
+      title: "配送中",
+      copy: "商家已确认到账，正在安排配送。",
+      nextAction: "等待订单完成",
+      tone: "success"
+    };
+  }
+  if (order.order_status === "COMPLETED") {
+    return {
+      title: "订单已完成",
+      copy: "本单已结束，如需联系商家可通过消息页继续沟通。",
+      nextAction: "查看历史订单",
+      tone: "success"
+    };
+  }
+  return {
+    title: "等待付款",
+    copy: "请先完成线下转账，再上传付款截图给商家确认。",
+    nextAction: "上传付款截图",
+    tone: "warning"
+  };
+}
+
 Page({
   data: {
     order: null,
@@ -75,7 +135,13 @@ Page({
     payment: null,
     uploading: false,
     proofImageFailed: false,
-    timeline: []
+    timeline: [],
+    paymentBanner: {
+      title: "",
+      copy: "",
+      nextAction: "",
+      tone: "info"
+    }
   },
   onLoad(query) {
     this.orderId = query.id;
@@ -101,6 +167,7 @@ Page({
             }
           : null,
         timeline: buildOrderTimeline(detail.order),
+        paymentBanner: buildPaymentBanner(detail.order),
         items: (detail.items || []).map((item) => ({
           ...item,
           selected_options_text: formatSelectedOptions(item.selected_options || [])
@@ -132,6 +199,10 @@ Page({
     });
   },
   choosePaymentProof() {
+    const order = this.data.order || {};
+    if (!(order.payment_status === "UNPAID" || order.payment_status === "FAILED")) {
+      return;
+    }
     wx.chooseMedia({
       count: 1,
       mediaType: ["image"],
@@ -140,15 +211,18 @@ Page({
         const file = (res.tempFiles || [])[0];
         if (!file) return;
         this.setData({ uploading: true });
+        wx.showLoading({ title: "正在上传..." });
         try {
           const uploadResult = await api.uploadPaymentProof(file.tempFilePath);
           await api.submitPaymentProof(this.orderId, {
             proof_image_url: uploadResult.image_url
           });
-          wx.showToast({ title: "截图已提交", icon: "success" });
+          wx.hideLoading();
+          wx.showToast({ title: "截图已提交，等待商家确认", icon: "success" });
           await this.loadDetail();
         } catch (error) {
           const detail = error && error.detail ? error.detail : "";
+          wx.hideLoading();
           wx.showToast({ title: detail || "提交失败", icon: "none" });
         } finally {
           this.setData({ uploading: false });

@@ -2,6 +2,10 @@ const api = require("../../utils/request");
 const { buildPricingPreview, normalizePricingConfig } = require("../../utils/pricing");
 const app = getApp();
 
+function getStoredCart() {
+  return wx.getStorageSync("user-cart") || [];
+}
+
 function buildPaymentCodes(shop = {}) {
   return [
     {
@@ -74,6 +78,7 @@ Page({
     categories: [],
     products: [],
     filteredProducts: [],
+    isGuest: true,
     shopOpen: true,
     cartCount: 0,
     cartLabel: "",
@@ -98,10 +103,12 @@ Page({
     }
   },
   paymentImageCache: {},
+  getActiveCart() {
+    return this.data.isGuest ? [] : getStoredCart();
+  },
   onShow() {
-    if (!app.requireUserLogin("/pages/index/index")) {
-      return;
-    }
+    const token = app.globalData.userToken || wx.getStorageSync("user-token") || "";
+    this.setData({ isGuest: !token });
     this.ensureLoginAndLoad();
     this.syncCartCount();
   },
@@ -151,11 +158,11 @@ Page({
     }
     return "side";
   },
-  getDishQuantity(productId, cart = wx.getStorageSync("user-cart") || []) {
+  getDishQuantity(productId, cart = this.getActiveCart()) {
     const found = cart.find((item) => item.product_id === productId);
     return found ? found.quantity : 0;
   },
-  refreshProductSelections(cart = wx.getStorageSync("user-cart") || []) {
+  refreshProductSelections(cart = this.getActiveCart()) {
     const mapSelection = (list) => (list || []).map((item) => ({
       ...item,
       selected_qty: this.getDishQuantity(item.id, cart)
@@ -211,8 +218,12 @@ Page({
     this.addToCart({ currentTarget: { dataset: { product } } });
   },
   decreaseDish(event) {
+    if (this.data.isGuest) {
+      app.requireUserLogin("/pages/index/index");
+      return;
+    }
     const productId = Number(event.currentTarget.dataset.productId || 0);
-    const cart = (wx.getStorageSync("user-cart") || [])
+    const cart = getStoredCart()
       .map((item) => (item.product_id === productId ? { ...item, quantity: item.quantity - 1 } : item))
       .filter((item) => item.quantity > 0);
     wx.setStorageSync("user-cart", cart);
@@ -241,9 +252,6 @@ Page({
     this.applyFilter(categoryId, this.data.products, this.data.currentPeriod);
   },
   goProductDetail(event) {
-    if (!app.requireUserLogin("/pages/index/index")) {
-      return;
-    }
     const productId = Number(event.currentTarget.dataset.productId);
     wx.navigateTo({ url: `/pages/detail/index?id=${productId}` });
   },
@@ -265,7 +273,7 @@ Page({
     });
   },
   syncCartCount() {
-    const cart = wx.getStorageSync("user-cart") || [];
+    const cart = this.getActiveCart();
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     const pricingPreview = buildPricingPreview(cart, this.data.pricingConfig);
     this.setData({
