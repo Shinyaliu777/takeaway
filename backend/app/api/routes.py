@@ -1,14 +1,12 @@
-import json
 import base64
 import hashlib
 import hmac
-from pathlib import Path
+import json
 from urllib.parse import urlencode
 from urllib.error import URLError
 from urllib.request import Request as UrlRequest, urlopen
 from datetime import datetime
 from typing import Optional
-from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, Request as FastAPIRequest, UploadFile
 from fastapi.encoders import jsonable_encoder
@@ -17,12 +15,9 @@ from sqlmodel import Session, select
 
 from app.core.config import (
     DEFAULT_CURRENCY,
-    IMAGE_UPLOAD_MAX_BYTES,
     MERCHANT_TOKEN_PREFIX,
-    PUBLIC_BASE_URL,
     TOKEN_SIGNING_SECRET,
     USER_TOKEN_PREFIX,
-    UPLOAD_DIR,
     WECHAT_APP_ID,
     WECHAT_APP_SECRET,
 )
@@ -61,6 +56,7 @@ from app.schemas.contracts import (
 )
 from app.services.bootstrap import DEFAULT_COMBO_RULES
 from app.services.pricing import EXTRA_RICE_PRICE, build_best_combo_plan
+from app.services.storage import store_public_image
 
 router = APIRouter()
 WECHAT_ACCESS_TOKEN_CACHE = {"token": "", "expires_at": 0.0}
@@ -459,25 +455,6 @@ def build_priced_order_lines(
     }
 
 
-def save_upload(file: UploadFile) -> str:
-    suffix = Path(file.filename or "image.jpg").suffix or ".jpg"
-    filename = f"{uuid4().hex}{suffix.lower()}"
-    target = UPLOAD_DIR / filename
-    written = 0
-    with target.open("wb") as output:
-        while True:
-            chunk = file.file.read(1024 * 1024)
-            if not chunk:
-                break
-            written += len(chunk)
-            if written > IMAGE_UPLOAD_MAX_BYTES:
-                output.close()
-                target.unlink(missing_ok=True)
-                raise HTTPException(status_code=413, detail="Image is too large")
-            output.write(chunk)
-    return filename
-
-
 def fetch_wechat_session(code: str) -> dict:
     if not WECHAT_APP_ID or not WECHAT_APP_SECRET:
         raise HTTPException(status_code=503, detail="WeChat login is not configured")
@@ -628,11 +605,7 @@ def update_user_profile(
 
 @router.post("/api/merchant/uploads/image", dependencies=[Depends(require_merchant)])
 def merchant_upload_image(request: FastAPIRequest, file: UploadFile = File(...)):
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Only image upload is supported")
-    filename = save_upload(file)
-    base_url = str(request.base_url).rstrip("/") or PUBLIC_BASE_URL.rstrip("/")
-    return {"image_url": base_url + f"/uploads/{filename}"}
+    return {"image_url": store_public_image(file, str(request.base_url), "merchant-images")}
 
 
 @router.post("/api/user/uploads/payment-proof")
@@ -642,11 +615,7 @@ def user_upload_payment_proof(
     user: User = Depends(require_user),
 ):
     del user
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Only image upload is supported")
-    filename = save_upload(file)
-    base_url = str(request.base_url).rstrip("/") or PUBLIC_BASE_URL.rstrip("/")
-    return {"image_url": base_url + f"/uploads/{filename}"}
+    return {"image_url": store_public_image(file, str(request.base_url), "payment-proof")}
 
 
 @router.get("/api/shop")
