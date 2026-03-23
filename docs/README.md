@@ -4,10 +4,7 @@
 
 这套文档的目标只有一个：**让下一个接手的人不用重新摸索项目。**
 
-当前目录保留两类资料：
-
-1. 现行 Markdown 文档  
-2. 历史 `.docx` 文档
+当前目录只保留**现行 Markdown 文档**。
 
 ## 1. 推荐阅读顺序
 
@@ -50,19 +47,8 @@
 - [13 合规测试数据指引](/Users/liuxu/Desktop/codex/takeaway-app/docs/13_TEST_DATA_GUIDE.md)
 - [15 线上联调测试数据清单](/Users/liuxu/Desktop/codex/takeaway-app/docs/15_LIVE_TEST_DATA_CHECKLIST.md)
 
-## 3. 历史资料
-
-下面这些 `.docx` 只保留参考，不再视为当前事实来源：
-
-- `单店外卖小程序需求文档_PRD_V2.0_付款截图审核版.docx`
-- `单店外卖小程序系统架构设计文档_快速上线版_V2.0_付款截图审核版.docx`
-- `单店外卖小程序模块设计文档_MDD_V2.0_付款截图审核版.docx`
-- `单店外卖小程序系统设计文档_SDD_V2.0_付款截图审核版.docx`
-- `单店外卖小程序软件说明文档_V2.0_付款截图审核版.docx`
-
-## 4. 维护原则
+## 3. 维护原则
 
 - 当前实现以代码和现行 Markdown 文档为准
-- 历史 `.docx` 不再单独追着改
 - 如果后续需要正式交付版，再从现行 Markdown 导出 `.docx`
 - 任何真实密钥、数据库密码、AppSecret、长期 Token 只记录“去哪找”，不要写进 GitHub

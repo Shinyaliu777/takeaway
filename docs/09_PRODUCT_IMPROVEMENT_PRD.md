@@ -549,4 +549,4 @@
 2. [03 接口说明](/Users/liuxu/Desktop/codex/takeaway-app/docs/03_API_REFERENCE.md)
 3. [07 项目交接](/Users/liuxu/Desktop/codex/takeaway-app/docs/07_HANDOFF.md)
 4. [09 产品优化 PRD](/Users/liuxu/Desktop/codex/takeaway-app/docs/09_PRODUCT_IMPROVEMENT_PRD.md)
-5. [10 接手提示词](/Users/liuxu/Desktop/codex/takeaway-app/docs/10_NEXT_AGENT_PROMPT.md)
+5. [07 项目交接](/Users/liuxu/Desktop/codex/takeaway-app/docs/07_HANDOFF.md)
