@@ -4,9 +4,9 @@ const { buildPricingPreview, normalizePricingConfig } = require("../../utils/pri
 const app = getApp();
 
 const PAYMENT_QR_FALLBACKS = {
-  wechat: "../../assets/payment-qr-wechat.png",
-  alipay: "../../assets/payment-qr-alipay.png",
-  tng: "../../assets/payment-qr-tng.png"
+  wechat: "/assets/payment-qr-wechat.png",
+  alipay: "/assets/payment-qr-alipay.png",
+  tng: "/assets/payment-qr-tng.png"
 };
 
 function getStoredCart() {
@@ -504,32 +504,16 @@ Page({
     });
   },
   loadFallbackQr(paymentKey, fallbackImageUrl, silent) {
-    const currentCode = (this.data.paymentCodes || []).find((item) => item.key === paymentKey) || {};
-    wx.getImageInfo({
-      src: fallbackImageUrl,
-      success: (res) => {
-        const localPath = res && res.path ? res.path : fallbackImageUrl;
-        this.paymentImageCache[paymentKey] = localPath;
-        this.patchPaymentCode(paymentKey, {
-          imageUrl: fallbackImageUrl,
-          isFallbackActive: true,
-          subtitle: "线上收款码失效，当前展示演示图"
-        });
-        this.setData({
-          sheetImagePath: this.data.selectedPaymentKey === paymentKey ? localPath : this.data.sheetImagePath,
-          sheetImageLoading: false,
-          sheetImageError: false
-        });
-      },
-      fail: () => {
-        if (!silent) {
-          this.setData({
-            sheetImagePath: "",
-            sheetImageLoading: false,
-            sheetImageError: true
-          });
-        }
-      }
+    this.paymentImageCache[paymentKey] = fallbackImageUrl;
+    this.patchPaymentCode(paymentKey, {
+      imageUrl: fallbackImageUrl,
+      isFallbackActive: true,
+      subtitle: "线上收款码失效，当前展示演示图"
+    });
+    this.setData({
+      sheetImagePath: this.data.selectedPaymentKey === paymentKey ? fallbackImageUrl : this.data.sheetImagePath,
+      sheetImageLoading: false,
+      sheetImageError: false
     });
   }
 });

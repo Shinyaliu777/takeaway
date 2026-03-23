@@ -823,7 +823,7 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
         }
     except HTTPException:
         raise
-    except Exception:
+    except Exception as exc:
         session.rollback()
         logger.exception(
             "create_order_failed user_id=%s channel=%s items=%s",
@@ -838,7 +838,7 @@ def create_order(payload: OrderCreate, user: User = Depends(require_user), sessi
                 for item in payload.items
             ],
         )
-        raise
+        raise HTTPException(status_code=500, detail=f"create_order_failed: {exc}") from exc
 
 
 @router.post("/api/payments/mock-success/{order_id}", dependencies=[Depends(require_merchant)])

@@ -180,7 +180,31 @@
       </view>
       <view class="payment-sheet-body">
         <image
-          wx:if="{{sheetImagePath}}"
+          wx:if="{{selectedPaymentCode.isFallbackActive && selectedPaymentKey === 'wechat'}}"
+          class="payment-sheet-image"
+          src="../../assets/payment-qr-wechat.png"
+          mode="aspectFit"
+          show-menu-by-longpress="true"
+          lazy-load="true"
+        />
+        <image
+          wx:elif="{{selectedPaymentCode.isFallbackActive && selectedPaymentKey === 'alipay'}}"
+          class="payment-sheet-image"
+          src="../../assets/payment-qr-alipay.png"
+          mode="aspectFit"
+          show-menu-by-longpress="true"
+          lazy-load="true"
+        />
+        <image
+          wx:elif="{{selectedPaymentCode.isFallbackActive && selectedPaymentKey === 'tng'}}"
+          class="payment-sheet-image"
+          src="../../assets/payment-qr-tng.png"
+          mode="aspectFit"
+          show-menu-by-longpress="true"
+          lazy-load="true"
+        />
+        <image
+          wx:elif="{{sheetImagePath}}"
           class="payment-sheet-image"
           src="{{sheetImagePath}}"
           mode="aspectFit"
