@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 from urllib.parse import urlencode
 from urllib.error import URLError
 from urllib.request import Request as UrlRequest, urlopen
@@ -60,6 +61,7 @@ from app.services.storage import store_public_image
 
 router = APIRouter()
 WECHAT_ACCESS_TOKEN_CACHE = {"token": "", "expires_at": 0.0}
+logger = logging.getLogger(__name__)
 
 
 def _encode_signed_token(prefix: str, subject_id: int) -> str:
@@ -753,71 +755,90 @@ def submit_payment_proof(
 
 @router.post("/api/orders/create")
 def create_order(payload: OrderCreate, user: User = Depends(require_user), session: Session = Depends(get_session)):
-    raw_items = []
-    category_map = get_category_map(session)
-    shop = session.exec(select(Shop)).first()
+    try:
+        raw_items = []
+        category_map = get_category_map(session)
+        shop = session.exec(select(Shop)).first()
 
-    for item in payload.items:
-        if item.quantity <= 0:
-            raise HTTPException(status_code=400, detail=f"Invalid quantity for product {item.product_id}")
-        product = session.get(Product, item.product_id)
-        if not product or not product.sale_status:
-            raise HTTPException(status_code=400, detail=f"Invalid product {item.product_id}")
-        validate_selected_options(product, item.selected_options)
-        if product.stock_qty < item.quantity:
-            raise HTTPException(status_code=400, detail=f"Insufficient stock for {product.name}")
-        raw_items.append((product, item.quantity))
+        for item in payload.items:
+            if item.quantity <= 0:
+                raise HTTPException(status_code=400, detail=f"Invalid quantity for product {item.product_id}")
+            product = session.get(Product, item.product_id)
+            if not product or not product.sale_status:
+                raise HTTPException(status_code=400, detail=f"Invalid product {item.product_id}")
+            validate_selected_options(product, item.selected_options)
+            if product.stock_qty < item.quantity:
+                raise HTTPException(status_code=400, detail=f"Insufficient stock for {product.name}")
+            raw_items.append((product, item.quantity))
 
-    pricing_result = build_priced_order_lines(
-        raw_items,
-        category_map,
-        get_active_combo_rules(session),
-        float((shop.extra_rice_price if shop else EXTRA_RICE_PRICE) or EXTRA_RICE_PRICE),
-    )
-
-    order = Order(
-        order_no=f"ORD-{uuid4().hex[:10].upper()}",
-        user_id=user.id,
-        receiver_name=payload.receiver_name,
-        receiver_mobile=payload.receiver_mobile,
-        receiver_address=payload.receiver_address,
-        total_amount=pricing_result["total_amount"],
-        currency_code=DEFAULT_CURRENCY,
-    )
-    session.add(order)
-    session.flush()
-
-    for line in pricing_result["lines"]:
-        session.add(
-            OrderItem(
-                order_id=order.id,
-                product_id=line["product_id"],
-                product_name_snapshot=line["name"],
-                product_price_snapshot=line["unit_price"],
-                selected_options_json=json.dumps(line["selected_options"], ensure_ascii=False),
-                quantity=line["quantity"],
-                line_amount=line["line_amount"],
-            )
+        pricing_result = build_priced_order_lines(
+            raw_items,
+            category_map,
+            get_active_combo_rules(session),
+            float((shop.extra_rice_price if shop else EXTRA_RICE_PRICE) or EXTRA_RICE_PRICE),
         )
 
-    payment = PaymentOrder(
-        order_id=order.id,
-        payment_no=f"PAY-{uuid4().hex[:10].upper()}",
-        channel_code=payload.channel_code.upper(),
-        amount=order.total_amount,
-        status="UNPAID",
-        qr_code_url=f"https://example.com/pay/{order.order_no}",
-    )
-    session.add(payment)
-    session.commit()
-    session.refresh(order)
-    session.refresh(payment)
+        order = Order(
+            order_no=f"ORD-{uuid4().hex[:10].upper()}",
+            user_id=user.id,
+            receiver_name=payload.receiver_name,
+            receiver_mobile=payload.receiver_mobile,
+            receiver_address=payload.receiver_address,
+            total_amount=pricing_result["total_amount"],
+            currency_code=DEFAULT_CURRENCY,
+        )
+        session.add(order)
+        session.flush()
 
-    return {
-        "order": dump(order),
-        "payment": dump(payment),
-        "message": "Order created, waiting for payment proof upload",
-    }
+        for line in pricing_result["lines"]:
+            session.add(
+                OrderItem(
+                    order_id=order.id,
+                    product_id=line["product_id"],
+                    product_name_snapshot=line["name"],
+                    product_price_snapshot=line["unit_price"],
+                    selected_options_json=json.dumps(line["selected_options"], ensure_ascii=False),
+                    quantity=line["quantity"],
+                    line_amount=line["line_amount"],
+                )
+            )
+
+        payment = PaymentOrder(
+            order_id=order.id,
+            payment_no=f"PAY-{uuid4().hex[:10].upper()}",
+            channel_code=payload.channel_code.upper(),
+            amount=order.total_amount,
+            status="UNPAID",
+            qr_code_url=f"https://example.com/pay/{order.order_no}",
+        )
+        session.add(payment)
+        session.commit()
+        session.refresh(order)
+        session.refresh(payment)
+
+        return {
+            "order": dump(order),
+            "payment": dump(payment),
+            "message": "Order created, waiting for payment proof upload",
+        }
+    except HTTPException:
+        raise
+    except Exception:
+        session.rollback()
+        logger.exception(
+            "create_order_failed user_id=%s channel=%s items=%s",
+            user.id,
+            payload.channel_code,
+            [
+                {
+                    "product_id": item.product_id,
+                    "quantity": item.quantity,
+                    "selected_options": item.selected_options,
+                }
+                for item in payload.items
+            ],
+        )
+        raise
 
 
 @router.post("/api/payments/mock-success/{order_id}", dependencies=[Depends(require_merchant)])
