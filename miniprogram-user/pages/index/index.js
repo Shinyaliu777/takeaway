@@ -4,9 +4,9 @@ const { buildPricingPreview, normalizePricingConfig } = require("../../utils/pri
 const app = getApp();
 
 const PAYMENT_QR_FALLBACKS = {
-  wechat: "/assets/payment-qr-wechat.png",
-  alipay: "/assets/payment-qr-alipay.png",
-  tng: "/assets/payment-qr-tng.png"
+  wechat: "../../assets/payment-qr-wechat.png",
+  alipay: "../../assets/payment-qr-alipay.png",
+  tng: "../../assets/payment-qr-tng.png"
 };
 
 function getStoredCart() {
