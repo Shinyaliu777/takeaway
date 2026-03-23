@@ -21,8 +21,8 @@
 ## 3. 线上资源
 
 ### 后端
-- 线上 API：`https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com`
-- 健康检查：`https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com/health`
+- 线上 API：`https://takeaway-test.garlandtools.cn`
+- 健康检查：`https://takeaway-test.garlandtools.cn/health`
 - 云托管服务名：`takeaway-api`
 
 ### MySQL
@@ -44,6 +44,8 @@
 
 说明：
 - 当前项目已经在小程序侧接入 `wx.cloud`
+- 后端图片上传链路已支持 `local / static / cos`
+- 当前线上如果未补齐 `COS_*` 或静态存储配置，仍可能默认写到本地 `/uploads`
 - 旧的 `/uploads/...` 仍可能出现在历史数据里
 
 ## 4. 小程序配置入口
@@ -70,6 +72,7 @@
 
 - 配置定义：[config.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/core/config.py)
 - 云托管环境模板：[cloud-hosting.env](/Users/liuxu/Desktop/codex/takeaway-app/backend/cloud-hosting.env)
+- 图片存储实现：[storage.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/services/storage.py)
 - 数据库会话与补列逻辑：[session.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/db/session.py)
 - 接口入口：[routes.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/api/routes.py)
 - 启动入口：[main.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/main.py)

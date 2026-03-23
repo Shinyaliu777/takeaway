@@ -78,7 +78,7 @@ function resolveFileRefs(fileRefs = []) {
       return;
     }
     if (!wx.cloud) {
-      reject({ detail: "当前基础库不支持云存储" });
+      resolve(resolvedMap);
       return;
     }
     wx.cloud.getTempFileURL({
@@ -92,7 +92,7 @@ function resolveFileRefs(fileRefs = []) {
         resolve(resolvedMap);
       },
       fail(error) {
-        reject(error || { detail: "云文件链接获取失败" });
+        resolve(resolvedMap);
       }
     });
   });

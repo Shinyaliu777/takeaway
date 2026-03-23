@@ -21,8 +21,8 @@
 
 当前线上服务：
 
-- 后端地址：[takeaway-api](https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com)
-- 健康检查：[health](https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com/health)
+- 后端地址：[takeaway-api](https://takeaway-test.garlandtools.cn)
+- 健康检查：[health](https://takeaway-test.garlandtools.cn/health)
 
 当前仓库：
 

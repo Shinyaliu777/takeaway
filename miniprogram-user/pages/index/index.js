@@ -63,7 +63,11 @@ function buildFeaturedCards(shop = {}, products = []) {
         image_url: item.image_preview_url || (linkedProduct ? (linkedProduct.image_preview_url || linkedProduct.image_url) : ""),
         target_product_id: linkedProduct ? linkedProduct.id : 0
       };
-    });
+  });
+}
+
+function resolveImagePreviewUrl(fileRef, resolvedRefs, fallback = "") {
+  return cloud.resolveDisplayUrl(fileRef, resolvedRefs, fallback);
 }
 
 function inferCurrentPeriod() {
@@ -148,20 +152,21 @@ Page({
           ...(products || []).map((item) => item.image_url || "")
         ]);
       } catch (error) {}
+      this.imageResolutionMap = resolvedRefs;
       const resolvedProducts = (products || []).map((item) => ({
         ...item,
-        image_preview_url: resolvedRefs[item.image_url] || ""
+        image_preview_url: resolveImagePreviewUrl(item.image_url, resolvedRefs)
       }));
       const resolvedShop = shop
         ? {
             ...shop,
-            logo_url_preview: resolvedRefs[shop.logo_url] || "",
-            wechat_qr_preview: resolvedRefs[shop.wechat_qr_url] || "",
-            alipay_qr_preview: resolvedRefs[shop.alipay_qr_url] || "",
-            tng_qr_preview: resolvedRefs[shop.tng_qr_url] || "",
+            logo_url_preview: resolveImagePreviewUrl(shop.logo_url, resolvedRefs),
+            wechat_qr_preview: resolveImagePreviewUrl(shop.wechat_qr_url, resolvedRefs),
+            alipay_qr_preview: resolveImagePreviewUrl(shop.alipay_qr_url, resolvedRefs),
+            tng_qr_preview: resolveImagePreviewUrl(shop.tng_qr_url, resolvedRefs),
             featured_cards: featuredCards.map((item) => ({
               ...item,
-              image_preview_url: resolvedRefs[item.image_url] || ""
+              image_preview_url: resolveImagePreviewUrl(item.image_url, resolvedRefs)
             }))
           }
         : {};
@@ -319,9 +324,10 @@ Page({
     if (!imageUrl) {
       return;
     }
+    const resolvedUrl = resolveImagePreviewUrl(imageUrl, this.imageResolutionMap || {}, imageUrl);
     wx.previewImage({
-      current: imageUrl,
-      urls: [imageUrl]
+      current: resolvedUrl,
+      urls: [resolvedUrl]
     });
   },
   syncCartCount() {

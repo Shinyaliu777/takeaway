@@ -13,6 +13,13 @@
 
 ## 2. 每次发布后建议验证
 
+### 后端 / 入口
+
+- `/health`
+- `/api/shop`
+- 当前线上域名是否仍为 `https://takeaway-test.garlandtools.cn`
+- 如果本次涉及图片链路，再看返回的 `image_url` 是否仍落到本地 `/uploads`，还是已经切到 COS / 静态域名
+
 ### 用户端
 
 - 登录 / 游客浏览
@@ -89,6 +96,8 @@
 - 云托管运行日志
 - 云托管 MySQL / DMS
 - 微信开发者工具 Network / Console
+- [cloud-hosting.env](/Users/liuxu/Desktop/codex/takeaway-app/backend/cloud-hosting.env) 对照当前云端环境变量
+- [storage.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/services/storage.py) 对照当前实际存储分支
 
 ## 6. 回归推荐顺序
 

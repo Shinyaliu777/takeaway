@@ -70,7 +70,7 @@ function getTempFileURL(fileRef) {
 }
 
 function resolveFileRefs(fileRefs = []) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const uniqueRefs = Array.from(new Set((fileRefs || []).filter(Boolean)));
     const resolvedMap = {};
     uniqueRefs.forEach((ref) => {
@@ -84,7 +84,7 @@ function resolveFileRefs(fileRefs = []) {
       return;
     }
     if (!ensureCloud()) {
-      reject({ detail: "当前基础库不支持云存储" });
+      resolve(resolvedMap);
       return;
     }
     wx.cloud.getTempFileURL({
@@ -97,11 +97,22 @@ function resolveFileRefs(fileRefs = []) {
         });
         resolve(resolvedMap);
       },
-      fail(error) {
-        reject(error || { detail: "云文件链接获取失败" });
+      fail() {
+        resolve(resolvedMap);
       }
     });
   });
+}
+
+function resolveDisplayUrl(fileRef, resolvedMap = {}, fallback = "") {
+  const source = String(fileRef || "").trim();
+  if (!source) {
+    return fallback || "";
+  }
+  if (!isCloudFileId(source)) {
+    return source;
+  }
+  return resolvedMap[source] || fallback || "";
 }
 
 module.exports = {
@@ -109,5 +120,6 @@ module.exports = {
   uploadImageToCloud,
   getTempFileURL,
   resolveFileRefs,
+  resolveDisplayUrl,
   cloudEnv: config.cloudEnv
 };

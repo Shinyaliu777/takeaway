@@ -4,7 +4,7 @@
 
 Base URL：
 
-- `https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com`
+- `https://takeaway-test.garlandtools.cn`
 
 ## 1. 公共接口
 

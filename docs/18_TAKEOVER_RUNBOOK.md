@@ -23,7 +23,7 @@
 4. [08 运维与发布](/Users/liuxu/Desktop/codex/takeaway-app/docs/08_OPERATIONS.md)
 
 ### 第三步：确认线上入口
-- API：`https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com`
+- API：`https://takeaway-test.garlandtools.cn`
 - MySQL：看 [16 资源地图](/Users/liuxu/Desktop/codex/takeaway-app/docs/16_RESOURCE_MAP.md)
 
 ## 2. 本地怎么启动
@@ -68,6 +68,9 @@
 ### 经验 2：历史 `/uploads/...` 图片很脆
 - 历史收款码和付款截图可能指向失效文件
 - 遇到图片 404，不要只看数据库有无 URL，要直接访问 URL 确认
+- 当前仓库已经把上传链路抽象成 `local / static / cos`
+- 但线上默认仍可能跑在本地 `/uploads`
+- 真正切独立存储前，不要假设“开了对象存储页面就已经自动生效”
 
 ### 经验 3：先看真实异常 detail
 - `/api/orders/create` 曾经的线上 500 最后真实原因是：
@@ -100,6 +103,10 @@
   - `/health`
   - `/api/shop`
   - `/api/orders/create`
+- 如果准备切图片存储，再额外确认：
+  - `IMAGE_STORAGE_BACKEND`
+  - `IMAGE_STORAGE_STATIC_PUBLIC_BASE_URL` 或 `COS_*`
+  - 迁移脚本 dry-run 结果
 
 ### 用户端
 - 首页付款方式
@@ -168,6 +175,7 @@
 - 订单创建
 - 订单状态流转
 - 图片上传链路
+- 图片存储迁移
 - 云托管 revision
 - MySQL 排查
 
@@ -211,3 +219,27 @@
    - 先确认收款码上传、付款审核、配送推进
 4. `测试 / 验收`
    - 先按 [15 线上联调测试数据清单](/Users/liuxu/Desktop/codex/takeaway-app/docs/15_LIVE_TEST_DATA_CHECKLIST.md) 跑一轮
+
+## 12. 当前图片存储迁移顺序
+
+如果要把图片从本地 `/uploads` 迁到独立静态/对象存储，当前建议顺序是：
+
+1. 先冻结数据库里的图片引用格式
+   - 优先保存完整可访问 URL，避免继续混写 `cloud://`、相对路径和旧域名
+2. 先把新存储目标打通，但先不切读流量
+   - 先验证 HTTPS、合法域名、上传权限
+3. 先切“新增写入”
+   - 商家图片上传
+   - 用户付款截图上传
+4. 再迁历史交易链路和店铺链路
+   - `paymentorder.proof_image_url`
+   - `shop.logo_url`
+   - `shop.*qr_url`
+   - `featured_cards_json`
+5. 最后迁商品图
+   - `product.image_url`
+
+回滚原则：
+- 先保留旧 `/uploads` 只读兜底
+- 迁移脚本先 dry-run，再 `--apply`
+- 线上异常时优先回退写入配置，不要先删旧文件

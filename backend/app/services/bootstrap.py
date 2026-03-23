@@ -69,6 +69,32 @@ DEFAULT_COMBO_RULES = [
 ]
 
 
+def _normalize_url(value: str | None) -> str:
+    return (value or "").strip()
+
+
+def _is_demo_or_seeded_image(url: str, asset_name: str | None = None) -> bool:
+    current = _normalize_url(url)
+    if not current:
+        return True
+    if "picsum.photos" in current:
+        return True
+    if "/uploads/" in current:
+        return True
+    return False
+
+
+def _should_replace_seeded_image(current_url: str, expected_url: str) -> bool:
+    current = _normalize_url(current_url)
+    if not current:
+        return True
+    if current == expected_url:
+        return False
+    if _is_demo_or_seeded_image(current):
+        return True
+    return False
+
+
 def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset_version: str) -> bool:
     updated = False
     if (shop.name or "").strip() in {"Liuxu 测试餐厅", "小黎的神秘小厨房"} or "演示" in (shop.notice or ""):
@@ -160,19 +186,21 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             )
             updated = True
             continue
+        should_replace_image = _should_replace_seeded_image(product.image_url, image_url)
         if (
             product.category_id != meat_category_id
             or product.price_amount != 0
             or product.stock_qty != stock
-            or product.image_url != image_url
             or product.description != description
             or product.option_groups_json != option_groups_json
             or product.sale_status is not True
+            or should_replace_image
         ):
             product.category_id = meat_category_id
             product.price_amount = 0
             product.stock_qty = stock
-            product.image_url = image_url
+            if should_replace_image:
+                product.image_url = image_url
             product.description = description
             product.option_groups_json = option_groups_json
             product.sale_status = True
@@ -197,19 +225,21 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             )
             updated = True
             continue
+        should_replace_image = _should_replace_seeded_image(product.image_url, image_url)
         if (
             product.category_id != veg_category_id
             or product.price_amount != 0
             or product.stock_qty != stock
-            or product.image_url != image_url
             or product.description != description
             or product.option_groups_json != "[]"
             or product.sale_status is not True
+            or should_replace_image
         ):
             product.category_id = veg_category_id
             product.price_amount = 0
             product.stock_qty = stock
-            product.image_url = image_url
+            if should_replace_image:
+                product.image_url = image_url
             product.description = description
             product.option_groups_json = "[]"
             product.sale_status = True
@@ -234,19 +264,21 @@ def ensure_operational_menu(session: Session, shop: Shop, asset_base: str, asset
             )
             updated = True
             continue
+        should_replace_image = _should_replace_seeded_image(product.image_url, image_url)
         if (
             product.category_id != staple_category_id
             or product.price_amount != price
             or product.stock_qty != stock
-            or product.image_url != image_url
             or product.description != description
             or product.option_groups_json != "[]"
             or product.sale_status is not True
+            or should_replace_image
         ):
             product.category_id = staple_category_id
             product.price_amount = price
             product.stock_qty = stock
-            product.image_url = image_url
+            if should_replace_image:
+                product.image_url = image_url
             product.description = description
             product.option_groups_json = "[]"
             product.sale_status = True
@@ -304,11 +336,9 @@ def seed_data(session: Session) -> None:
         }
         updated = False
         shop = session.exec(select(Shop)).first()
-        if shop and (
-            not (shop.logo_url or "").strip()
-            or "/uploads/brand-store-logo.png" not in (shop.logo_url or "")
-            or not (shop.logo_url or "").startswith(asset_base)
-            or f"?{asset_version}" not in (shop.logo_url or "")
+        if shop and _should_replace_seeded_image(
+            shop.logo_url,
+            f"{asset_base}/brand-store-logo.png?{asset_version}",
         ):
             shop.logo_url = f"{asset_base}/brand-store-logo.png?{asset_version}"
             session.add(shop)
@@ -317,13 +347,9 @@ def seed_data(session: Session) -> None:
             updated = True
         for product in products:
             asset_name = image_seed_map.get(product.name)
-            if asset_name and (
-                not (product.image_url or "").strip()
-                or "picsum.photos" in (product.image_url or "")
-                or "/uploads/product-" not in (product.image_url or "")
-                or asset_name not in (product.image_url or "")
-                or not (product.image_url or "").startswith(asset_base)
-                or f"?{asset_version}" not in (product.image_url or "")
+            if asset_name and _should_replace_seeded_image(
+                product.image_url,
+                f"{asset_base}/{asset_name}?{asset_version}",
             ):
                 product.image_url = f"{asset_base}/{asset_name}?{asset_version}"
                 session.add(product)

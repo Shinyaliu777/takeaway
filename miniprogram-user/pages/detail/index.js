@@ -6,6 +6,10 @@ function getStoredCart() {
   return wx.getStorageSync("user-cart") || [];
 }
 
+function resolveImagePreviewUrl(fileRef, resolvedRefs, fallback = "") {
+  return cloud.resolveDisplayUrl(fileRef, resolvedRefs, fallback);
+}
+
 Page({
   data: {
     loading: true,
@@ -51,7 +55,8 @@ Page({
       if (product && product.image_url) {
         try {
           const resolved = await cloud.resolveFileRefs([product.image_url]);
-          imagePreviewUrl = resolved[product.image_url] || "";
+          this.imageResolutionMap = resolved;
+          imagePreviewUrl = resolveImagePreviewUrl(product.image_url, resolved);
         } catch (error) {}
       }
       this.setData({
@@ -155,7 +160,12 @@ Page({
     wx.navigateTo({ url: "/pages/cart/cart" });
   },
   previewProductImage() {
-    const imageUrl = ((this.data.product || {}).image_preview_url || (this.data.product || {}).image_url || "").trim();
+    const product = this.data.product || {};
+    const imageUrl = resolveImagePreviewUrl(
+      product.image_url,
+      this.imageResolutionMap || {},
+      product.image_preview_url || product.image_url || ""
+    );
     if (!imageUrl) {
       return;
     }

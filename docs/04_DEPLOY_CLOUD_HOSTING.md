@@ -14,7 +14,7 @@
 
 - 服务名：`takeaway-api`
 - 端口：`8000`
-- 公网地址：`https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com`
+- 公网地址：`https://takeaway-test.garlandtools.cn`
 
 ## 3. 构建参数
 
@@ -31,11 +31,15 @@
 WECHAT_APP_ID=你的小程序AppID
 WECHAT_APP_SECRET=你的小程序AppSecret
 TOKEN_SIGNING_SECRET=你自己生成的一串长随机字符串
-PUBLIC_BASE_URL=https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com
+PUBLIC_BASE_URL=https://takeaway-test.garlandtools.cn
 DATABASE_URL=mysql+pymysql://takeaway_app:你的密码@10.23.101.169:3306/takeaway
 PORT=8000
 APP_DATA_DIR=/app/runtime
+IMAGE_STORAGE_BACKEND=auto
 IMAGE_UPLOAD_MAX_BYTES=5242880
+IMAGE_STORAGE_LOCAL_PUBLIC_PATH=/uploads
+IMAGE_STORAGE_STATIC_PUBLIC_BASE_URL=
+IMAGE_STORAGE_STATIC_PUBLIC_PATH=/uploads
 COS_SECRET_ID=你的腾讯云API密钥SecretId
 COS_SECRET_KEY=你的腾讯云API密钥SecretKey
 COS_REGION=存储桶地域，例如 ap-singapore
@@ -44,9 +48,21 @@ COS_DOMAIN=可选，自定义CDN或COS访问域名
 COS_PATH_PREFIX=takeaway
 ```
 
+说明：
+
+- 当前稳态建议先用 `IMAGE_STORAGE_BACKEND=auto`
+- `auto` 的实际行为是：
+  - 配齐 `COS_*` 就优先走 COS
+  - 否则回退到容器本地 `/uploads`
+- 如果要强制切静态资源域名，可改成 `IMAGE_STORAGE_BACKEND=static`
+  - 这时必须同时配置 `IMAGE_STORAGE_STATIC_PUBLIC_BASE_URL`
+- 如果要强制切 COS，可改成 `IMAGE_STORAGE_BACKEND=cos`
+  - 这时必须配齐 `COS_SECRET_ID`、`COS_SECRET_KEY`、`COS_REGION`、`COS_BUCKET`
+
 ## 5. 发布后检查
 
 - `/health`
+- `/api/shop`
 - 用户登录
 - 菜单页实时计价
 - 商家规则管理

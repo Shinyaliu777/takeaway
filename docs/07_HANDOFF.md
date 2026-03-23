@@ -31,7 +31,7 @@
 ## 3. 关键地址
 
 - 项目目录：`/Users/liuxu/Desktop/codex/takeaway-app`
-- 线上 API：`https://takeaway-api-236333-9-1413277342.sh.run.tcloudbase.com`
+- 线上 API：`https://takeaway-test.garlandtools.cn`
 - GitHub 仓库：[https://github.com/Shinyaliu777/takeaway](https://github.com/Shinyaliu777/takeaway)
 
 ## 4. 第一次接手建议阅读顺序
@@ -58,7 +58,8 @@
 
 ### 历史 `/uploads/...` 图片
 - 旧收款码、旧付款截图曾出现文件丢失
-- 新链路优先走小程序云环境和新的前端兜底
+- 新链路的新增写入已优先走后端上传接口
+- 历史 `cloud://` 文件引用仍保留前端兼容解析
 - 仍需警惕数据库里残留旧 URL
 
 ### 后端结构

@@ -1,5 +1,4 @@
 const app = getApp();
-const cloud = require("./cloud");
 
 function request(path, method = "GET", data, withAuth = true) {
   const header = {};
@@ -31,6 +30,20 @@ function request(path, method = "GET", data, withAuth = true) {
   });
 }
 
+function parseUploadResponse(res) {
+  if (!res) {
+    return {};
+  }
+  if (typeof res.data === "string") {
+    try {
+      return JSON.parse(res.data);
+    } catch (error) {
+      return { detail: res.data };
+    }
+  }
+  return res.data || {};
+}
+
 module.exports = {
   login: (data) => request("/api/merchant/login", "POST", data, false),
   getOrders: () => request("/api/merchant/orders"),
@@ -58,6 +71,41 @@ module.exports = {
   getMessages: () => request("/api/merchant/messages"),
   readMessage: (messageId) => request(`/api/merchant/messages/${messageId}/read`, "PATCH"),
   uploadImage(filePath) {
-    return cloud.uploadImageToCloud(filePath, "merchant-images");
+    return new Promise((resolve, reject) => {
+      const header = {};
+      if (app.globalData.merchantToken) {
+        header.Authorization = `Bearer ${app.globalData.merchantToken}`;
+      }
+      wx.uploadFile({
+        url: `${app.globalData.apiBase}/api/merchant/uploads/image`,
+        filePath,
+        name: "file",
+        header,
+        success(res) {
+          const data = parseUploadResponse(res);
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            const imageUrl = (data.image_url || "").trim();
+            if (!imageUrl) {
+              reject({ detail: "Upload succeeded but image_url is missing" });
+              return;
+            }
+            resolve({
+              image_url: imageUrl,
+              preview_url: imageUrl || filePath,
+            });
+            return;
+          }
+          if (res.statusCode === 401) {
+            app.globalData.merchantToken = "";
+            wx.removeStorageSync("merchant-token");
+            wx.removeStorageSync("merchant-user");
+          }
+          reject(data || { detail: "Upload failed" });
+        },
+        fail(err) {
+          reject(err);
+        }
+      });
+    });
   }
 };

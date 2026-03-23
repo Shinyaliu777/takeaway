@@ -157,8 +157,9 @@ Page({
         try {
           wx.showLoading({ title: "上传中" });
           const result = await api.uploadImage(file.tempFilePath);
+          const imageUrl = result.image_url || "";
           this.setData({
-            "form.image_url": result.file_id || result.image_url || "",
+            "form.image_url": imageUrl,
             "form.image_preview_url": result.preview_url || file.tempFilePath
           });
           wx.showToast({ title: "上传成功", icon: "success" });

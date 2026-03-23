@@ -47,6 +47,22 @@
       <text class="line muted" wx:if="{{order.payment_status === 'FAILED'}}">商家未通过当前截图，请重新上传清晰截图。</text>
       <text class="line muted" wx:if="{{order.payment_status === 'PROOF_UPLOADED'}}">截图已提交，请等待商家确认，不需要重复上传。</text>
       <text class="line muted" wx:if="{{order.payment_status === 'UNPAID'}}">先完成转账，再上传付款截图。</text>
+      <text class="line muted" wx:if="{{order.payment_status === 'UNPAID' || order.payment_status === 'FAILED'}}">建议优先上传支付截图；如果图片较大，系统会先自动优化后再上传。</text>
+      <view wx:if="{{uploading}}" class="upload-progress-card">
+        <view class="upload-progress-head">
+          <text class="upload-progress-title">{{uploadStatusText || '正在上传截图...'}}</text>
+          <text class="upload-progress-percent">{{uploadProgress}}%</text>
+        </view>
+        <view class="upload-progress-track">
+          <view class="upload-progress-bar" style="width: {{uploadProgress}}%;"></view>
+        </view>
+      </view>
+      <view wx:if="{{uploadErrorText}}" class="upload-error-card">
+        <text class="upload-error-title">上传未完成</text>
+        <text class="upload-error-copy">{{uploadErrorText}}</text>
+      </view>
+      <text class="line muted" wx:if="{{!uploading && uploadGuideText}}">{{uploadGuideText}}</text>
+      <text class="line muted" wx:if="{{!uploading && uploadGuideSubText}}">{{uploadGuideSubText}}</text>
       <button wx:if="{{order.payment_status === 'UNPAID' || order.payment_status === 'FAILED'}}" class="ghost-btn proof-secondary-btn" bindtap="goPaymentMethods">查看付款方式</button>
       <button wx:if="{{payment.proof_storage_ref}}" class="ghost-btn proof-secondary-btn" bindtap="previewProofImage">查看大图</button>
       <button
@@ -54,6 +70,7 @@
         class="primary-btn proof-btn proof-btn-primary"
         bindtap="choosePaymentProof"
         loading="{{uploading}}"
+        disabled="{{uploading}}"
       >
         {{payment.proof_storage_ref ? '重新上传付款截图' : '上传付款截图'}}
       </button>

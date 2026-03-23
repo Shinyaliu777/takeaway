@@ -99,17 +99,19 @@ Page({
         this.setData({ uploadKey: key });
         try {
           const uploaded = await api.uploadImage(file.tempFilePath);
+          const imageUrl = uploaded.image_url || "";
+          const previewUrl = uploaded.preview_url || file.tempFilePath;
           if (index !== undefined && index !== null && index !== "") {
             this.setData({
-              [`featuredCards[${Number(index)}].${key}`]: uploaded.file_id || uploaded.image_url,
-              [`featuredCards[${Number(index)}].image_preview_url`]: uploaded.preview_url || file.tempFilePath,
+              [`featuredCards[${Number(index)}].${key}`]: imageUrl,
+              [`featuredCards[${Number(index)}].image_preview_url`]: previewUrl,
               uploadKey: ""
             });
           } else {
             const previewKey = key.replace(/_url$/, "_preview");
             this.setData({
-              [`form.${key}`]: uploaded.file_id || uploaded.image_url,
-              [`form.${previewKey}`]: uploaded.preview_url || file.tempFilePath,
+              [`form.${key}`]: imageUrl,
+              [`form.${previewKey}`]: previewUrl,
               uploadKey: ""
             });
           }

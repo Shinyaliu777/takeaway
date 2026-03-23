@@ -1,5 +1,4 @@
 const app = getApp();
-const cloud = require("./cloud");
 
 function request(path, method = "GET", data) {
   return new Promise((resolve, reject) => {
@@ -41,6 +40,101 @@ function request(path, method = "GET", data) {
   });
 }
 
+function normalizeUploadError(err, fallback = "上传失败，请稍后重试") {
+  if (!err) {
+    return { detail: fallback };
+  }
+  const detail = String(err.detail || err.message || "").trim();
+  if (detail) {
+    return { ...err, detail };
+  }
+  const errMsg = String(err.errMsg || "").trim();
+  if (errMsg.includes("timeout")) {
+    return { ...err, detail: "上传超时，请稍后重试" };
+  }
+  if (errMsg.includes("abort")) {
+    return { ...err, detail: "上传已中断，请重新选择截图再试" };
+  }
+  const statusCode = Number(err.statusCode || 0);
+  if (statusCode === 401) {
+    return { ...err, detail: "登录已过期，请重新登录后再上传" };
+  }
+  if (statusCode === 413) {
+    return { ...err, detail: "图片过大，请重新选择更小的截图" };
+  }
+  if (statusCode >= 500) {
+    return { ...err, detail: "服务暂时繁忙，请稍后重试" };
+  }
+  return { ...err, detail: fallback };
+}
+
+function uploadFile(path, filePath, name = "file", options = {}) {
+  return new Promise((resolve, reject) => {
+    const header = {};
+    const token = app.globalData.userToken || wx.getStorageSync("user-token") || "";
+    if (token) {
+      app.globalData.userToken = token;
+      header.Authorization = `Bearer ${token}`;
+    }
+
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      if (task && typeof task.abort === "function") {
+        task.abort();
+      }
+      reject({ detail: "上传超时，请稍后重试" });
+    }, 60000);
+
+    const task = wx.uploadFile({
+      url: `${app.globalData.apiBase}${path}`,
+      filePath,
+      name,
+      header,
+      success(res) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+        let data = {};
+        try {
+          data = JSON.parse(res.data || "{}");
+        } catch (error) {
+          reject({ detail: "上传响应解析失败，请稍后重试" });
+          return;
+        }
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(data);
+          return;
+        }
+        if (res.statusCode === 401) {
+          app.globalData.userToken = "";
+          app.globalData.userInfo = null;
+          wx.removeStorageSync("user-token");
+          wx.removeStorageSync("user-info");
+          wx.removeStorageSync("user-nickname");
+        }
+        reject(normalizeUploadError({
+          ...data,
+          statusCode: res.statusCode
+        }, "上传失败，请稍后重试"));
+      },
+      fail(err) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+        reject(normalizeUploadError(err, "上传失败，请稍后重试"));
+      }
+    });
+
+    if (task && typeof task.onProgressUpdate === "function" && typeof options.onProgress === "function") {
+      task.onProgressUpdate((progress) => {
+        options.onProgress(progress || {});
+      });
+    }
+  });
+}
+
 module.exports = {
   userLogin: (data) => request("/api/user/login", "POST", data),
   getUserProfile: () => request("/api/user/profile"),
@@ -59,7 +153,7 @@ module.exports = {
   readMessage: (messageId) => request(`/api/user/messages/${messageId}/read`, "PATCH"),
   createOrder: (data) => request("/api/orders/create", "POST", data),
   submitPaymentProof: (orderId, data) => request(`/api/orders/${orderId}/payment-proof`, "POST", data),
-  uploadPaymentProof(filePath) {
-    return cloud.uploadImageToCloud(filePath, "payment-proof");
+  uploadPaymentProof(filePath, options) {
+    return uploadFile("/api/user/uploads/payment-proof", filePath, "file", options);
   }
 };

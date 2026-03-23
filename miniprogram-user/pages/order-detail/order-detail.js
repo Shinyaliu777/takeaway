@@ -1,6 +1,8 @@
 const api = require("../../utils/request");
 const cloud = require("../../utils/cloud");
 const app = getApp();
+const SOFT_COMPRESS_THRESHOLD_BYTES = 1024 * 1024;
+const HARD_REJECT_THRESHOLD_BYTES = 8 * 1024 * 1024;
 
 function mapOrderStatus(status) {
   return {
@@ -129,6 +131,75 @@ function buildPaymentBanner(order) {
   };
 }
 
+function buildUploadGuide(order) {
+  if (!order) {
+    return {
+      uploadGuideText: "",
+      uploadGuideSubText: ""
+    };
+  }
+  if (order.payment_status === "FAILED") {
+    return {
+      uploadGuideText: "上次截图未通过，请重新上传清晰截图。",
+      uploadGuideSubText: "系统会在上传中显示实时进度，图片较大时会先自动优化。"
+    };
+  }
+  if (order.payment_status === "PROOF_UPLOADED") {
+    return {
+      uploadGuideText: "截图已提交，正在等待商家确认。",
+      uploadGuideSubText: "如果商家退回截图，这里会提示你重新上传。"
+    };
+  }
+  if (order.payment_status === "UNPAID") {
+    return {
+      uploadGuideText: "先完成转账，再上传付款截图。",
+      uploadGuideSubText: "系统会在上传中显示实时进度，图片较大时会先自动优化。"
+    };
+  }
+  return {
+    uploadGuideText: "",
+    uploadGuideSubText: ""
+  };
+}
+
+function formatUploadError(error) {
+  if (!error) {
+    return "提交失败，请稍后重试";
+  }
+  const detail = String(error.detail || error.message || "").trim();
+  if (detail) {
+    return detail;
+  }
+  if (String(error.errMsg || "").includes("abort")) {
+    return "上传已中断，请重新选择截图再试";
+  }
+  return "提交失败，请稍后重试";
+}
+
+function compressProofIfNeeded(file) {
+  return new Promise((resolve) => {
+    const size = Number((file && file.size) || 0);
+    const tempFilePath = (file && file.tempFilePath) || "";
+    if (!tempFilePath || !size || size <= SOFT_COMPRESS_THRESHOLD_BYTES) {
+      resolve(file);
+      return;
+    }
+    wx.compressImage({
+      src: tempFilePath,
+      quality: 78,
+      success(res) {
+        resolve({
+          ...file,
+          tempFilePath: res.tempFilePath || tempFilePath
+        });
+      },
+      fail() {
+        resolve(file);
+      }
+    });
+  });
+}
+
 async function normalizePayment(payment) {
   if (!payment) {
     return null;
@@ -155,6 +226,11 @@ Page({
     items: [],
     payment: null,
     uploading: false,
+    uploadProgress: 0,
+    uploadStatusText: "",
+    uploadErrorText: "",
+    uploadGuideText: "",
+    uploadGuideSubText: "",
     proofImageFailed: false,
     timeline: [],
     paymentBanner: {
@@ -180,6 +256,7 @@ Page({
     try {
       const detail = await api.getOrderDetail(this.orderId);
       const payment = await normalizePayment(detail.payment || null);
+      const uploadGuide = buildUploadGuide(detail.order);
       this.setData({
         order: detail.order
           ? {
@@ -190,12 +267,17 @@ Page({
           : null,
         timeline: buildOrderTimeline(detail.order),
         paymentBanner: buildPaymentBanner(detail.order),
+        uploadGuideText: uploadGuide.uploadGuideText,
+        uploadGuideSubText: uploadGuide.uploadGuideSubText,
         items: (detail.items || []).map((item) => ({
           ...item,
           selected_options_text: formatSelectedOptions(item.selected_options || [])
         })),
         payment,
-        proofImageFailed: false
+        proofImageFailed: false,
+        uploadProgress: 0,
+        uploadStatusText: "",
+        uploadErrorText: ""
       });
     } catch (error) {
       wx.showToast({ title: "加载失败", icon: "none" });
@@ -236,29 +318,88 @@ Page({
     if (!(order.payment_status === "UNPAID" || order.payment_status === "FAILED")) {
       return;
     }
+    if (this.data.uploading) {
+      return;
+    }
     wx.chooseMedia({
       count: 1,
       mediaType: ["image"],
+      sizeType: ["compressed"],
       sourceType: ["album", "camera"],
       success: async (res) => {
-        const file = (res.tempFiles || [])[0];
+        let file = (res.tempFiles || [])[0];
         if (!file) return;
-        this.setData({ uploading: true });
+        this.setData({
+          uploadErrorText: "",
+          uploadStatusText: "正在检查截图大小..."
+        });
+        if ((file.size || 0) > HARD_REJECT_THRESHOLD_BYTES) {
+          const errorText = "图片过大，请换一张更小的截图";
+          this.setData({
+            uploadStatusText: "",
+            uploadErrorText: errorText
+          });
+          wx.showToast({ title: errorText, icon: "none" });
+          return;
+        }
+        if ((file.size || 0) > SOFT_COMPRESS_THRESHOLD_BYTES) {
+          this.setData({ uploadStatusText: "图片较大，正在自动优化..." });
+          wx.showLoading({ title: "正在优化图片..." });
+          file = await compressProofIfNeeded(file);
+          wx.hideLoading();
+          this.setData({ uploadStatusText: "图片已优化，准备上传..." });
+        }
+        this.setData({
+          uploading: true,
+          uploadProgress: 0,
+          uploadStatusText: "正在上传截图...",
+          uploadErrorText: ""
+        });
         wx.showLoading({ title: "正在上传..." });
         try {
-          const uploadResult = await api.uploadPaymentProof(file.tempFilePath);
+          const uploadResult = await api.uploadPaymentProof(file.tempFilePath, {
+            onProgress: (progress) => {
+              const percent = Math.max(0, Math.min(99, Number(progress.progress || 0)));
+              this.setData({
+                uploadProgress: percent,
+                uploadStatusText: percent >= 99 ? "上传已接近完成，正在提交凭证..." : `正在上传截图 ${percent}%`
+              });
+            }
+          });
+          this.setData({
+            uploadProgress: 100,
+            uploadStatusText: "图片已上传，正在提交凭证..."
+          });
           await api.submitPaymentProof(this.orderId, {
-            proof_image_url: uploadResult.file_id || uploadResult.image_url
+            proof_image_url: uploadResult.image_url || ""
           });
           wx.hideLoading();
-          wx.showToast({ title: "截图已提交，等待商家确认", icon: "success" });
           await this.loadDetail();
+          this.setData({
+            uploadProgress: 0,
+            uploadStatusText: "",
+            uploadErrorText: ""
+          });
+          wx.showToast({ title: "截图已提交，等待商家确认", icon: "success" });
         } catch (error) {
-          const detail = error && error.detail ? error.detail : "";
+          const detail = formatUploadError(error);
           wx.hideLoading();
-          wx.showToast({ title: detail || "提交失败", icon: "none" });
+          this.setData({
+            uploadProgress: 0,
+            uploadStatusText: "",
+            uploadErrorText: detail
+          });
+          if (String(detail || "").includes("图片过大")) {
+            this.setData({
+              uploadGuideText: "图片太大了，换一张更小的截图再试。",
+              uploadGuideSubText: "系统仍会在上传前尝试自动优化。"
+            });
+          }
+          wx.showToast({ title: detail, icon: "none" });
         } finally {
-          this.setData({ uploading: false });
+          this.setData({
+            uploading: false
+          });
         }
       }
     });

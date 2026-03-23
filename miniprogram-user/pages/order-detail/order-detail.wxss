@@ -255,6 +255,69 @@
   border: 0;
 }
 
+.upload-progress-card {
+  padding: 18rpx 20rpx;
+  border-radius: 18rpx;
+  background: #fff6ea;
+  border: 1rpx solid #f1debe;
+}
+
+.upload-progress-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18rpx;
+  align-items: center;
+}
+
+.upload-progress-title {
+  font-size: 22rpx;
+  color: #6b4e39;
+}
+
+.upload-progress-percent {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #8f5a2e;
+}
+
+.upload-progress-track {
+  margin-top: 12rpx;
+  width: 100%;
+  height: 12rpx;
+  border-radius: 999rpx;
+  overflow: hidden;
+  background: #eddcc5;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #9e602d, #cf8746);
+}
+
+.upload-error-card {
+  padding: 18rpx 20rpx;
+  border-radius: 18rpx;
+  background: #fff0ee;
+  border: 1rpx solid #f2c1bb;
+}
+
+.upload-error-title {
+  display: block;
+  font-size: 22rpx;
+  font-weight: 800;
+  color: #8c2f23;
+}
+
+.upload-error-copy {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  line-height: 1.45;
+  color: #9a4b40;
+}
+
 .muted {
   color: #8a6d56;
 }

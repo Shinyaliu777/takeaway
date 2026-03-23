@@ -157,7 +157,7 @@
 
 说明：
 - 目前后端仍兼容本地 `uploads/`
-- 小程序端已逐步转向云文件引用和解析
+- 小程序端当前是“新增写入优先走后端上传接口，历史 `cloud://` 继续兼容解析”
 
 ### 数据模型
 - [models/entities.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/models/entities.py)
