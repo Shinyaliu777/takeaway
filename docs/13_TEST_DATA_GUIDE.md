@@ -1,6 +1,6 @@
 # 合规测试数据指引
 
-更新时间：2026-03-22  
+更新时间：2026-03-23
 项目目录：`/Users/liuxu/Desktop/codex/takeaway-app`
 
 ## 1. 目的
@@ -113,7 +113,59 @@
 - `2026-03-22 20:00`
 - `Reference: TEST-001`
 
-## 6. 审核演示数据建议
+推荐做法：
+
+- 将演示付款截图统一放在可控位置，例如对象存储、稳定 CDN，或仓库内测试素材目录
+- 文件命名保持可识别，例如 `payment-proof-demo-success-1.jpg`
+- 审核演示与联调环境统一使用同一套演示图片，避免页面截图和后台状态不一致
+
+## 6. 收款码测试数据与最小可用方案
+
+2026-03-23 校验记录：
+
+- `shop.logo_url` 可访问
+- 线上曾出现 `shop.wechat_qr_url`、`shop.alipay_qr_url`、`shop.tng_qr_url` 指向旧 `/uploads/...` 地址并返回 `404`
+- 同日再次校验时，`/api/shop` 已返回新的可访问收款码地址
+- 因此仍建议保留前端兜底，以覆盖缓存、旧环境数据和再次回退到坏链路的情况
+
+最小可用修复建议：
+
+- 用户端首页在收款码预览时，先尝试线上 URL
+- 如果线上 URL 失效，则回退到小程序包内演示收款码素材
+- 当前仓库已包含以下演示收款码素材，可直接用于联调与审核演示：
+  - `miniprogram-user/assets/payment-qr-wechat.png`
+  - `miniprogram-user/assets/payment-qr-alipay.png`
+  - `miniprogram-user/assets/payment-qr-tng.png`
+
+后续正式修复建议：
+
+- 优先把 `shop.wechat_qr_url`、`shop.alipay_qr_url`、`shop.tng_qr_url` 改为稳定可访问地址
+- 推荐顺序：
+  - 云存储 `cloud://` 文件引用，由小程序端换临时 URL
+  - 稳定 CDN / 对象存储公网地址
+  - 后端 `uploads/` 下固定文件名地址，仅在部署链路可控时使用
+
+合规要求：
+
+- 演示收款码不得指向真实个人收款账户
+- 允许使用纯演示二维码图片，或在图中明确标注 `Demo QR`
+- 对外审核时，如使用演示收款码，页面应避免暗示真实到账
+
+## 7. 地址测试数据建议
+
+建议保留 3 到 5 条虚构地址，覆盖默认地址、校内地址、宿舍地址、多地址切换：
+
+- `Demo Block A, Test Street 1, Kuala Lumpur`
+- `KK12 Room 3-12-08, Test Campus, Kuala Lumpur`
+- `Engineering Faculty Lobby, Test Campus, Kuala Lumpur`
+- `Medical Faculty Gate 2, Test Campus, Kuala Lumpur`
+
+约束：
+
+- 不写真实门牌号与真实住户姓名
+- 地址命名最好贴近真实配送场景，便于验证配送范围与文案
+
+## 8. 审核演示数据建议
 
 提交微信审核时，建议准备：
 
@@ -131,7 +183,7 @@
 - 商家配送路径
 - 用户订单状态展示路径
 
-## 7. 数据一致性要求
+## 9. 数据一致性要求
 
 测试数据必须满足以下约束：
 
@@ -147,7 +199,12 @@
 - `order_status = DELIVERING` 且 `payment_status != SUCCESS`
 - `order_status = COMPLETED` 且 `payment_status != SUCCESS`
 
-## 8. 发布前建议
+推荐额外覆盖：
+
+- 至少 1 个 `FAILED` 付款订单，用于验证重新上传截图流程
+- 至少 1 个 `PROOF_UPLOADED` 订单，用于验证用户等待审核和商家确认/退回
+
+## 10. 发布前建议
 
 发布前建议检查：
 
@@ -156,7 +213,7 @@
 - 商家端统计是否与测试订单状态一致
 - 用户端状态文案是否与订单数据一致
 
-## 9. 当前仓库现状
+## 11. 当前仓库现状
 
 当前项目的初始化种子数据已经包含基础演示订单，见：
 

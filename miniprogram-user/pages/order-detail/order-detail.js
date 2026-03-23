@@ -228,6 +228,9 @@ Page({
       urls: [current]
     });
   },
+  goPaymentMethods() {
+    wx.redirectTo({ url: "/pages/index/index?openPayment=1" });
+  },
   choosePaymentProof() {
     const order = this.data.order || {};
     if (!(order.payment_status === "UNPAID" || order.payment_status === "FAILED")) {

@@ -162,6 +162,9 @@ Page({
       }
     });
   },
+  goPaymentMethods() {
+    wx.redirectTo({ url: "/pages/index/index?openPayment=1" });
+  },
   async checkout() {
     const token = app.globalData.userToken || wx.getStorageSync("user-token");
     if (!token) {

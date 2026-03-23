@@ -3,6 +3,12 @@ const cloud = require("../../utils/cloud");
 const { buildPricingPreview, normalizePricingConfig } = require("../../utils/pricing");
 const app = getApp();
 
+const PAYMENT_QR_FALLBACKS = {
+  wechat: "/assets/payment-qr-wechat.png",
+  alipay: "/assets/payment-qr-alipay.png",
+  tng: "/assets/payment-qr-tng.png"
+};
+
 function getStoredCart() {
   return wx.getStorageSync("user-cart") || [];
 }
@@ -14,6 +20,8 @@ function buildPaymentCodes(shop = {}) {
       title: "微信",
       subtitle: shop.wechat_qr_url ? "微信收款码" : "微信收款码未上传",
       imageUrl: shop.wechat_qr_preview || shop.wechat_qr_url || "",
+      fallbackImageUrl: PAYMENT_QR_FALLBACKS.wechat,
+      isFallbackActive: false,
       uploaded: !!shop.wechat_qr_url
     },
     {
@@ -21,6 +29,8 @@ function buildPaymentCodes(shop = {}) {
       title: "支付宝",
       subtitle: shop.alipay_qr_url ? "支付宝收款码" : "支付宝收款码未上传",
       imageUrl: shop.alipay_qr_preview || shop.alipay_qr_url || "",
+      fallbackImageUrl: PAYMENT_QR_FALLBACKS.alipay,
+      isFallbackActive: false,
       uploaded: !!shop.alipay_qr_url
     },
     {
@@ -28,6 +38,8 @@ function buildPaymentCodes(shop = {}) {
       title: "TNG",
       subtitle: shop.tng_qr_url ? "TNG 收款码" : "TNG 收款码未上传",
       imageUrl: shop.tng_qr_preview || shop.tng_qr_url || "",
+      fallbackImageUrl: PAYMENT_QR_FALLBACKS.tng,
+      isFallbackActive: false,
       uploaded: !!shop.tng_qr_url
     }
   ];
@@ -104,6 +116,10 @@ Page({
     }
   },
   paymentImageCache: {},
+  onLoad(query = {}) {
+    this.pendingOpenPaymentKey = query.key || "wechat";
+    this.pendingOpenPaymentSheet = query.openPayment === "1";
+  },
   getActiveCart() {
     return this.data.isGuest ? [] : getStoredCart();
   },
@@ -170,6 +186,12 @@ Page({
       this.applyFilter(this.data.selectedCategoryId || 0, resolvedProducts || [], this.data.currentPeriod);
       this.preloadPaymentCodes(paymentCodes);
       this.syncCartCount();
+      if (this.pendingOpenPaymentSheet) {
+        const nextKey = this.pendingOpenPaymentKey || "wechat";
+        this.pendingOpenPaymentSheet = false;
+        this.pendingOpenPaymentKey = nextKey;
+        this.previewPaymentQr({ currentTarget: { dataset: { key: nextKey } } });
+      }
     } catch (error) {
       wx.showToast({ title: "菜单加载失败", icon: "none" });
     }
@@ -419,6 +441,13 @@ Page({
     });
   },
   stopPaymentSheet() {},
+  patchPaymentCode(paymentKey, patch = {}) {
+    const paymentCodes = (this.data.paymentCodes || []).map((item) => (
+      item.key === paymentKey ? { ...item, ...patch } : item
+    ));
+    const selectedPaymentCode = paymentCodes.find((item) => item.key === this.data.selectedPaymentKey) || paymentCodes[0];
+    this.setData({ paymentCodes, selectedPaymentCode });
+  },
   preloadPaymentCodes(paymentCodes) {
     (paymentCodes || []).forEach((item) => {
       if (item && item.imageUrl && !this.paymentImageCache[item.key]) {
@@ -427,7 +456,13 @@ Page({
     });
   },
   loadSheetQr(paymentKey, imageUrl, silent) {
+    const currentCode = (this.data.paymentCodes || []).find((item) => item.key === paymentKey) || {};
+    const fallbackImageUrl = currentCode.fallbackImageUrl || PAYMENT_QR_FALLBACKS[paymentKey] || "";
     if (!imageUrl) {
+      if (fallbackImageUrl) {
+        this.loadFallbackQr(paymentKey, fallbackImageUrl, silent);
+        return;
+      }
       if (!silent) {
         this.setData({
           sheetImagePath: "",
@@ -442,6 +477,44 @@ Page({
       success: (res) => {
         const localPath = res && res.path ? res.path : imageUrl;
         this.paymentImageCache[paymentKey] = localPath;
+        this.patchPaymentCode(paymentKey, {
+          imageUrl,
+          isFallbackActive: false,
+          subtitle: currentCode.uploaded ? `${currentCode.title}收款码` : currentCode.subtitle
+        });
+        this.setData({
+          sheetImagePath: this.data.selectedPaymentKey === paymentKey ? localPath : this.data.sheetImagePath,
+          sheetImageLoading: false,
+          sheetImageError: false
+        });
+      },
+      fail: () => {
+        if (fallbackImageUrl && fallbackImageUrl !== imageUrl) {
+          this.loadFallbackQr(paymentKey, fallbackImageUrl, silent);
+          return;
+        }
+        if (!silent) {
+          this.setData({
+            sheetImagePath: imageUrl,
+            sheetImageLoading: false,
+            sheetImageError: true
+          });
+        }
+      }
+    });
+  },
+  loadFallbackQr(paymentKey, fallbackImageUrl, silent) {
+    const currentCode = (this.data.paymentCodes || []).find((item) => item.key === paymentKey) || {};
+    wx.getImageInfo({
+      src: fallbackImageUrl,
+      success: (res) => {
+        const localPath = res && res.path ? res.path : fallbackImageUrl;
+        this.paymentImageCache[paymentKey] = localPath;
+        this.patchPaymentCode(paymentKey, {
+          imageUrl: fallbackImageUrl,
+          isFallbackActive: true,
+          subtitle: "线上收款码失效，当前展示演示图"
+        });
         this.setData({
           sheetImagePath: this.data.selectedPaymentKey === paymentKey ? localPath : this.data.sheetImagePath,
           sheetImageLoading: false,
@@ -451,7 +524,7 @@ Page({
       fail: () => {
         if (!silent) {
           this.setData({
-            sheetImagePath: imageUrl,
+            sheetImagePath: "",
             sheetImageLoading: false,
             sheetImageError: true
           });

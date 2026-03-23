@@ -47,6 +47,7 @@
       <text class="line muted" wx:if="{{order.payment_status === 'FAILED'}}">商家未通过当前截图，请重新上传清晰截图。</text>
       <text class="line muted" wx:if="{{order.payment_status === 'PROOF_UPLOADED'}}">截图已提交，请等待商家确认，不需要重复上传。</text>
       <text class="line muted" wx:if="{{order.payment_status === 'UNPAID'}}">先完成转账，再上传付款截图。</text>
+      <button wx:if="{{order.payment_status === 'UNPAID' || order.payment_status === 'FAILED'}}" class="ghost-btn proof-secondary-btn" bindtap="goPaymentMethods">查看付款方式</button>
       <button wx:if="{{payment.proof_storage_ref}}" class="ghost-btn proof-secondary-btn" bindtap="previewProofImage">查看大图</button>
       <button
         wx:if="{{order.payment_status === 'UNPAID' || order.payment_status === 'FAILED'}}"

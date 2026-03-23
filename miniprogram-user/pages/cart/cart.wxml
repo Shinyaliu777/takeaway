@@ -117,6 +117,7 @@
       <text wx:if="{{!pricingPreview.matched && cart.length}}" class="line strong">{{pricingSummary.checkoutHint}}</text>
       <text wx:if="{{orderHint}}" class="line strong">{{orderHint}}</text>
     </view>
+    <button class="panel-btn ghost-btn subtle-ghost-btn action-btn-secondary" bindtap="goPaymentMethods">查看付款方式</button>
     <button class="panel-btn primary-btn action-btn-primary" bindtap="checkout" disabled="{{!canCheckout}}">创建订单</button>
     <button wx:if="{{cart.length}}" class="panel-btn ghost-btn subtle-ghost-btn action-btn-secondary" bindtap="clearCart">清空购物车</button>
   </view>

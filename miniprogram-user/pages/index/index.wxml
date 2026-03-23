@@ -33,6 +33,30 @@
     </view>
   </view>
 
+  <view class="section-shell payment-shell">
+    <view class="section-head payment-head">
+      <text class="section-title">付款方式</text>
+      <text class="section-subtitle">付款后截图并上传到订单</text>
+    </view>
+    <view class="payment-grid">
+      <view
+        wx:for="{{paymentCodes}}"
+        wx:key="key"
+        class="payment-card {{item.key === selectedPaymentKey ? 'payment-card-active' : ''}}"
+        bindtap="previewPaymentQr"
+        data-key="{{item.key}}"
+      >
+        <view class="payment-card-top">
+          <text class="payment-title">{{item.title}}</text>
+          <text class="payment-state {{item.uploaded ? 'payment-state-ready' : 'payment-state-empty'}}">
+            {{item.isFallbackActive ? '演示图' : item.uploaded ? '可查看' : '未上传'}}
+          </text>
+        </view>
+        <text class="payment-copy">{{item.subtitle}}</text>
+      </view>
+    </view>
+  </view>
+
   <view wx:if="{{featuredProducts.length}}" class="section-shell">
     <view class="section-head">
       <text class="section-title">推荐</text>
@@ -132,5 +156,48 @@
       <text class="pricing-inline-total">已选 {{pricingPreview.selectedCount}} 份</text>
     </view>
     <button class="panel-btn panel-primary panel-cart-btn" bindtap="goCart">{{isGuest ? '登录后下单' : '去核对订单'}}{{isGuest ? '' : cartLabel}}</button>
+  </view>
+
+  <view wx:if="{{showPaymentSheet}}" class="payment-sheet-mask" bindtap="closePaymentSheet">
+    <view class="payment-sheet" catchtap="stopPaymentSheet">
+      <view class="payment-sheet-head">
+        <view>
+          <text class="payment-sheet-title">{{selectedPaymentCode.title}} 收款码</text>
+          <text class="payment-sheet-subtitle">{{selectedPaymentCode.isFallbackActive ? '线上收款码失效，当前展示演示图用于联调，请在订单详情继续上传演示付款截图。' : '转账完成后，请到订单详情上传付款截图'}}</text>
+        </view>
+        <text class="payment-sheet-close" bindtap="closePaymentSheet">关闭</text>
+      </view>
+      <view class="payment-sheet-tabs">
+        <view
+          wx:for="{{paymentCodes}}"
+          wx:key="key"
+          class="payment-sheet-tab {{item.key === selectedPaymentKey ? 'payment-sheet-tab-active' : ''}}"
+          bindtap="selectPaymentCode"
+          data-key="{{item.key}}"
+        >
+          {{item.title}}
+        </view>
+      </view>
+      <view class="payment-sheet-body">
+        <image
+          wx:if="{{sheetImagePath}}"
+          class="payment-sheet-image"
+          src="{{sheetImagePath}}"
+          mode="aspectFit"
+          show-menu-by-longpress="true"
+          lazy-load="true"
+        />
+        <view wx:elif="{{sheetImageLoading}}" class="payment-sheet-empty">
+          <text class="payment-sheet-empty-copy">收款码加载中</text>
+        </view>
+        <view wx:elif="{{sheetImageError}}" class="payment-sheet-empty">
+          <text class="payment-sheet-empty-copy">收款码加载失败，请稍后再试</text>
+        </view>
+        <view wx:else class="payment-sheet-empty">
+          <text class="payment-sheet-empty-copy">商家暂未上传该收款码</text>
+        </view>
+      </view>
+      <button class="payment-sheet-save" bindtap="savePaymentQr" data-key="{{selectedPaymentKey}}">保存收款码到相册</button>
+    </view>
   </view>
 </view>
