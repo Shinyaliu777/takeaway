@@ -88,3 +88,107 @@
 - 当前事实以代码和本目录 Markdown 为准
 - 历史 `.docx` 仅保留参考
 - 任何真实密码、AppSecret、数据库长期凭据都不要写进 GitHub 文档
+
+## 9. 建议接手团队配置
+
+### 最少配置：2 人
+
+适合：
+- 先救火
+- 先维持上线
+- 需求不多、以修线上问题为主
+
+建议分工：
+- `1 名全栈 / 后端主负责人`
+  - 负责云托管
+  - 负责 MySQL
+  - 负责接口
+  - 负责商家端和用户端联调闭环
+- `1 名前端 / 小程序负责人`
+  - 负责用户端
+  - 负责商家端页面
+  - 负责微信开发者工具、真机验证和发布前回归
+
+### 推荐配置：3 人
+
+这是当前项目最合适的接手方式。
+
+建议分工：
+- `1 名后端负责人`
+  - 负责 FastAPI、订单状态流、图片上传、数据库和云托管
+- `1 名用户端负责人`
+  - 负责用户端点餐、购物车、订单详情、登录链路、付款方式
+- `1 名商家端负责人`
+  - 负责工作台、订单审核、商品、规则、店铺设置、收款码上传
+
+优点：
+- 用户端和商家端不会互相抢同一套页面
+- 后端能专心盯接口、日志、数据库和部署
+- 最适合当前“线上已运行、还在持续修链路”的状态
+
+### 更稳配置：4 人
+
+适合：
+- 要持续迭代
+- 既要修线上问题，也要推进产品体验和新需求
+
+建议分工：
+- `1 名后端负责人`
+- `1 名用户端小程序负责人`
+- `1 名商家端小程序负责人`
+- `1 名产品 / 测试 / 运营联调负责人`
+
+第四个人重点负责：
+- 用真实测试数据走主链路
+- 验证回归
+- 记录线上问题
+- 跟进发布 checklist
+
+## 10. 当前最推荐的职责划分
+
+如果现在真的要交给下一批人接手，建议按下面切：
+
+- `A 角色：后端与运维`
+  - 文件范围：
+    - [backend/app/api/routes.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/api/routes.py)
+    - [backend/app/services/order_flow.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/services/order_flow.py)
+    - [backend/app/services/storage.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/services/storage.py)
+    - [backend/app/db/session.py](/Users/liuxu/Desktop/codex/takeaway-app/backend/app/db/session.py)
+  - 资源范围：
+    - 云托管
+    - MySQL
+    - 日志
+
+- `B 角色：用户端`
+  - 文件范围：
+    - [miniprogram-user/pages/index/index.js](/Users/liuxu/Desktop/codex/takeaway-app/miniprogram-user/pages/index/index.js)
+    - [miniprogram-user/pages/cart/cart.js](/Users/liuxu/Desktop/codex/takeaway-app/miniprogram-user/pages/cart/cart.js)
+    - [miniprogram-user/pages/order-detail/order-detail.js](/Users/liuxu/Desktop/codex/takeaway-app/miniprogram-user/pages/order-detail/order-detail.js)
+    - [miniprogram-user/pages/login/login.js](/Users/liuxu/Desktop/codex/takeaway-app/miniprogram-user/pages/login/login.js)
+  - 业务范围：
+    - 菜单
+    - 购物车
+    - 下单
+    - 上传付款截图
+    - 付款方式展示
+
+- `C 角色：商家端`
+  - 文件范围：
+    - [miniprogram-merchant/pages/index/index.js](/Users/liuxu/Desktop/codex/takeaway-app/miniprogram-merchant/pages/index/index.js)
+    - [miniprogram-merchant/pages/orders/orders.js](/Users/liuxu/Desktop/codex/takeaway-app/miniprogram-merchant/pages/orders/orders.js)
+    - [miniprogram-merchant/pages/order-detail/order-detail.js](/Users/liuxu/Desktop/codex/takeaway-app/miniprogram-merchant/pages/order-detail/order-detail.js)
+    - [miniprogram-merchant/pages/shop/shop.js](/Users/liuxu/Desktop/codex/takeaway-app/miniprogram-merchant/pages/shop/shop.js)
+  - 业务范围：
+    - 审核付款
+    - 商品与规则
+    - 收款码与店铺设置
+
+- `D 角色：测试 / 产品验收`
+  - 文档范围：
+    - [docs/15_LIVE_TEST_DATA_CHECKLIST.md](/Users/liuxu/Desktop/codex/takeaway-app/docs/15_LIVE_TEST_DATA_CHECKLIST.md)
+    - [docs/13_TEST_DATA_GUIDE.md](/Users/liuxu/Desktop/codex/takeaway-app/docs/13_TEST_DATA_GUIDE.md)
+    - [docs/08_OPERATIONS.md](/Users/liuxu/Desktop/codex/takeaway-app/docs/08_OPERATIONS.md)
+  - 工作范围：
+    - 跑回归
+    - 记问题
+    - 做发布前确认
