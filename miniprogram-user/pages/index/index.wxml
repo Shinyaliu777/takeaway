@@ -2,7 +2,7 @@
   <view class="hero-card compact-hero">
     <view class="hero-top">
       <view class="hero-brand">
-        <image wx:if="{{shop.logo_url}}" class="hero-logo" src="{{shop.logo_url}}" mode="aspectFill" lazy-load="true"></image>
+        <image wx:if="{{shop.logo_url_preview || shop.logo_url}}" class="hero-logo" src="{{shop.logo_url_preview || shop.logo_url}}" mode="aspectFill" lazy-load="true"></image>
         <view class="hero-copy">
           <text class="eyebrow">店铺</text>
           <text class="hero-title">{{shop.name}}</text>
@@ -89,7 +89,7 @@
     </view>
     <view wx:if="{{filteredProducts.length}}">
       <view wx:for="{{filteredProducts}}" wx:key="id" class="dish-card">
-        <image wx:if="{{item.image_url}}" class="dish-image" src="{{item.image_url}}" mode="aspectFill" lazy-load="true" catchtap="previewDishImage" data-image-url="{{item.image_url}}"></image>
+        <image wx:if="{{item.image_preview_url || item.image_url}}" class="dish-image" src="{{item.image_preview_url || item.image_url}}" mode="aspectFill" lazy-load="true" catchtap="previewDishImage" data-image-url="{{item.image_preview_url || item.image_url}}"></image>
         <view class="dish-main">
           <view class="dish-copy">
             <view class="dish-name-row">

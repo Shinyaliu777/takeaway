@@ -1,4 +1,5 @@
 const api = require("../../utils/request");
+const cloud = require("../../utils/cloud");
 const app = getApp();
 
 Page({
@@ -18,6 +19,7 @@ Page({
       category_id: 1,
       name: "",
       image_url: "",
+      image_preview_url: "",
       description: "",
       price_amount: "",
       stock_qty: "",
@@ -45,10 +47,15 @@ Page({
   async loadProducts() {
     try {
       const products = await api.getProducts();
+      let resolvedRefs = {};
+      try {
+        resolvedRefs = await cloud.resolveFileRefs((products || []).map((item) => item.image_url || ""));
+      } catch (error) {}
       const productsWithCategory = (products || []).map((item) => {
         const category = this.data.categories.find((row) => row.id === item.category_id);
         return {
           ...item,
+          image_preview_url: resolvedRefs[item.image_url] || "",
           category_name: category ? category.name : `分类${item.category_id}`
         };
       });
@@ -151,7 +158,8 @@ Page({
           wx.showLoading({ title: "上传中" });
           const result = await api.uploadImage(file.tempFilePath);
           this.setData({
-            "form.image_url": result.image_url || ""
+            "form.image_url": result.file_id || result.image_url || "",
+            "form.image_preview_url": result.preview_url || file.tempFilePath
           });
           wx.showToast({ title: "上传成功", icon: "success" });
         } catch (error) {
@@ -165,6 +173,7 @@ Page({
   clearImage() {
     this.setData({
       "form.image_url": ""
+      ,"form.image_preview_url": ""
     });
   },
   editProduct(event) {
@@ -177,6 +186,7 @@ Page({
         category_id: product.category_id,
         name: product.name,
         image_url: product.image_url || "",
+        image_preview_url: product.image_preview_url || product.image_url || "",
         description: product.description || "",
         price_amount: product.price_amount,
         stock_qty: product.stock_qty,
@@ -227,6 +237,7 @@ Page({
         category_id: 1,
         name: "",
         image_url: "",
+        image_preview_url: "",
         description: "",
         price_amount: "",
         stock_qty: "",
@@ -245,6 +256,7 @@ Page({
         price_amount: Number(this.data.form.price_amount),
         stock_qty: Number(this.data.form.stock_qty)
       };
+      delete payload.image_preview_url;
       if (this.data.editingId) {
         await api.updateProduct(this.data.editingId, payload);
       } else {
@@ -256,13 +268,14 @@ Page({
           category_id: 1,
           name: "",
           image_url: "",
-        description: "",
-        price_amount: "",
-        stock_qty: "",
-        sale_status: true,
-        available_lunch: true,
-        available_dinner: true
-      },
+          image_preview_url: "",
+          description: "",
+          price_amount: "",
+          stock_qty: "",
+          sale_status: true,
+          available_lunch: true,
+          available_dinner: true
+        },
         categoryIndex: 0
       });
       this.loadProducts();

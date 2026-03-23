@@ -1,4 +1,5 @@
 const api = require("../../utils/request");
+const cloud = require("../../utils/cloud");
 const app = getApp();
 
 Page({
@@ -6,9 +7,13 @@ Page({
     form: {
       name: "",
       logo_url: "",
+      logo_preview: "",
       wechat_qr_url: "",
+      wechat_qr_preview: "",
       alipay_qr_url: "",
+      alipay_qr_preview: "",
       tng_qr_url: "",
+      tng_qr_preview: "",
       phone: "",
       address: "",
       notice: "",
@@ -31,13 +36,34 @@ Page({
   async loadShop() {
     try {
       const shop = await api.getShop();
+      const featuredCards = (shop.featured_cards || []).length
+        ? shop.featured_cards
+        : [
+            { title: "", subtitle: "", image_url: "", target_product_id: "" },
+            { title: "", subtitle: "", image_url: "", target_product_id: "" },
+            { title: "", subtitle: "", image_url: "", target_product_id: "" }
+          ];
+      let resolvedRefs = {};
+      try {
+        resolvedRefs = await cloud.resolveFileRefs([
+          shop.logo_url || "",
+          shop.wechat_qr_url || "",
+          shop.alipay_qr_url || "",
+          shop.tng_qr_url || "",
+          ...featuredCards.map((item) => item.image_url || "")
+        ]);
+      } catch (error) {}
       this.setData({
         form: {
           name: shop.name || "",
           logo_url: shop.logo_url || "",
+          logo_preview: resolvedRefs[shop.logo_url] || "",
           wechat_qr_url: shop.wechat_qr_url || "",
+          wechat_qr_preview: resolvedRefs[shop.wechat_qr_url] || "",
           alipay_qr_url: shop.alipay_qr_url || "",
+          alipay_qr_preview: resolvedRefs[shop.alipay_qr_url] || "",
           tng_qr_url: shop.tng_qr_url || "",
+          tng_qr_preview: resolvedRefs[shop.tng_qr_url] || "",
           phone: shop.phone || "",
           address: shop.address || "",
           notice: shop.notice || "",
@@ -46,13 +72,10 @@ Page({
           featured_enabled: !!shop.featured_enabled,
           featured_cards_json: shop.featured_cards_json || "[]"
         },
-        featuredCards: (shop.featured_cards || []).length
-          ? shop.featured_cards
-          : [
-              { title: "", subtitle: "", image_url: "", target_product_id: "" },
-              { title: "", subtitle: "", image_url: "", target_product_id: "" },
-              { title: "", subtitle: "", image_url: "", target_product_id: "" }
-            ]
+        featuredCards: featuredCards.map((item) => ({
+          ...item,
+          image_preview_url: resolvedRefs[item.image_url] || ""
+        }))
       });
     } catch (error) {
       wx.showToast({ title: "加载失败", icon: "none" });
@@ -78,12 +101,15 @@ Page({
           const uploaded = await api.uploadImage(file.tempFilePath);
           if (index !== undefined && index !== null && index !== "") {
             this.setData({
-              [`featuredCards[${Number(index)}].${key}`]: uploaded.image_url,
+              [`featuredCards[${Number(index)}].${key}`]: uploaded.file_id || uploaded.image_url,
+              [`featuredCards[${Number(index)}].image_preview_url`]: uploaded.preview_url || file.tempFilePath,
               uploadKey: ""
             });
           } else {
+            const previewKey = key.replace(/_url$/, "_preview");
             this.setData({
-              [`form.${key}`]: uploaded.image_url,
+              [`form.${key}`]: uploaded.file_id || uploaded.image_url,
+              [`form.${previewKey}`]: uploaded.preview_url || file.tempFilePath,
               uploadKey: ""
             });
           }
@@ -115,11 +141,22 @@ Page({
   },
   async saveShop() {
     try {
-      await api.updateShop({
+      const featuredCardsPayload = (this.data.featuredCards || []).map((item) => ({
+        title: item.title || "",
+        subtitle: item.subtitle || "",
+        image_url: item.image_url || "",
+        target_product_id: item.target_product_id || ""
+      }));
+      const payload = {
         ...this.data.form,
         extra_rice_price: Number(this.data.form.extra_rice_price || 0),
-        featured_cards_json: JSON.stringify(this.data.featuredCards || [])
-      });
+        featured_cards_json: JSON.stringify(featuredCardsPayload)
+      };
+      delete payload.logo_preview;
+      delete payload.wechat_qr_preview;
+      delete payload.alipay_qr_preview;
+      delete payload.tng_qr_preview;
+      await api.updateShop(payload);
       await this.loadShop();
       wx.showToast({ title: "已保存", icon: "success" });
     } catch (error) {

@@ -38,11 +38,16 @@
       <text class="section-subtitle">确认到账后订单才进入已付款</text>
     </view>
     <image
-      wx:if="{{payment.proof_image_url}}"
+      wx:if="{{payment.proof_preview_url}}"
       class="proof-image"
-      src="{{payment.proof_image_url}}"
+      src="{{payment.proof_preview_url}}"
       mode="aspectFit"
+      bindtap="previewProofImage"
     />
+    <view wx:elif="{{payment.proof_storage_ref}}" class="proof-empty">
+      <text class="line">截图已上传，但当前预览加载失败。</text>
+      <button class="ghost-btn" bindtap="previewProofImage">查看大图</button>
+    </view>
     <view wx:else class="proof-empty">
       <text class="line">用户还没有上传付款截图。</text>
     </view>

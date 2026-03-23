@@ -1,4 +1,5 @@
 const api = require("../../utils/request");
+const cloud = require("../../utils/cloud");
 const app = getApp();
 
 function getStoredCart() {
@@ -45,15 +46,28 @@ Page({
     this.setData({ loading: true });
     try {
       const result = await api.getProductDetail(this.productId);
+      const product = result.product || null;
+      let imagePreviewUrl = "";
+      if (product && product.image_url) {
+        try {
+          const resolved = await cloud.resolveFileRefs([product.image_url]);
+          imagePreviewUrl = resolved[product.image_url] || "";
+        } catch (error) {}
+      }
       this.setData({
-        product: result.product || null,
+        product: product
+          ? {
+              ...product,
+              image_preview_url: imagePreviewUrl
+            }
+          : null,
         category: result.category || null,
         loading: false,
-        selectedOptions: this.buildDefaultSelections((result.product || {}).option_groups || [])
+        selectedOptions: this.buildDefaultSelections((product || {}).option_groups || [])
       });
-      if (result && result.product && result.product.name) {
+      if (product && product.name) {
         wx.setNavigationBarTitle({
-          title: result.product.name
+          title: product.name
         });
       }
     } catch (error) {
@@ -141,7 +155,7 @@ Page({
     wx.navigateTo({ url: "/pages/cart/cart" });
   },
   previewProductImage() {
-    const imageUrl = ((this.data.product || {}).image_url || "").trim();
+    const imageUrl = ((this.data.product || {}).image_preview_url || (this.data.product || {}).image_url || "").trim();
     if (!imageUrl) {
       return;
     }

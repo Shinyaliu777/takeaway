@@ -3,10 +3,17 @@ const config = require("./config");
 App({
   globalData: {
     apiBase: config.apiBase,
+    cloudEnv: config.cloudEnv,
     userToken: "",
     userInfo: null
   },
   onLaunch() {
+    if (wx.cloud && config.cloudEnv) {
+      wx.cloud.init({
+        env: config.cloudEnv,
+        traceUser: true
+      });
+    }
     this.globalData.userToken = wx.getStorageSync("user-token") || "";
     this.globalData.userInfo = wx.getStorageSync("user-info") || null;
   },

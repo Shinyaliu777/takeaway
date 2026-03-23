@@ -1,4 +1,5 @@
 const api = require("../../utils/request");
+const cloud = require("../../utils/cloud");
 const app = getApp();
 
 function mapOrderStatus(status) {
@@ -128,6 +129,26 @@ function buildPaymentBanner(order) {
   };
 }
 
+async function normalizePayment(payment) {
+  if (!payment) {
+    return null;
+  }
+  const proofRef = (payment.proof_image_url || "").trim();
+  let previewUrl = "";
+  if (proofRef) {
+    try {
+      previewUrl = await cloud.getTempFileURL(proofRef);
+    } catch (error) {
+      previewUrl = "";
+    }
+  }
+  return {
+    ...payment,
+    proof_storage_ref: proofRef,
+    proof_preview_url: previewUrl
+  };
+}
+
 Page({
   data: {
     order: null,
@@ -158,6 +179,7 @@ Page({
   async loadDetail() {
     try {
       const detail = await api.getOrderDetail(this.orderId);
+      const payment = await normalizePayment(detail.payment || null);
       this.setData({
         order: detail.order
           ? {
@@ -172,12 +194,7 @@ Page({
           ...item,
           selected_options_text: formatSelectedOptions(item.selected_options || [])
         })),
-        payment: detail.payment && detail.payment.proof_image_url
-          ? {
-              ...detail.payment,
-              proof_image_url: `${detail.payment.proof_image_url}${detail.payment.proof_image_url.indexOf("?") > -1 ? "&" : "?"}t=${Date.now()}`
-            }
-          : (detail.payment || null),
+        payment,
         proofImageFailed: false
       });
     } catch (error) {
@@ -187,12 +204,25 @@ Page({
   handleProofError() {
     this.setData({ proofImageFailed: true });
   },
-  previewProofImage() {
+  async previewProofImage() {
     const payment = this.data.payment || {};
-    if (!payment.proof_image_url) {
+    let current = payment.proof_preview_url || "";
+    if (!current && payment.proof_storage_ref) {
+      try {
+        current = await cloud.getTempFileURL(payment.proof_storage_ref);
+        if (current) {
+          this.setData({
+            "payment.proof_preview_url": current
+          });
+        }
+      } catch (error) {
+        current = "";
+      }
+    }
+    if (!current) {
+      wx.showToast({ title: "当前图片不可预览", icon: "none" });
       return;
     }
-    const current = payment.proof_image_url.split("?")[0];
     wx.previewImage({
       current,
       urls: [current]
@@ -215,7 +245,7 @@ Page({
         try {
           const uploadResult = await api.uploadPaymentProof(file.tempFilePath);
           await api.submitPaymentProof(this.orderId, {
-            proof_image_url: uploadResult.image_url
+            proof_image_url: uploadResult.file_id || uploadResult.image_url
           });
           wx.hideLoading();
           wx.showToast({ title: "截图已提交，等待商家确认", icon: "success" });

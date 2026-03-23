@@ -1,4 +1,5 @@
 const app = getApp();
+const cloud = require("./cloud");
 
 function request(path, method = "GET", data) {
   return new Promise((resolve, reject) => {
@@ -59,27 +60,6 @@ module.exports = {
   createOrder: (data) => request("/api/orders/create", "POST", data),
   submitPaymentProof: (orderId, data) => request(`/api/orders/${orderId}/payment-proof`, "POST", data),
   uploadPaymentProof(filePath) {
-    return new Promise((resolve, reject) => {
-      const token = app.globalData.userToken || wx.getStorageSync("user-token") || "";
-      if (token) {
-        app.globalData.userToken = token;
-      }
-      wx.uploadFile({
-        url: `${app.globalData.apiBase}/api/user/uploads/payment-proof`,
-        filePath,
-        name: "file",
-        header: {
-          Authorization: token ? `Bearer ${token}` : ""
-        },
-        success(res) {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(JSON.parse(res.data));
-            return;
-          }
-          reject(res);
-        },
-        fail: reject
-      });
-    });
+    return cloud.uploadImageToCloud(filePath, "payment-proof");
   }
 };

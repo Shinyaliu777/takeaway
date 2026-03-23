@@ -1,4 +1,5 @@
 const app = getApp();
+const cloud = require("./cloud");
 
 function request(path, method = "GET", data, withAuth = true) {
   const header = {};
@@ -57,23 +58,6 @@ module.exports = {
   getMessages: () => request("/api/merchant/messages"),
   readMessage: (messageId) => request(`/api/merchant/messages/${messageId}/read`, "PATCH"),
   uploadImage(filePath) {
-    return new Promise((resolve, reject) => {
-      wx.uploadFile({
-        url: `${app.globalData.apiBase}/api/merchant/uploads/image`,
-        filePath,
-        name: "file",
-        header: {
-          Authorization: `Bearer ${app.globalData.merchantToken}`
-        },
-        success(res) {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(JSON.parse(res.data));
-            return;
-          }
-          reject(res);
-        },
-        fail: reject
-      });
-    });
+    return cloud.uploadImageToCloud(filePath, "merchant-images");
   }
 };

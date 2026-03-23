@@ -1,4 +1,5 @@
 const api = require("../../utils/request");
+const cloud = require("../../utils/cloud");
 const { buildPricingPreview, normalizePricingConfig } = require("../../utils/pricing");
 const app = getApp();
 
@@ -12,21 +13,21 @@ function buildPaymentCodes(shop = {}) {
       key: "wechat",
       title: "微信",
       subtitle: shop.wechat_qr_url ? "微信收款码" : "微信收款码未上传",
-      imageUrl: shop.wechat_qr_url || "",
+      imageUrl: shop.wechat_qr_preview || shop.wechat_qr_url || "",
       uploaded: !!shop.wechat_qr_url
     },
     {
       key: "alipay",
       title: "支付宝",
       subtitle: shop.alipay_qr_url ? "支付宝收款码" : "支付宝收款码未上传",
-      imageUrl: shop.alipay_qr_url || "",
+      imageUrl: shop.alipay_qr_preview || shop.alipay_qr_url || "",
       uploaded: !!shop.alipay_qr_url
     },
     {
       key: "tng",
       title: "TNG",
       subtitle: shop.tng_qr_url ? "TNG 收款码" : "TNG 收款码未上传",
-      imageUrl: shop.tng_qr_url || "",
+      imageUrl: shop.tng_qr_preview || shop.tng_qr_url || "",
       uploaded: !!shop.tng_qr_url
     }
   ];
@@ -47,7 +48,7 @@ function buildFeaturedCards(shop = {}, products = []) {
       return {
         title: item.title || (linkedProduct ? linkedProduct.name : "推荐菜品"),
         subtitle: item.subtitle || (linkedProduct ? linkedProduct.description : ""),
-        image_url: item.image_url || (linkedProduct ? linkedProduct.image_url : ""),
+        image_url: item.image_preview_url || (linkedProduct ? (linkedProduct.image_preview_url || linkedProduct.image_url) : ""),
         target_product_id: linkedProduct ? linkedProduct.id : 0
       };
     });
@@ -119,25 +120,54 @@ Page({
         api.getCategories(),
         api.getProducts()
       ]);
+      const featuredCards = ((shop || {}).featured_cards || []);
+      let resolvedRefs = {};
+      try {
+        resolvedRefs = await cloud.resolveFileRefs([
+          (shop || {}).logo_url || "",
+          (shop || {}).wechat_qr_url || "",
+          (shop || {}).alipay_qr_url || "",
+          (shop || {}).tng_qr_url || "",
+          ...featuredCards.map((item) => item.image_url || ""),
+          ...(products || []).map((item) => item.image_url || "")
+        ]);
+      } catch (error) {}
+      const resolvedProducts = (products || []).map((item) => ({
+        ...item,
+        image_preview_url: resolvedRefs[item.image_url] || ""
+      }));
+      const resolvedShop = shop
+        ? {
+            ...shop,
+            logo_url_preview: resolvedRefs[shop.logo_url] || "",
+            wechat_qr_preview: resolvedRefs[shop.wechat_qr_url] || "",
+            alipay_qr_preview: resolvedRefs[shop.alipay_qr_url] || "",
+            tng_qr_preview: resolvedRefs[shop.tng_qr_url] || "",
+            featured_cards: featuredCards.map((item) => ({
+              ...item,
+              image_preview_url: resolvedRefs[item.image_url] || ""
+            }))
+          }
+        : {};
       const pricingConfig = normalizePricingConfig({
-        comboRules: (shop || {}).pricing_rules || [],
-        extraRicePrice: (shop || {}).extra_rice_price
+        comboRules: (resolvedShop || {}).pricing_rules || [],
+        extraRicePrice: (resolvedShop || {}).extra_rice_price
       });
-      const paymentCodes = buildPaymentCodes(shop || {});
+      const paymentCodes = buildPaymentCodes(resolvedShop || {});
       const selectedPaymentCode =
         paymentCodes.find((item) => item.key === this.data.selectedPaymentKey) || paymentCodes[0];
       this.setData({
-        shop: shop || {},
+        shop: resolvedShop || {},
         categories: categories || [],
-        products: products || [],
-        featuredProducts: buildFeaturedCards(shop || {}, products || []),
-        shopOpen: isShopOpen((shop || {}).business_hours),
+        products: resolvedProducts || [],
+        featuredProducts: buildFeaturedCards(resolvedShop || {}, resolvedProducts || []),
+        shopOpen: isShopOpen((resolvedShop || {}).business_hours),
         paymentCodes,
         selectedPaymentCode,
         pricingConfig
       });
       wx.setStorageSync("pricing-config", pricingConfig);
-      this.applyFilter(this.data.selectedCategoryId || 0, products || [], this.data.currentPeriod);
+      this.applyFilter(this.data.selectedCategoryId || 0, resolvedProducts || [], this.data.currentPeriod);
       this.preloadPaymentCodes(paymentCodes);
       this.syncCartCount();
     } catch (error) {

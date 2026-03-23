@@ -9,7 +9,7 @@
       <text class="section-title">店铺设置</text>
       <text class="section-subtitle">营业资料与展示信息</text>
     </view>
-    <image wx:if="{{form.logo_url}}" class="shop-logo-preview" src="{{form.logo_url}}" mode="aspectFill"></image>
+    <image wx:if="{{form.logo_preview || form.logo_url}}" class="shop-logo-preview" src="{{form.logo_preview || form.logo_url}}" mode="aspectFill"></image>
     <view class="field-block">
       <text class="field-label">店铺名称</text>
       <input class="input" placeholder="请输入店铺名称" value="{{form.name}}" data-key="name" bindinput="onInput" />
@@ -52,7 +52,7 @@
           <text class="section-title">推荐卡片 {{index + 1}}</text>
           <text class="section-subtitle">最多 3 张</text>
         </view>
-        <image wx:if="{{item.image_url}}" class="payment-qr-preview" src="{{item.image_url}}" mode="aspectFill"></image>
+        <image wx:if="{{item.image_preview_url || item.image_url}}" class="payment-qr-preview" src="{{item.image_preview_url || item.image_url}}" mode="aspectFill"></image>
         <view class="field-block">
           <text class="field-label">标题</text>
           <input class="input" placeholder="例如：今日推荐" value="{{item.title}}" data-index="{{index}}" data-key="title" bindinput="onFeaturedInput" />
@@ -83,7 +83,7 @@
           </view>
           <button class="secondary-btn" bindtap="chooseUpload" data-key="wechat_qr_url">上传</button>
         </view>
-        <image wx:if="{{form.wechat_qr_url}}" class="payment-qr-preview" src="{{form.wechat_qr_url}}" mode="aspectFit"></image>
+        <image wx:if="{{form.wechat_qr_preview || form.wechat_qr_url}}" class="payment-qr-preview" src="{{form.wechat_qr_preview || form.wechat_qr_url}}" mode="aspectFit"></image>
       </view>
 
       <view class="payment-upload-card">
@@ -94,7 +94,7 @@
           </view>
           <button class="secondary-btn" bindtap="chooseUpload" data-key="alipay_qr_url">上传</button>
         </view>
-        <image wx:if="{{form.alipay_qr_url}}" class="payment-qr-preview" src="{{form.alipay_qr_url}}" mode="aspectFit"></image>
+        <image wx:if="{{form.alipay_qr_preview || form.alipay_qr_url}}" class="payment-qr-preview" src="{{form.alipay_qr_preview || form.alipay_qr_url}}" mode="aspectFit"></image>
       </view>
 
       <view class="payment-upload-card">
@@ -105,7 +105,7 @@
           </view>
           <button class="secondary-btn" bindtap="chooseUpload" data-key="tng_qr_url">上传</button>
         </view>
-        <image wx:if="{{form.tng_qr_url}}" class="payment-qr-preview" src="{{form.tng_qr_url}}" mode="aspectFit"></image>
+        <image wx:if="{{form.tng_qr_preview || form.tng_qr_url}}" class="payment-qr-preview" src="{{form.tng_qr_preview || form.tng_qr_url}}" mode="aspectFit"></image>
       </view>
     </view>
     <button class="primary-btn" bindtap="saveShop">保存</button>

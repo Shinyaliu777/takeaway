@@ -42,7 +42,7 @@
     </view>
     <view wx:for="{{filteredProducts}}" wx:key="id" class="product-list-card">
       <view class="product-top">
-        <image wx:if="{{item.image_url}}" class="product-thumb" src="{{item.image_url}}" mode="aspectFill"></image>
+        <image wx:if="{{item.image_preview_url || item.image_url}}" class="product-thumb" src="{{item.image_preview_url || item.image_url}}" mode="aspectFill"></image>
         <view class="product-main">
           <view class="product-header">
             <text class="product-title">{{item.name}}</text>
@@ -93,7 +93,7 @@
       <text class="editor-section-title">图片</text>
       <view class="image-upload-panel">
         <view class="image-preview-wrap">
-          <image wx:if="{{form.image_url}}" class="preview-image" src="{{form.image_url}}" mode="aspectFill"></image>
+          <image wx:if="{{form.image_preview_url || form.image_url}}" class="preview-image" src="{{form.image_preview_url || form.image_url}}" mode="aspectFill"></image>
           <view wx:else class="image-placeholder">暂无图片</view>
         </view>
         <view class="image-upload-actions">

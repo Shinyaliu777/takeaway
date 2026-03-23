@@ -3,9 +3,16 @@ const config = require("./config");
 App({
   globalData: {
     apiBase: config.apiBase,
+    cloudEnv: config.cloudEnv,
     merchantToken: ""
   },
   onLaunch() {
+    if (wx.cloud && config.cloudEnv) {
+      wx.cloud.init({
+        env: config.cloudEnv,
+        traceUser: true
+      });
+    }
     this.globalData.merchantToken = wx.getStorageSync("merchant-token") || "";
   },
   ensureMerchantLogin() {

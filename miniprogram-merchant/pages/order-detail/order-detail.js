@@ -1,4 +1,5 @@
 const api = require("../../utils/request");
+const cloud = require("../../utils/cloud");
 const app = getApp();
 
 function mapOrderStatus(status) {
@@ -44,6 +45,20 @@ Page({
   async loadDetail() {
     try {
       const detail = await api.getOrderDetail(this.orderId);
+      const payment = detail.payment
+        ? {
+            ...detail.payment,
+            proof_storage_ref: (detail.payment.proof_image_url || "").trim(),
+            proof_preview_url: ""
+          }
+        : null;
+      if (payment && payment.proof_storage_ref) {
+        try {
+          payment.proof_preview_url = await cloud.getTempFileURL(payment.proof_storage_ref);
+        } catch (error) {
+          payment.proof_preview_url = "";
+        }
+      }
       this.setData({
         order: detail.order
           ? {
@@ -56,11 +71,35 @@ Page({
           ...item,
           selected_options_text: formatSelectedOptions(item.selected_options || [])
         })),
-        payment: detail.payment || null
+        payment
       });
     } catch (error) {
       wx.showToast({ title: "加载失败", icon: "none" });
     }
+  },
+  async previewProofImage() {
+    const payment = this.data.payment || {};
+    let current = payment.proof_preview_url || "";
+    if (!current && payment.proof_storage_ref) {
+      try {
+        current = await cloud.getTempFileURL(payment.proof_storage_ref);
+        if (current) {
+          this.setData({
+            "payment.proof_preview_url": current
+          });
+        }
+      } catch (error) {
+        current = "";
+      }
+    }
+    if (!current) {
+      wx.showToast({ title: "当前图片不可预览", icon: "none" });
+      return;
+    }
+    wx.previewImage({
+      current,
+      urls: [current]
+    });
   },
   async confirmPayment() {
     try {
