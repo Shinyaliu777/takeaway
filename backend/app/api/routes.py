@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from urllib.error import URLError
 from urllib.request import Request as UrlRequest, urlopen
 from datetime import datetime
+from uuid import uuid4
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, Request as FastAPIRequest, UploadFile
